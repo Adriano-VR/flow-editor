@@ -1,5 +1,5 @@
 "use client"
-import React, { useCallback, useState, useEffect } from "react";
+import React, { useCallback, useState, useEffect, useRef } from "react";
 import ReactFlow, {
     MiniMap,
     Controls,
@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus } from 'lucide-react';
+import { Plus, MessageCircle, Mail } from 'lucide-react';
 
 interface FlowData {
   data: {
@@ -63,9 +63,16 @@ const nodeTypes = {
   trigger: ({ data }: { data: any }) => (
     <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-stone-400">
       <div className="flex flex-col">
-        <div className="text-xs font-bold">{data.label}</div>
+        <div className="flex items-center gap-2">
+          {data.subcategory === 'whatsapp' ? (
+            <MessageCircle className="h-4 w-4 text-[#25D366]" />
+          ) : data.icon && (
+            <data.icon className="h-4 w-4 text-stone-400" />
+          )}
+          <div className="text-sm font-semibold">{data.label}</div>
+        </div>
         {data.config && Object.entries(data.config).map(([key, value]) => (
-          <div key={key} className="text-xs text-gray-500">
+          <div key={key} className="text-xs text-gray-500 mt-1">
             {key}: {JSON.stringify(value)}
           </div>
         ))}
@@ -85,9 +92,16 @@ const nodeTypes = {
         className="w-3 h-3 bg-blue-400 hover:bg-blue-500"
       />
       <div className="flex flex-col">
-        <div className="text-xs font-bold">{data.label}</div>
+        <div className="flex items-center gap-2">
+          {data.subcategory === 'whatsapp' ? (
+            <MessageCircle className="h-4 w-4 text-[#25D366]" />
+          ) : data.icon && (
+            <data.icon className="h-4 w-4 text-blue-400" />
+          )}
+          <div className="text-sm font-semibold">{data.label}</div>
+        </div>
         {data.config && Object.entries(data.config).map(([key, value]) => (
-          <div key={key} className="text-xs text-gray-500">
+          <div key={key} className="text-xs text-gray-500 mt-1">
             {key}: {JSON.stringify(value)}
           </div>
         ))}
@@ -107,9 +121,16 @@ const nodeTypes = {
         className="w-3 h-3 bg-yellow-400 hover:bg-yellow-500"
       />
       <div className="flex flex-col">
-        <div className="text-xs font-bold">{data.label}</div>
+        <div className="flex items-center gap-2">
+          {data.subcategory === 'whatsapp' ? (
+            <MessageCircle className="h-4 w-4 text-[#25D366]" />
+          ) : data.icon && (
+            <data.icon className="h-4 w-4 text-yellow-400" />
+          )}
+          <div className="text-sm font-semibold">{data.label}</div>
+        </div>
         {data.config && Object.entries(data.config).map(([key, value]) => (
-          <div key={key} className="text-xs text-gray-500">
+          <div key={key} className="text-xs text-gray-500 mt-1">
             {key}: {JSON.stringify(value)}
           </div>
         ))}
@@ -134,15 +155,101 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const [selectedAction, setSelectedAction] = useState<string>('');
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const categories = getNodeCategories();
 
-  const addNode = useCallback((node: Node) => {
-    setNodes((nds) => [...nds, node]);
-    if (onSave) {
-      onSave({ nodes: [...nodes, node], edges });
+  // Debounced save function
+  const debouncedSave = useCallback(() => {
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      if (onSave) {
+        onSave({ nodes, edges });
+        setLastSaved(new Date());
+      }
+    }, 1000); // 1 second delay
   }, [nodes, edges, onSave]);
+
+  // Modified node change handler
+  const handleNodesChange = useCallback((changes: NodeChange[]) => {
+    onNodesChange(changes);
+    debouncedSave();
+  }, [onNodesChange, debouncedSave]);
+
+  // Modified edge change handler
+  const handleEdgesChange = useCallback((changes: EdgeChange[]) => {
+    onEdgesChange(changes);
+    debouncedSave();
+  }, [onEdgesChange, debouncedSave]);
+
+  // Modified connect handler
+  const onConnect = useCallback((params: Connection) => {
+    setEdges((eds) => addEdge({
+      ...params,
+      type: 'smoothstep',
+      animated: false,
+      style: { stroke: '#64748b', strokeWidth: 2 },
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        width: 20,
+        height: 20,
+        color: '#64748b',
+      },
+    }, eds));
+    debouncedSave();
+  }, [debouncedSave]);
+
+  // Modified node config save handler
+  const handleSaveNode = () => {
+    if (!selectedNode) return;
+
+    const updatedNodes = nodes.map((node) => {
+      if (node.id === selectedNode.id) {
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            config: nodeConfig ? JSON.parse(nodeConfig) : {},
+          },
+        };
+      }
+      return node;
+    });
+
+    setNodes(updatedNodes);
+    setSelectedNode(null);
+    debouncedSave();
+  };
+
+  // Modified delete handlers
+  const handleDeleteNode = () => {
+    if (!selectedNode) return;
+
+    setNodes((nds) => nds.filter((node) => node.id !== selectedNode.id));
+    setEdges((eds) => eds.filter(
+      (edge) => edge.source !== selectedNode.id && edge.target !== selectedNode.id
+    ));
+    setSelectedNode(null);
+    debouncedSave();
+  };
+
+  const handleDeleteEdge = (event: React.MouseEvent, edge: Edge) => {
+    setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+    debouncedSave();
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const loadFlow = async () => {
@@ -188,44 +295,9 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
     }
   }, [initialData]);
 
-  const onConnect = (params: Connection) => {
-    setEdges((eds) => addEdge({
-      ...params,
-      type: 'smoothstep',
-      animated: false,
-      style: { stroke: '#64748b', strokeWidth: 2 },
-      markerEnd: {
-        type: MarkerType.ArrowClosed,
-        width: 20,
-        height: 20,
-        color: '#64748b',
-      },
-    }, eds));
-  };
-
   const handleNodeClick = (event: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
     setNodeConfig(node.data.config ? JSON.stringify(node.data.config) : '');
-  };
-
-  const handleSaveNode = () => {
-    if (!selectedNode) return;
-
-    const updatedNodes = nodes.map((node) => {
-      if (node.id === selectedNode.id) {
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            config: nodeConfig ? JSON.parse(nodeConfig) : {},
-          },
-        };
-      }
-      return node;
-    });
-
-    setNodes(updatedNodes);
-    setSelectedNode(null);
   };
 
   const handleAddNode = () => {
@@ -253,6 +325,7 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
       type: actionDefinition.type,
       data: {
         label: actionDefinition.name,
+        // icon: Mail, // <-- Aqui define o ícone desejado
         config: actionDefinition.config || {},
         onAddNode: () => {
           console.log('Node plus button clicked');
@@ -264,37 +337,10 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
         y: Math.random() * 500,
       },
     };
-
-    addNode(newNode);
-    setSelectedAction('');
-  };
-
-  const handleSaveFlow = () => {
-    if (onSave) {
-      onSave({ nodes, edges });
-      toast({
-        title: "Flow salvo",
-        description: "Todas as alterações foram salvas com sucesso.",
-      });
-    }
-  };
-
-  const handleDeleteNode = () => {
-    if (!selectedNode) return;
-
-    // Remove the node
-    setNodes((nds) => nds.filter((node) => node.id !== selectedNode.id));
     
-    // Remove connected edges
-    setEdges((eds) => eds.filter(
-      (edge) => edge.source !== selectedNode.id && edge.target !== selectedNode.id
-    ));
 
-    setSelectedNode(null);
-  };
-
-  const handleDeleteEdge = (event: React.MouseEvent, edge: Edge) => {
-    setEdges((eds) => eds.filter((e) => e.id !== edge.id));
+    setNodes((nds) => [...nds, newNode]);
+    setSelectedAction('');
   };
 
   if (loading) {
@@ -307,15 +353,15 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-4 font-semibold">
         <div className="flex gap-2">
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-[180px] ">
               <SelectValue placeholder="Selecione uma categoria" />
             </SelectTrigger>
             <SelectContent>
               {Object.entries(categories).map(([key, category]) => (
-                <SelectItem key={key} value={key}>
+                <SelectItem key={key} value={key} className="font-semibold">
                   {category.name}
                 </SelectItem>
               ))}
@@ -327,12 +373,17 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Selecione um app" />
               </SelectTrigger>
-              <SelectContent>
-                {Object.entries(categories.app.subcategories).map(([key, subcategory]) => (
-                  <SelectItem key={key} value={key}>
-                    {subcategory.name}
-                  </SelectItem>
-                ))}
+              <SelectContent >
+                {Object.entries(categories.app.subcategories).map(([key, subcategory]) => {
+                  
+                  return (
+                    <SelectItem key={key} value={key} className="font-semibold">
+                   
+                      {subcategory.name}
+                                        
+                    </SelectItem>
+                  );
+                })}
               </SelectContent>
             </Select>
           )}
@@ -349,7 +400,7 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
                     </SelectItem>
                   ))
                 : categories.internal.actions.map((action: NodeTypeDefinition) => (
-                    <SelectItem key={action.id} value={action.id}>
+                    <SelectItem key={action.id} value={action.id} className="font-semibold">
                       {action.name}
                     </SelectItem>
                   ))}
@@ -360,20 +411,26 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
             Adicionar Nó
           </Button>
         </div>
-        <Button onClick={handleSaveFlow}>Salvar Flow</Button>
+        {lastSaved && (
+          <div className="text-sm text-muted-foreground">
+            Último salvamento: {lastSaved.toLocaleTimeString()}
+          </div>
+        )}
       </div>
 
       <div className="flex-1 border rounded-lg">
         <ReactFlow
           nodes={nodes}
           edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
+          onNodesChange={handleNodesChange}
+          onEdgesChange={handleEdgesChange}
           onConnect={onConnect}
           onNodeClick={handleNodeClick}
           onEdgeClick={handleDeleteEdge}
           nodeTypes={nodeTypes}
           fitView
+          className="cursor-crosshair"
+          style={{ cursor: 'crosshair' }}
         >
           <Background />
           <Controls />

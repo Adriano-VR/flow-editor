@@ -103,20 +103,7 @@ export default function Home() {
     }
   };
 
-  const handleDeleteFlow = async () => {
-    if (!selectedFlowId) return;
-    
-    try {
-      setIsDeleting(true);
-      await deleteFlow(selectedFlowId);
-      setSelectedFlowId(null);
-      setFlowData(null);
-    } catch (error) {
-      console.error('Error deleting flow:', error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+
 
   const handleSaveFlow = async (data: { nodes: any[]; edges: any[] }) => {
     if (!selectedFlowId) return;
@@ -296,17 +283,7 @@ export default function Home() {
     <DefaultLayout>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Flows</h1>
-        <div className="flex gap-2 items-center">
-          {selectedFlowId && (
-            <Button 
-              onClick={handleDeleteFlow}
-              disabled={isDeleting}
-              variant="destructive"
-            >
-              {isDeleting ? 'Deletando...' : 'Deletar Flow'}
-            </Button>
-          )}
-        </div>
+      
       </div>
       
       <div className="flex h-[calc(100vh-8rem)]">
