@@ -27,6 +27,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
   const [newFlowName, setNewFlowName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [selectedFlowId, setSelectedFlowId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchFlows = async () => {
@@ -186,8 +187,11 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
               <li key={flow.id} className="group relative">
                 <Button 
                   variant="ghost" 
-                  className="w-full justify-start truncate"
-                  onClick={() => onSelectFlow(flow.id)}
+                  className={`w-full justify-start truncate ${selectedFlowId === flow.id ? 'bg-accent' : ''}`}
+                  onClick={() => {
+                    setSelectedFlowId(flow.id);
+                    onSelectFlow(flow.id);
+                  }}
                 >
                   <div className="flex flex-col items-start cursor-pointer">
                     <span className="font-medium">{flow.attributes.name}</span>
