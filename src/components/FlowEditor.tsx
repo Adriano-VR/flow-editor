@@ -7,7 +7,6 @@ import ReactFlow, {
     addEdge,
     Edge,
     Connection,
-    Node,
     NodeChange,
     EdgeChange,
     applyNodeChanges,
@@ -25,6 +24,7 @@ import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from "@/components/ui/use-toast";
 import { nodeTypes as nodeTypeDefinitions, getNodeCategories, NodeTypeDefinition } from '@/lib/nodeTypes';
+import { JsonEditor } from './JsonEditor';
 import {
   Select,
   SelectContent,
@@ -32,7 +32,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, MessageCircle, Mail } from 'lucide-react';
+import { Plus, MessageCircle, Mail, Code } from 'lucide-react';
+import { Node } from "@/types/flow";
 
 interface FlowData {
   data: {
@@ -56,7 +57,7 @@ interface FlowEditorProps {
     edges: Edge[];
   };
   onSave?: (data: { nodes: Node[]; edges: Edge[] }) => void;
-  onOpenDrawer?: () => void;
+  onOpenDrawer?: (node: Node) => void;
 }
 
 const nodeTypes = {
@@ -156,6 +157,7 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const [selectedAction, setSelectedAction] = useState<string>('');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [showJsonEditor, setShowJsonEditor] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const categories = getNodeCategories();
@@ -298,6 +300,32 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
   const handleNodeClick = (event: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
     setNodeConfig(node.data.config ? JSON.stringify(node.data.config) : '');
+    setShowJsonEditor(true);
+    onOpenDrawer?.(node);
+  };
+
+  const handleJsonSave = (json: string) => {
+    try {
+      const parsedJson = JSON.parse(json);
+      if (selectedNode) {
+        const updatedNodes = nodes.map((node) => {
+          if (node.id === selectedNode.id) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                config: parsedJson,
+              },
+            };
+          }
+          return node;
+        });
+        setNodes(updatedNodes);
+        debouncedSave();
+      }
+    } catch (err) {
+      console.error('Error saving JSON:', err);
+    }
   };
 
   const handleAddNode = () => {
@@ -343,6 +371,15 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
     setSelectedAction('');
   };
 
+  // Add this new function to handle the Code button click
+  const handleCodeButtonClick = () => {
+    setShowJsonEditor(!showJsonEditor);
+    if (!showJsonEditor) {
+      // When showing the editor, set the selected node to null to show the full flow
+      setSelectedNode(null);
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-[80vh]">Loading...</div>;
   }
@@ -374,16 +411,11 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
                 <SelectValue placeholder="Selecione um app" />
               </SelectTrigger>
               <SelectContent >
-                {Object.entries(categories.app.subcategories).map(([key, subcategory]) => {
-                  
-                  return (
-                    <SelectItem key={key} value={key} className="font-semibold">
-                   
-                      {subcategory.name}
-                                        
-                    </SelectItem>
-                  );
-                })}
+                {Object.entries(categories.app.subcategories).map(([key, subcategory]) => (
+                  <SelectItem key={key} value={key} className="font-semibold">
+                    {subcategory.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           )}
@@ -411,12 +443,71 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
             Adicionar Nó
           </Button>
         </div>
-        {lastSaved && (
-          <div className="text-sm text-muted-foreground">
-            Último salvamento: {lastSaved.toLocaleTimeString()}
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {lastSaved && (
+            <div className="text-sm text-muted-foreground">
+              Último salvamento: {lastSaved.toLocaleTimeString()}
+            </div>
+          )}
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleCodeButtonClick}
+            className={showJsonEditor ? "bg-muted" : ""}
+          >
+            <Code className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
+
+      {showJsonEditor && (
+        <div className="mb-4 h-[200px] border rounded-lg">
+          <JsonEditor
+            flowData={selectedNode}
+            onSave={(json) => {
+              try {
+                const parsedJson = JSON.parse(json);
+                if (selectedNode) {
+                  // Update single node
+                  const updatedNodes = nodes.map((node) => {
+                    if (node.id === selectedNode.id) {
+                      return {
+                        ...node,
+                        data: {
+                          ...node.data,
+                          config: parsedJson,
+                        },
+                      };
+                    }
+                    return node;
+                  });
+                  setNodes(updatedNodes);
+                } else {
+                  // Update entire flow
+                  if (parsedJson.nodes && Array.isArray(parsedJson.nodes)) {
+                    setNodes(parsedJson.nodes);
+                  }
+                  if (parsedJson.edges && Array.isArray(parsedJson.edges)) {
+                    setEdges(parsedJson.edges);
+                  }
+                }
+                debouncedSave();
+                toast({
+                  title: "Sucesso!",
+                  description: "JSON aplicado com sucesso",
+                });
+              } catch (err) {
+                console.error('Error saving JSON:', err);
+                toast({
+                  title: "Erro",
+                  description: "JSON inválido. Verifique o formato.",
+                  variant: "destructive",
+                });
+              }
+            }}
+          />
+        </div>
+      )}
 
       <div className="flex-1 border rounded-lg">
         <ReactFlow

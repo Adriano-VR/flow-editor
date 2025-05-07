@@ -184,17 +184,17 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
         ) : (
           <ul className="space-y-2 mt-4">
             {flows.map((flow) => (
-              <li key={flow.id} className="group relative">
+              <li key={flow.id} className="group relative  ">
                 <Button 
                   variant="ghost" 
-                  className={`w-full justify-start truncate ${selectedFlowId === flow.id ? 'bg-accent' : ''}`}
+                  className={`h-11 w-full justify-start truncate  ${selectedFlowId === flow.id ? 'bg-primary text-green-200 hover:bg-primary/90 hover:text-green-200' : ''}`}
                   onClick={() => {
                     setSelectedFlowId(flow.id);
                     onSelectFlow(flow.id);
                   }}
                 >
-                  <div className="flex flex-col items-start cursor-pointer">
-                    <span className="font-medium">{flow.attributes.name}</span>
+                  <div className="flex gap-1 flex-col items-start cursor-pointer">
+                    <span className="font-medium capitalize">{flow.attributes.name}</span>
                     <span className="text-xs text-muted-foreground">
                       {flow.attributes.status}
                     </span>
