@@ -13,6 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Search, Menu, Bell, User } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSearch } from "@/contexts/SearchContext";
 
 interface NavBarProps {
   onMenuClick?: () => void;
@@ -27,28 +28,24 @@ interface Flow {
 }
 
 export default function NavBar({ onMenuClick, flows = [] }: NavBarProps) {
-  const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  const { searchInput, setSearchInput } = useSearch();
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
-
-  const filteredFlows = searchQuery.length < 2 
+  const filteredFlows = searchInput.length < 2 
     ? [] 
     : flows.filter((flow: Flow) => 
-        flow.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        flow.status.toLowerCase().includes(searchQuery.toLowerCase())
+        flow.name.toLowerCase().includes(searchInput.toLowerCase()) ||
+        flow.status.toLowerCase().includes(searchInput.toLowerCase())
       );
 
   const handleFlowSelect = (flowId: string) => {
     router.push(`/flows/${flowId}`);
-    setSearchQuery("");
+    setSearchInput("");
   };
 
   return (
     <nav className="border-b w-full backdrop-blur-xs">
-      <div className="flex h-16 items-center px-4 max-w-7xl mx-auto">
+      <div className="flex h-16 items-center justify-between px-4 ">
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
@@ -63,38 +60,36 @@ export default function NavBar({ onMenuClick, flows = [] }: NavBarProps) {
           </div>
         </div>
 
-        <div className="flex-1 flex items-center justify-center px-4">
-          <div className="w-full max-w-2xl relative">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar flows..."
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-            
-            {/* Resultados da busca */}
-            {filteredFlows.length > 0 && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-50">
-                <div className="py-2">
-                  {filteredFlows.map((flow) => (
-                    <button
-                      key={flow.id}
-                      onClick={() => handleFlowSelect(flow.id)}
-                      className="w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground flex flex-col"
-                    >
-                      <span className="font-medium">{flow.name}</span>
-                      <span className="text-sm text-muted-foreground">
-                        Status: {flow.status} • Criado em: {new Date(flow.created_at).toLocaleDateString()}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+        <div className="w-full max-w-2xl relative">
+          <div className="relative">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar flows..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="pl-8"
+            />
           </div>
+          
+          {/* Resultados da busca */}
+          {filteredFlows.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-50">
+              <div className="py-2">
+                {filteredFlows.map((flow) => (
+                  <button
+                    key={flow.id}
+                    onClick={() => handleFlowSelect(flow.id)}
+                    className="w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground flex flex-col"
+                  >
+                    <span className="font-medium">{flow.name}</span>
+                    <span className="text-sm text-muted-foreground">
+                      Status: {flow.status} • Criado em: {new Date(flow.created_at).toLocaleDateString()}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-4">

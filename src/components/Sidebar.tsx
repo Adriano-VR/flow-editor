@@ -5,6 +5,7 @@ import { getFlows, createFlow, deleteFlow } from "@/lib/api";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Plus, Loader2, X, Save, Trash2 } from "lucide-react";
+import { useSearch } from "@/contexts/SearchContext";
 
 interface Flow {
   id: string;
@@ -28,6 +29,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [selectedFlowId, setSelectedFlowId] = useState<string | null>(null);
+  const { searchInput } = useSearch();
 
   useEffect(() => {
     const fetchFlows = async () => {
@@ -183,7 +185,9 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
           </div>
         ) : (
           <ul className="space-y-2 mt-4">
-            {flows.map((flow) => (
+            {flows.filter((flow) => 
+              flow.attributes.name.toLowerCase().includes(searchInput.toLowerCase())
+            ).map((flow) => (
               <li key={flow.id} className="group relative  ">
                 <Button 
                   variant="ghost" 
