@@ -124,7 +124,7 @@ export default function Home() {
     try {
       await updateFlow(selectedFlowId, {
         data: {
-          name: flowName,
+          name: flowData?.attributes?.name || "Novo Flow",
           status: "draft",
           billing: "free",
           published: true,
