@@ -1,3 +1,11 @@
+import { MessageCircle, Mail, Brain, Clock, Code, Play } from 'lucide-react';
+import { FaTools, FaWhatsapp, FaRobot } from 'react-icons/fa';
+import { AiOutlineOpenAI } from 'react-icons/ai';
+import { MdMemory } from 'react-icons/md';
+import { VscDebugStart } from 'react-icons/vsc';
+import { IoTime } from 'react-icons/io5';
+import { TbAirConditioning } from 'react-icons/tb';
+
 export interface NodeAction {
   id: string;
   name: string;
@@ -8,7 +16,7 @@ export interface NodeAction {
 }
 
 type AppSubcategory = 'whatsapp' | 'assistant';
-type AppAction = 'send_message' | 'receive_message' | 'model' | 'memory' | 'tool';
+type AppAction = 'send_message' | 'receive_message' | 'model' | 'memory' | 'tool' | 'create_agent' | 'run_agent';
 type InternalAction = 'start' | 'delay' | 'condition';
 
 export interface NodeTypeDefinition {
@@ -18,6 +26,8 @@ export interface NodeTypeDefinition {
   category: 'app' | 'internal';
   subcategory?: string;
   config: Record<string, any>;
+  icon?: React.ComponentType<{ className?: string }>;
+  color: string;
 }
 
 interface AppNodeTypes {
@@ -42,6 +52,8 @@ export const nodeTypes: {
         type: 'action',
         category: 'app',
         subcategory: 'whatsapp',
+        icon: FaWhatsapp,
+        color: '#25D366',
         config: {
           message: '',
           to: ''
@@ -53,6 +65,8 @@ export const nodeTypes: {
         type: 'trigger',
         category: 'app',
         subcategory: 'whatsapp',
+        icon: FaWhatsapp,
+        color: '#25D366',
         config: {
           message: ''
         }
@@ -65,6 +79,8 @@ export const nodeTypes: {
         type: 'action',
         category: 'app',
         subcategory: 'assistant',
+        icon: AiOutlineOpenAI,
+        color: '#3B82F6',
         config: {
           model: '',
           temperature: 0.7
@@ -76,6 +92,8 @@ export const nodeTypes: {
         type: 'action',
         category: 'app',
         subcategory: 'assistant',
+        icon: MdMemory,
+        color: '#3B82F6',
         config: {
           type: 'short_term' | 'long_term'
         }
@@ -86,8 +104,38 @@ export const nodeTypes: {
         type: 'action',
         category: 'app',
         subcategory: 'assistant',
+        icon: FaTools,
+        color: '#3B82F6',
         config: {
           tool: '',
+          parameters: {}
+        }
+      },
+      create_agent: {
+        id: 'assistant_create_agent',
+        name: 'Criar Agente',
+        type: 'action',
+        category: 'app',
+        subcategory: 'assistant',
+        icon: FaRobot,
+        color: '#3B82F6',
+        config: {
+          name: '',
+          description: '',
+          capabilities: []
+        }
+      },
+      run_agent: {
+        id: 'assistant_run_agent',
+        name: 'Executar Agente',
+        type: 'action',
+        category: 'app',
+        subcategory: 'assistant',
+        icon: FaRobot,
+        color: '#3B82F6',
+        config: {
+          agent_id: '',
+          input: '',
           parameters: {}
         }
       }
@@ -99,6 +147,8 @@ export const nodeTypes: {
       name: 'Início',
       type: 'trigger',
       category: 'internal',
+      icon: VscDebugStart,
+      color: '#EAB308',
       config: {}
     },
     delay: {
@@ -106,6 +156,8 @@ export const nodeTypes: {
       name: 'Atraso',
       type: 'action',
       category: 'internal',
+      icon: IoTime ,
+      color: '#EAB308',
       config: {
         duration: 0,
         unit: 'seconds'
@@ -116,6 +168,8 @@ export const nodeTypes: {
       name: 'Condição',
       type: 'condition',
       category: 'internal',
+      icon: TbAirConditioning,
+      color: '#EAB308',
       config: {
         condition: '',
         operator: 'equals' | 'contains' | 'greater' | 'less'

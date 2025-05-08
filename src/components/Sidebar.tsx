@@ -186,7 +186,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
         ) : (
           <ul className="space-y-2 mt-4">
             {flows.filter((flow) => 
-              flow.attributes.name.toLowerCase().includes(searchInput.toLowerCase())
+              flow.attributes?.name?.toLowerCase().includes(searchInput.toLowerCase()) ?? false
             ).map((flow) => (
               <li key={flow.id} className="group relative  ">
                 <Button 

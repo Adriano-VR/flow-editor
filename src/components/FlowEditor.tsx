@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, MessageCircle, Mail, Code } from 'lucide-react';
+import { Plus, MessageCircle, Mail, Code, CheckCircle2, XCircle } from 'lucide-react';
 import { Node } from "@/types/flow";
 
 interface FlowData {
@@ -61,88 +61,166 @@ interface FlowEditorProps {
 }
 
 const nodeTypes = {
-  trigger: ({ data }: { data: any }) => (
-    <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-stone-400">
-      <div className="flex flex-col">
-        <div className="flex items-center gap-2">
-          {data.subcategory === 'whatsapp' ? (
-            <MessageCircle className="h-4 w-4 text-[#25D366]" />
-          ) : data.icon && (
-            <data.icon className="h-4 w-4 text-stone-400" />
-          )}
-          <div className="text-sm font-semibold">{data.label}</div>
-        </div>
-        {data.config && Object.entries(data.config).map(([key, value]) => (
-          <div key={key} className="text-xs text-gray-500 mt-1">
-            {key}: {JSON.stringify(value)}
+  trigger: ({ data }: { data: any }) => {
+    const Icon = data.icon as React.ComponentType<{ size?: number; color?: string }>;
+    return (
+      <div className="flex flex-col items-center">
+        <div
+          className={`
+            flex flex-col items-center justify-center
+            rounded-full shadow-lg
+            border-2 
+            w-36 h-36
+            relative
+          `}
+          style={{ 
+            minWidth: 96, 
+            minHeight: 96,
+            backgroundColor: data.color || '#3B82F6'
+          }}
+        >
+          <Handle
+            type="target"
+            position={Position.Left}
+            className="w-3 h-3 bg-white absolute left-[-8px] top-1/2 -translate-y-1/2"
+          />
+          <div className="flex items-center justify-center w-11/12 h-11/12  rounded-full mb-2">
+          {Icon && <Icon size={90} color="#fff" />}
           </div>
-        ))}
-      </div>
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="w-3 h-3 bg-stone-400 hover:bg-stone-500"
-      />
-    </div>
-  ),
-  action: ({ data }: { data: any }) => (
-    <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-blue-400">
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="w-3 h-3 bg-blue-400 hover:bg-blue-500"
-      />
-      <div className="flex flex-col">
-        <div className="flex items-center gap-2">
-          {data.subcategory === 'whatsapp' ? (
-            <MessageCircle className="h-4 w-4 text-[#25D366]" />
-          ) : data.icon && (
-            <data.icon className="h-4 w-4 text-blue-400" />
-          )}
-          <div className="text-sm font-semibold">{data.label}</div>
-        </div>
-        {data.config && Object.entries(data.config).map(([key, value]) => (
-          <div key={key} className="text-xs text-gray-500 mt-1">
-            {key}: {JSON.stringify(value)}
+          
+          <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+            <div className="w-full h-full rounded-full flex items-center justify-center shadow bg-green-600">
+              <Plus size={12} color="#fff" />
+            </div>
+            <Handle
+              type="source"
+              position={Position.Right}
+              className="absolute inset-0 opacity-0"
+            />
           </div>
-        ))}
-      </div>
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="w-3 h-3 bg-blue-400 hover:bg-blue-500"
-      />
-    </div>
-  ),
-  condition: ({ data }: { data: any }) => (
-    <div className="px-4 py-2 shadow-md rounded-md bg-white border-2 border-yellow-400">
-      <Handle
-        type="target"
-        position={Position.Left}
-        className="w-3 h-3 bg-yellow-400 hover:bg-yellow-500"
-      />
-      <div className="flex flex-col">
-        <div className="flex items-center gap-2">
-          {data.subcategory === 'whatsapp' ? (
-            <MessageCircle className="h-4 w-4 text-[#25D366]" />
-          ) : data.icon && (
-            <data.icon className="h-4 w-4 text-yellow-400" />
-          )}
-          <div className="text-sm font-semibold">{data.label}</div>
         </div>
-        {data.config && Object.entries(data.config).map(([key, value]) => (
-          <div key={key} className="text-xs text-gray-500 mt-1">
-            {key}: {JSON.stringify(value)}
-          </div>
-        ))}
+        <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize" >{data.name}</div>
+        <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
+        {/* <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.}</div> */}
       </div>
-      <Handle
-        type="source"
-        position={Position.Right}
-        className="w-3 h-3 bg-yellow-400 hover:bg-yellow-500"
-      />
-    </div>
-  ),
+    );
+  },
+  action: ({ data }: { data: any }) => {
+    const Icon = data.icon as React.ComponentType<{ size?: number; color?: string }>;
+    console.log('Icon is a function:', typeof data.icon === 'function'); // deve imprimir: true
+
+    return (
+      <div className="flex flex-col items-center">
+        <div
+          className={`
+            flex flex-col items-center justify-center
+            rounded-full shadow-lg
+            border-2 
+            w-36 h-36
+            relative
+          `}
+          style={{ 
+            minWidth: 96, 
+            minHeight: 96,
+            backgroundColor: data.color || '#3B82F6'
+          }}
+        >
+          <Handle
+            type="target"
+            position={Position.Left}
+            className="w-3 h-3 bg-white absolute left-[-8px] top-1/2 -translate-y-1/2"
+          />
+          <div className="flex items-center justify-center w-11/12 h-11/12  rounded-full mb-2">
+          {Icon && <Icon size={90} color="#fff" />}
+          </div>
+          
+          <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+            <div className="w-full h-full rounded-full flex items-center justify-center shadow bg-green-600">
+              <Plus size={12} color="#fff" />
+            </div>
+            <Handle
+              type="source"
+              position={Position.Right}
+              className="absolute inset-0 opacity-0"
+            />
+          </div>
+        </div>
+        <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize" >{data.name}</div>
+        <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
+        {/* <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.}</div> */}
+      </div>
+    );
+  },
+  condition: ({ data }: { data: any }) => {
+    const Icon = data.icon as React.ComponentType<{ size?: number; color?: string }>;
+    return (
+      <div
+        className={`
+          flex flex-col items-center justify-center
+          shadow-lg
+          border-4
+          relative
+          bg-white
+          p-4
+          rounded-lg
+        `}
+        style={{ 
+          minWidth: 120,
+          minHeight: 80,
+          borderColor: data.color || '#EAB308'
+        }}
+      >
+        <Handle
+          type="target"
+          position={Position.Left}
+          className="w-3 h-3 bg-white absolute left-[-8px] top-1/2 -translate-y-1/2"
+        />
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full" style={{ backgroundColor: data.color || '#EAB308' }}>
+            {Icon && <Icon size={20} color="white" />}
+          </div>
+          <div className="text-sm font-bold" style={{ color: data.color || '#EAB308' }}>{data.label}</div>
+        </div>
+        <div className="flex gap-4">
+          <div className="flex flex-col items-center">
+            <div className="text-xs text-gray-500 mb-1">Sim</div>
+            <Handle
+              type="source"
+              position={Position.Bottom}
+              id="true"
+              className="w-4 h-4 p-1"
+              style={{ 
+                position: 'absolute', 
+                left: '90px', 
+                bottom: '-15%',
+
+                backgroundColor: 'red',
+                border: 'none'
+              }}
+            >
+            </Handle>
+          </div>
+          <div className="flex flex-col items-center">
+            <div className="text-xs text-gray-500 mb-1">Não</div>
+            <Handle
+              type="source"
+              position={Position.Bottom}
+              id="false"
+              className="w-4 h-4 p-1"
+              style={{ 
+                position: 'absolute', 
+                left: '50px', 
+                bottom: '-15%',
+                backgroundColor: 'green',
+                border: 'none'
+              }}
+            >
+            </Handle>
+          </div>
+        </div>
+      </div>
+    );
+  },
 };
 
 export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }: FlowEditorProps) {
@@ -193,14 +271,23 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
     setEdges((eds) => addEdge({
       ...params,
       type: 'smoothstep',
-      animated: false,
-      style: { stroke: '#64748b', strokeWidth: 2 },
+      animated: true,
+      style: { 
+        stroke: '#64748b',
+        strokeWidth: 2,
+        strokeDasharray: '5,5',
+      },
       markerEnd: {
         type: MarkerType.ArrowClosed,
         width: 20,
         height: 20,
         color: '#64748b',
       },
+     
+      labelStyle: { fill: '#64748b', fontWeight: 700 },
+      labelBgStyle: { fill: '#ffffff', fillOpacity: 0.8 },
+      labelBgPadding: [4, 4],
+      labelBgBorderRadius: 4,
     }, eds));
     debouncedSave();
   }, [debouncedSave]);
@@ -346,19 +433,28 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
       return;
     }
 
-    console.log('Creating new node with onAddNode:', onOpenDrawer);
+    const actionTypes: Record<string, string> = {
+      "Enviar Mensagem": "whatsapp",
+      "Receber Mensagem": "whatsapp",
+      "Modelo" : 'openAi',
+       "Memória" : 'openAi',
+        "Ferramenta" : 'openAi',
+         "Criar Agente" : 'openAi',
+          "Executar Agente" : 'openAi'
+     
+      // Adicione mais mapeamentos conforme necessário
+    };
 
     const newNode: Node = {
       id: `${actionDefinition.id}-${Date.now()}`,
       type: actionDefinition.type,
       data: {
         label: actionDefinition.name,
-        // icon: Mail, // <-- Aqui define o ícone desejado
+        icon: actionDefinition.icon,
+        name: actionTypes[actionDefinition.name] ?? null, // Mapeia para 'whatsapp' se não houver mapeamento
+        color: actionDefinition.color,
         config: actionDefinition.config || {},
-        onAddNode: () => {
-          console.log('Node plus button clicked');
-          onOpenDrawer?.();
-        },
+       
       },
       position: {
         x: Math.random() * 500,

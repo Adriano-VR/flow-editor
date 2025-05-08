@@ -17,6 +17,9 @@ export type Node = ReactFlowNode<{
   config: any;
   icon?: any;
   subcategory?: string;
+  color?: string;
+  name:string;
+  onAddNode?: () => void;
 }>;
 
 export type Edge = ReactFlowEdge & {
