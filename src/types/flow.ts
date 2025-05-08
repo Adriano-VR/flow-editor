@@ -16,7 +16,7 @@ export interface Flow {
 export type Node = ReactFlowNode<{
   label: string;
   config: unknown;
-  icon?: unknown;
+  icon?: string;
   subcategory?: string;
   color?: string;
   name:string;

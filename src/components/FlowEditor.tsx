@@ -32,6 +32,7 @@ import { Plus, Code } from 'lucide-react';
 import { Node } from "@/types/flow";
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { IconRenderer } from "@/lib/IconRenderer";
 
 interface FlowData {
   data: {
@@ -60,7 +61,6 @@ interface FlowEditorProps {
 
 const nodeTypes = {
   trigger: ({ data }: { data: NodeTypeDefinition }) => {
-    const Icon = data.icon as React.ComponentType<{ size?: number; color?: string }>;
     return (
       <div className="flex flex-col items-center">
         <div
@@ -77,26 +77,6 @@ const nodeTypes = {
             backgroundColor: data.color || '#3B82F6'
           }}
         >
-          <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
-            <div 
-              className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
-              style={{ 
-                background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
-              }}
-            >
-              <div className="w-2 h-2 rounded-full bg-white/80"></div>
-            </div>
-            <Handle
-              type="target"
-              position={Position.Left}
-              className="absolute inset-0 opacity-0"
-            />
-          </div>
-
-          <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
-            {Icon && <Icon size={90} color="#fff" />}
-          </div>
-          
           <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
             <div 
               className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
@@ -112,18 +92,64 @@ const nodeTypes = {
               className="absolute inset-0 opacity-0"
             />
           </div>
+
+          <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
+            <IconRenderer iconName={data.icon ?? ''} />
+          </div>
         </div>
-        <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize" >{data.name}</div>
+        <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
         <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
       </div>
     );
   },
   action: ({ data }: { data: NodeTypeDefinition }) => {
-    const Icon = data.icon as React.ComponentType<{ size?: number; color?: string }>;
-    console.log(data);
     // Design especial para assistente virtual
     if (data.name === 'openAi') {
-      return (
+      // Se for Modelo, Memória ou Ferramenta, mostra apenas um handle para cima
+      if (data.label && ['Modelo', 'Memória', 'Ferramenta'].includes(data.label)) {
+        return (
+          <div className="flex flex-col items-center">
+            <div
+              className={`
+                flex flex-col items-center justify-center
+                rounded-full shadow-lg
+                border-2 
+                w-36 h-36
+                relative
+              `}
+              style={{ 
+                minWidth: 96, 
+                minHeight: 96,
+                backgroundColor: data.color || '#3B82F6'
+              }}
+            >
+              <div className="absolute top-[-25px] left-1/2 -translate-x-1/2 w-5 h-5 z-10">
+                <div 
+                  className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+                  style={{ 
+                    background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+                  }}
+                >
+                  <div className="w-2 h-2 rounded-full bg-white/80"></div>
+                </div>
+                <Handle
+                  type="source"
+                  position={Position.Top}
+                  className="absolute inset-0 opacity-0"
+                />
+              </div>
+
+              <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
+                <IconRenderer iconName={data.icon ?? ''} />
+              </div>
+            </div>
+            <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
+            <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
+          </div>
+        );
+      }
+
+      return (  
         <div className="flex flex-col items-center">
           <div
             className={`
@@ -159,13 +185,66 @@ const nodeTypes = {
 
             <div className="flex items-center gap-3 mb-2">
               <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{ backgroundColor: data.color || '#3B82F6' }}>
-                {Icon && <Icon size={24} color="white" />}
+                <IconRenderer iconName={data.icon ?? ''} />
               </div>
               <div className="flex flex-col">
                 <div className="text-sm font-bold" style={{ color: data.color || '#3B82F6' }}>{data.label}</div>
                 <div className="text-xs text-gray-500">Assistente Virtual</div>
               </div>
             </div>
+
+            {data.label === 'Criar Agente' && (
+              <div className="flex items-center justify-between gap-4 mt-4 px-2 pt-2">
+                <div className="flex flex-col items-center relative">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+                    style={{ 
+                      background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+                    }}>
+                    <div className="w-2 h-2 rounded-full bg-white/80"></div>
+                  </div>
+                  <div className="text-xs mt-1">Modelo</div>
+                  <Handle
+                    type="target"
+                    position={Position.Bottom}
+                    id="model"
+                    className="absolute bottom-[-4px] opacity-0"
+                    style={{ left: '50%' }}
+                  />
+                </div>
+                <div className="flex flex-col items-center relative">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+                    style={{ 
+                      background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+                    }}>
+                    <div className="w-2 h-2 rounded-full bg-white/80"></div>
+                  </div>
+                  <div className="text-xs mt-1">Memória</div>
+                  <Handle
+                    type="target"
+                    position={Position.Bottom}
+                    id="memory"
+                    className="absolute bottom-[-4px] opacity-0"
+                    style={{ left: '50%' }}
+                  />
+                </div>
+                <div className="flex flex-col items-center relative">
+                  <div className="w-5 h-5 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+                    style={{ 
+                      background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+                    }}>
+                    <div className="w-2 h-2 rounded-full bg-white/80"></div>
+                  </div>
+                  <div className="text-xs mt-1">Ferramenta</div>
+                  <Handle
+                    type="target"
+                    position={Position.Bottom}
+                    id="tool"
+                    className="absolute bottom-[-4px] opacity-0"
+                    style={{ left: '50%' }}
+                  />
+                </div>
+              </div>
+            )}
             
             <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
               <div 
@@ -188,7 +267,7 @@ const nodeTypes = {
     }
 
     // Design padrão para outros nós de ação
-    return (
+    return (  
       <div className="flex flex-col items-center">
         <div
           className={`
@@ -221,7 +300,8 @@ const nodeTypes = {
           </div>
 
           <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
-            {Icon && <Icon size={90} color="#fff" />}
+          <IconRenderer iconName={data.icon ?? ''} />
+
           </div>
           
           <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
@@ -246,7 +326,6 @@ const nodeTypes = {
     );
   },
   condition: ({ data }: { data: NodeTypeDefinition }) => {
-    const Icon = data.icon as React.ComponentType<{ size?: number; color?: string }>;
     return (
       <div
         className={`
@@ -259,8 +338,8 @@ const nodeTypes = {
           rounded-lg
         `}
         style={{ 
-          minWidth: 120,
-          minHeight: 80,
+          minWidth: 170,
+          minHeight: 100,
           borderColor: data.color || '#EAB308'
         }}
       >
@@ -271,7 +350,8 @@ const nodeTypes = {
         />
         <div className="flex items-center gap-2 mb-2">
           <div className="flex items-center justify-center w-8 h-8 rounded-full" style={{ backgroundColor: data.color || '#EAB308' }}>
-            {Icon && <Icon size={20} color="white" />}
+          <IconRenderer iconName={data.icon ?? ''} />
+
           </div>
           <div className="text-sm font-bold" style={{ color: data.color || '#EAB308' }}>{data.label}</div>
         </div>

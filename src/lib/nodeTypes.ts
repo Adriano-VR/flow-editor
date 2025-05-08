@@ -22,7 +22,7 @@ export interface NodeTypeDefinition {
   category: 'app' | 'internal';
   subcategory?: string;
   config: Record<string, unknown>;
-  icon?: React.ComponentType<{ className?: string }>;
+  icon?: string;
   color: string;
   label?:string;
 }
@@ -49,7 +49,7 @@ export const nodeTypes: {
         type: 'action',
         category: 'app',
         subcategory: 'whatsapp',
-        icon: FaWhatsapp,
+        icon: 'FaWhatsapp',
         color: '#25D366',
         config: {
           message: '',
@@ -62,7 +62,7 @@ export const nodeTypes: {
         type: 'trigger',
         category: 'app',
         subcategory: 'whatsapp',
-        icon: FaWhatsapp,
+        icon: 'FaWhatsapp',
         color: '#25D366',
         config: {
           message: ''
@@ -76,7 +76,7 @@ export const nodeTypes: {
         type: 'action',
         category: 'app',
         subcategory: 'assistant',
-        icon: AiOutlineOpenAI,
+        icon: 'AiOutlineOpenAI',
         color: '#3B82F6',
         config: {
           model: '',
@@ -89,7 +89,7 @@ export const nodeTypes: {
         type: 'action',
         category: 'app',
         subcategory: 'assistant',
-        icon: MdMemory,
+        icon: 'MdMemory',
         color: '#3B82F6',
         config: {
         
@@ -101,7 +101,7 @@ export const nodeTypes: {
         type: 'action',
         category: 'app',
         subcategory: 'assistant',
-        icon: FaTools,
+        icon: 'FaTools',
         color: '#3B82F6',
         config: {
           tool: '',
@@ -114,7 +114,7 @@ export const nodeTypes: {
         type: 'action',
         category: 'app',
         subcategory: 'assistant',
-        icon: FaRobot,
+        icon: 'FaRobot',
         color: '#3B82F6',
         config: {
           name: '',
@@ -128,7 +128,7 @@ export const nodeTypes: {
         type: 'action',
         category: 'app',
         subcategory: 'assistant',
-        icon: FaRobot,
+        icon: 'FaRobot',
         color: '#3B82F6',
         config: {
           agent_id: '',
@@ -144,7 +144,7 @@ export const nodeTypes: {
       name: 'Início',
       type: 'trigger',
       category: 'internal',
-      icon: VscDebugStart,
+      icon: 'VscDebugStart',
       color: '#EAB308',
       config: {}
     },
@@ -153,7 +153,7 @@ export const nodeTypes: {
       name: 'Atraso',
       type: 'action',
       category: 'internal',
-      icon: IoTime ,
+      icon: 'IoTime',
       color: '#EAB308',
       config: {
         duration: 0,
@@ -165,7 +165,7 @@ export const nodeTypes: {
       name: 'Condição',
       type: 'condition',
       category: 'internal',
-      icon: TbAirConditioning,
+      icon: 'TbAirConditioning',
       color: '#EAB308',
       config: {
         condition: '',
