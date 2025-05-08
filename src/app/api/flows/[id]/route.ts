@@ -3,12 +3,11 @@ import { NextRequest, NextResponse } from 'next/server';
 const API_URL = process.env.API_URL || 'https://api.xbase.app/api/flows';
 
 // GET /api/flows/[id] - Obter um flow específico
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
+  const id = request.nextUrl.pathname.split('/').pop(); // Aqui pegamos o 'id' da URL
+
   try {
-    const response = await fetch(`${API_URL}/${params.id}`, {
+    const response = await fetch(`${API_URL}/${id}`, {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
@@ -35,14 +34,13 @@ export async function GET(
 }
 
 // PUT /api/flows/[id] - Atualizar um flow
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest) {
+  const id = request.nextUrl.pathname.split('/').pop(); // Aqui pegamos o 'id' da URL
+
   try {
     const body = await request.json();
 
-    const response = await fetch(`${API_URL}/${params.id}`, {
+    const response = await fetch(`${API_URL}/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -71,12 +69,11 @@ export async function PUT(
 }
 
 // DELETE /api/flows/[id] - Deletar um flow
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest) {
+  const id = request.nextUrl.pathname.split('/').pop(); // Aqui pegamos o 'id' da URL
+
   try {
-    const response = await fetch(`${API_URL}/${params.id}`, {
+    const response = await fetch(`${API_URL}/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

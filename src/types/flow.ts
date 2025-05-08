@@ -1,3 +1,4 @@
+import { Dispatch, SetStateAction } from 'react';
 import { Node as ReactFlowNode, Edge as ReactFlowEdge, MarkerType } from 'reactflow';
 
 export interface Flow {
@@ -14,12 +15,13 @@ export interface Flow {
 
 export type Node = ReactFlowNode<{
   label: string;
-  config: any;
-  icon?: any;
+  config: unknown;
+  icon?: unknown;
   subcategory?: string;
   color?: string;
   name:string;
   onAddNode?: () => void;
+  data?:string
 }>;
 
 export type Edge = ReactFlowEdge & {
@@ -42,6 +44,15 @@ export interface Action {
   category: string;
 }
 
+export interface actionConfig {
+  subject?: string;
+  to?: string;
+  body?: string;
+  message?: string;
+  phone?: string;
+  template?:string
+}
+
 export interface FlowContextType {
   selectedFlowId: string | null;
   setSelectedFlowId: (id: string | null) => void;
@@ -57,8 +68,8 @@ export interface FlowContextType {
   setIsActionModalOpen: (open: boolean) => void;
   selectedAction: Action | null;
   setSelectedAction: (action: Action | null) => void;
-  actionConfig: any;
-  setActionConfig: (config: any) => void;
+  actionConfig: actionConfig;
+  setActionConfig: Dispatch<SetStateAction<actionConfig>>;
   handleCreateFlow: () => Promise<void>;
   handleSaveFlow: (data: { nodes: Node[]; edges: Edge[] }) => Promise<void>;
   handleActionSelect: (action: Action) => void;

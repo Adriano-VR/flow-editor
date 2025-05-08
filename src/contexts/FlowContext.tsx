@@ -1,9 +1,9 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { createFlow, deleteFlow, getFlow, updateFlow } from "@/lib/api";
+import { createFlow,getFlow, updateFlow } from "@/lib/api";
 import { nodeTypes as nodeTypeDefinitions } from "@/lib/nodeTypes";
-import { Flow, Node, Edge, Action, FlowContextType } from "@/types/flow";
+import { Flow, Node, Edge, Action, FlowContextType, actionConfig } from "@/types/flow";
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
 
@@ -16,7 +16,10 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<Action | null>(null);
-  const [actionConfig, setActionConfig] = useState<any>({});
+  const [actionConfig, setActionConfig] = useState<actionConfig>({});
+  
+
+
 
   useEffect(() => {
     const loadFlowData = async () => {
@@ -85,7 +88,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   };
 
   const handleActionConfigSubmit = async () => {
-    if (!selectedAction || !flowData?.data || !selectedFlowId) return;
+    if (!selectedAction || !flowData?.attributes?.data || !selectedFlowId) return;
 
     let actionDefinition;
 
@@ -127,6 +130,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
       data: {
         label: actionDefinition.name,
         config: config,
+        name: actionDefinition.name, // campo obrigatório
       },
       position: {
         x: Math.random() * 500,
@@ -135,8 +139,8 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     };
 
     const updatedData = {
-      nodes: [...(flowData.data.nodes || []), newNode],
-      edges: flowData.data.edges || [],
+      nodes: [...(flowData.attributes?.data.nodes || []), newNode],
+      edges: flowData.attributes?.data.edges || [],
     };
 
     try {

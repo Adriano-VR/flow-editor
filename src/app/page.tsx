@@ -1,17 +1,11 @@
 "use client"
 
-import { useState } from "react";
 import FlowEditor from "@/components/FlowEditor";
 import Sidebar from "@/components/Sidebar";
 import DefaultLayout from "@/layout/DefaultLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+
 import {
   Dialog,
   DialogContent,
@@ -136,6 +130,8 @@ export default function Home() {
     }
   };
 
+  
+
   return (
     <DefaultLayout>
       <div className="flex justify-between items-center mb-4">
@@ -149,12 +145,10 @@ export default function Home() {
             <div className="relative h-full">
               <FlowEditor 
                 flowId={selectedFlowId} 
-                initialData={flowData?.data}
-                onSave={handleSaveFlow}
-                onOpenDrawer={() => {
-                  console.log('Opening drawer...');
-                  setIsDrawerOpen(true);
-                }}
+                initialData={flowData?.attributes?.data ?? undefined}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                onSave={handleSaveFlow as any}
+                
               />
               <Button
                 size="lg"
@@ -185,57 +179,7 @@ export default function Home() {
         </main>
       </div>
 
-      <Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-        <DrawerContent className="fixed right-0 top-0 h-full w-[400px] border-l bg-background">
-          <DrawerHeader className="border-b">
-            <DrawerTitle>Adicionar Ação</DrawerTitle>
-          </DrawerHeader>
-          <div className="p-4">
-            <div className="space-y-4">
-              {!selectedFlowId && (
-                <div className="space-y-2">
-                  <Label htmlFor="flowName">Nome do Flow</Label>
-                  <Input
-                    id="flowName"
-                    placeholder="Digite o nome do flow"
-                    value={flowName}
-                    onChange={(e) => setFlowName(e.target.value)}
-                  />
-                  <Button 
-                    className="w-full" 
-                    onClick={handleCreateFlow}
-                    disabled={isCreating}
-                  >
-                    {isCreating ? 'Criando...' : 'Criar Novo Flow'}
-                  </Button>
-                </div>
-              )}
-              <div>
-                <Input
-                  type="search"
-                  placeholder="Pesquisar ações..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div className="space-y-2 max-h-[calc(100vh-300px)] overflow-y-auto">
-                {filteredActions.map((action) => (
-                  <Button
-                    key={action.id}
-                    variant="outline"
-                    className="w-full justify-start flex-col items-start h-auto py-3"
-                    onClick={() => handleActionSelect(action)}
-                  >
-                    <span className="font-medium">{action.name}</span>
-                    <span className="text-sm text-muted-foreground">{action.description}</span>
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </DrawerContent>
-      </Drawer>
+    
       <Dialog open={isActionModalOpen} onOpenChange={setIsActionModalOpen}>
         <DialogContent>
           <DialogHeader>

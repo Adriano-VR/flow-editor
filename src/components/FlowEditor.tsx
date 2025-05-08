@@ -1,7 +1,6 @@
 "use client"
 import React, { useCallback, useState, useEffect, useRef } from "react";
 import ReactFlow, {
-    MiniMap,
     Controls,
     Background,
     addEdge,
@@ -9,8 +8,6 @@ import ReactFlow, {
     Connection,
     NodeChange,
     EdgeChange,
-    applyNodeChanges,
-    applyEdgeChanges,
     useNodesState,
     useEdgesState,
     Handle,
@@ -21,10 +18,9 @@ import 'reactflow/dist/style.css';
 import { getFlow } from "../lib/api";
 import { Button } from './ui/button';
 import { Input } from './ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from "@/components/ui/use-toast";
 import { nodeTypes as nodeTypeDefinitions, getNodeCategories, NodeTypeDefinition } from '@/lib/nodeTypes';
-import { JsonEditor } from './JsonEditor';
 import {
   Select,
   SelectContent,
@@ -32,8 +28,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, MessageCircle, Mail, Code, CheckCircle2, XCircle } from 'lucide-react';
+import { Plus, Code } from 'lucide-react';
 import { Node } from "@/types/flow";
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface FlowData {
   data: {
@@ -47,7 +45,7 @@ interface FlowData {
       } | null;
     };
   };
-  meta: any;
+  meta: unknown;
 }
 
 interface FlowEditorProps {
@@ -56,59 +54,13 @@ interface FlowEditorProps {
     nodes: Node[];
     edges: Edge[];
   };
-  onSave?: (data: { nodes: Node[]; edges: Edge[] }) => void;
-  onOpenDrawer?: (node: Node) => void;
+  onSave?: (data: { nodes: Node[]; edges: Edge[] }) => Promise<void>;
 }
 
-const nodeTypes = {
-  trigger: ({ data }: { data: any }) => {
-    const Icon = data.icon as React.ComponentType<{ size?: number; color?: string }>;
-    return (
-      <div className="flex flex-col items-center">
-        <div
-          className={`
-            flex flex-col items-center justify-center
-            rounded-full shadow-lg
-            border-2 
-            w-36 h-36
-            relative
-          `}
-          style={{ 
-            minWidth: 96, 
-            minHeight: 96,
-            backgroundColor: data.color || '#3B82F6'
-          }}
-        >
-          <Handle
-            type="target"
-            position={Position.Left}
-            className="w-3 h-3 bg-white absolute left-[-8px] top-1/2 -translate-y-1/2"
-          />
-          <div className="flex items-center justify-center w-11/12 h-11/12  rounded-full mb-2">
-          {Icon && <Icon size={90} color="#fff" />}
-          </div>
-          
-          <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
-            <div className="w-full h-full rounded-full flex items-center justify-center shadow bg-green-600">
-              <Plus size={12} color="#fff" />
-            </div>
-            <Handle
-              type="source"
-              position={Position.Right}
-              className="absolute inset-0 opacity-0"
-            />
-          </div>
-        </div>
-        <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize" >{data.name}</div>
-        <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
-        {/* <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.}</div> */}
-      </div>
-    );
-  },
-  action: ({ data }: { data: any }) => {
-    const Icon = data.icon as React.ComponentType<{ size?: number; color?: string }>;
-    console.log('Icon is a function:', typeof data.icon === 'function'); // deve imprimir: true
 
+const nodeTypes = {
+  trigger: ({ data }: { data: NodeTypeDefinition }) => {
+    const Icon = data.icon as React.ComponentType<{ size?: number; color?: string }>;
     return (
       <div className="flex flex-col items-center">
         <div
@@ -125,18 +77,34 @@ const nodeTypes = {
             backgroundColor: data.color || '#3B82F6'
           }}
         >
-          <Handle
-            type="target"
-            position={Position.Left}
-            className="w-3 h-3 bg-white absolute left-[-8px] top-1/2 -translate-y-1/2"
-          />
-          <div className="flex items-center justify-center w-11/12 h-11/12  rounded-full mb-2">
-          {Icon && <Icon size={90} color="#fff" />}
+          <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+            <div 
+              className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+              style={{ 
+                background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+              }}
+            >
+              <div className="w-2 h-2 rounded-full bg-white/80"></div>
+            </div>
+            <Handle
+              type="target"
+              position={Position.Left}
+              className="absolute inset-0 opacity-0"
+            />
+          </div>
+
+          <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
+            {Icon && <Icon size={90} color="#fff" />}
           </div>
           
           <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
-            <div className="w-full h-full rounded-full flex items-center justify-center shadow bg-green-600">
-              <Plus size={12} color="#fff" />
+            <div 
+              className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+              style={{ 
+                background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+              }}
+            >
+              <div className="w-2 h-2 rounded-full bg-white/80"></div>
             </div>
             <Handle
               type="source"
@@ -147,11 +115,137 @@ const nodeTypes = {
         </div>
         <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize" >{data.name}</div>
         <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
-        {/* <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.}</div> */}
       </div>
     );
   },
-  condition: ({ data }: { data: any }) => {
+  action: ({ data }: { data: NodeTypeDefinition }) => {
+    const Icon = data.icon as React.ComponentType<{ size?: number; color?: string }>;
+    console.log(data);
+    // Design especial para assistente virtual
+    if (data.name === 'openAi') {
+      return (
+        <div className="flex flex-col items-center">
+          <div
+            className={`
+              flex flex-col items-center justify-center
+              shadow-lg
+              border-2 
+              relative
+              bg-white
+              p-4
+              rounded-lg
+              min-w-[200px]
+            `}
+            style={{ 
+              borderColor: data.color || '#3B82F6',
+              backgroundColor: `${data.color}15`
+            }}
+          >
+            <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+              <div 
+                className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+                style={{ 
+                  background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+                }}
+              >
+                <div className="w-2 h-2 rounded-full bg-white/80"></div>
+              </div>
+              <Handle
+                type="target"
+                position={Position.Left}
+                className="absolute inset-0 opacity-0"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 mb-2">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg" style={{ backgroundColor: data.color || '#3B82F6' }}>
+                {Icon && <Icon size={24} color="white" />}
+              </div>
+              <div className="flex flex-col">
+                <div className="text-sm font-bold" style={{ color: data.color || '#3B82F6' }}>{data.label}</div>
+                <div className="text-xs text-gray-500">Assistente Virtual</div>
+              </div>
+            </div>
+            
+            <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+              <div 
+                className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+                style={{ 
+                  background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+                }}
+              >
+                <div className="w-2 h-2 rounded-full bg-white/80"></div>
+              </div>
+              <Handle
+                type="source"
+                position={Position.Right}
+                className="absolute inset-0 opacity-0"
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Design padrão para outros nós de ação
+    return (
+      <div className="flex flex-col items-center">
+        <div
+          className={`
+            flex flex-col items-center justify-center
+            rounded-full shadow-lg
+            border-2 
+            w-36 h-36
+            relative
+          `}
+          style={{ 
+            minWidth: 96, 
+            minHeight: 96,
+            backgroundColor: data.color || '#3B82F6'
+          }}
+        >
+          <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+            <div 
+              className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+              style={{ 
+                background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+              }}
+            >
+              <div className="w-2 h-2 rounded-full bg-white/80"></div>
+            </div>
+            <Handle
+              type="target"
+              position={Position.Left}
+              className="absolute inset-0 opacity-0"
+            />
+          </div>
+
+          <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
+            {Icon && <Icon size={90} color="#fff" />}
+          </div>
+          
+          <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+            <div 
+              className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+              style={{ 
+                background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+              }}
+            >
+              <div className="w-2 h-2 rounded-full bg-white/80"></div>
+            </div>
+            <Handle
+              type="source"
+              position={Position.Right}
+              className="absolute inset-0 opacity-0"
+            />
+          </div>
+        </div>
+        <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize" >{data.name}</div>
+        <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
+      </div>
+    );
+  },
+  condition: ({ data }: { data: NodeTypeDefinition }) => {
     const Icon = data.icon as React.ComponentType<{ size?: number; color?: string }>;
     return (
       <div
@@ -173,7 +267,7 @@ const nodeTypes = {
         <Handle
           type="target"
           position={Position.Left}
-          className="w-3 h-3 bg-white absolute left-[-8px] top-1/2 -translate-y-1/2"
+          className="absolute left-[-8px] top-1/2 -translate-y-1/2"
         />
         <div className="flex items-center gap-2 mb-2">
           <div className="flex items-center justify-center w-8 h-8 rounded-full" style={{ backgroundColor: data.color || '#EAB308' }}>
@@ -184,38 +278,41 @@ const nodeTypes = {
         <div className="flex gap-4">
           <div className="flex flex-col items-center">
             <div className="text-xs text-gray-500 mb-1">Sim</div>
-            <Handle
-              type="source"
-              position={Position.Bottom}
-              id="true"
-              className="w-4 h-4 p-1"
-              style={{ 
-                position: 'absolute', 
-                left: '90px', 
-                bottom: '-15%',
-
-                backgroundColor: 'red',
-                border: 'none'
-              }}
-            >
-            </Handle>
+            <div className="relative">
+              <div 
+                className="w-5 h-5 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+                style={{ 
+                  background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+                }}
+              >
+                <div className="w-2 h-2 rounded-full bg-white/80"></div>
+              </div>
+              <Handle
+                type="source"
+                position={Position.Bottom}
+                id="true"
+                className="absolute inset-0 opacity-0"
+              />
+            </div>
           </div>
           <div className="flex flex-col items-center">
             <div className="text-xs text-gray-500 mb-1">Não</div>
-            <Handle
-              type="source"
-              position={Position.Bottom}
-              id="false"
-              className="w-4 h-4 p-1"
-              style={{ 
-                position: 'absolute', 
-                left: '50px', 
-                bottom: '-15%',
-                backgroundColor: 'green',
-                border: 'none'
-              }}
-            >
-            </Handle>
+            <div className="relative">
+              <div 
+                className="w-5 h-5 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 border-white/20 hover:scale-110"
+                style={{ 
+                  background: `linear-gradient(to bottom right, ${data.color}99, ${data.color})`,
+                }}
+              >
+                <div className="w-2 h-2 rounded-full bg-white/80"></div>
+              </div>
+              <Handle
+                type="source"
+                position={Position.Bottom}
+                id="false"
+                className="absolute inset-0 opacity-0"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -223,7 +320,7 @@ const nodeTypes = {
   },
 };
 
-export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }: FlowEditorProps) {
+export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorProps) {
   const { toast } = useToast();
   const [nodes, setNodes, onNodesChange] = useNodesState(initialData?.nodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialData?.edges || []);
@@ -236,6 +333,9 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
   const [selectedAction, setSelectedAction] = useState<string>('');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [showJsonEditor, setShowJsonEditor] = useState(false);
+  const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false);
+  const [newNodeConfig, setNewNodeConfig] = useState<any>({});
+  const [tempNode, setTempNode] = useState<Node | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const categories = getNodeCategories();
@@ -388,32 +488,8 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
     setSelectedNode(node);
     setNodeConfig(node.data.config ? JSON.stringify(node.data.config) : '');
     setShowJsonEditor(true);
-    onOpenDrawer?.(node);
   };
 
-  const handleJsonSave = (json: string) => {
-    try {
-      const parsedJson = JSON.parse(json);
-      if (selectedNode) {
-        const updatedNodes = nodes.map((node) => {
-          if (node.id === selectedNode.id) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                config: parsedJson,
-              },
-            };
-          }
-          return node;
-        });
-        setNodes(updatedNodes);
-        debouncedSave();
-      }
-    } catch (err) {
-      console.error('Error saving JSON:', err);
-    }
-  };
 
   const handleAddNode = () => {
     if (!selectedAction || !selectedCategory) return;
@@ -436,13 +512,11 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
     const actionTypes: Record<string, string> = {
       "Enviar Mensagem": "whatsapp",
       "Receber Mensagem": "whatsapp",
-      "Modelo" : 'openAi',
-       "Memória" : 'openAi',
-        "Ferramenta" : 'openAi',
-         "Criar Agente" : 'openAi',
-          "Executar Agente" : 'openAi'
-     
-      // Adicione mais mapeamentos conforme necessário
+      "Modelo": "openAi",
+      "Memória": "openAi",
+      "Ferramenta": "openAi",
+      "Criar Agente": "openAi",
+      "Executar Agente": "openAi"
     };
 
     const newNode: Node = {
@@ -451,20 +525,294 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
       data: {
         label: actionDefinition.name,
         icon: actionDefinition.icon,
-        name: actionTypes[actionDefinition.name] ?? null, // Mapeia para 'whatsapp' se não houver mapeamento
+        name: actionTypes[actionDefinition.name] ?? 'internal',
         color: actionDefinition.color,
         config: actionDefinition.config || {},
-       
       },
       position: {
         x: Math.random() * 500,
         y: Math.random() * 500,
       },
     };
-    
 
-    setNodes((nds) => [...nds, newNode]);
+    // Se for um nó interno que não é delay, adiciona diretamente sem mostrar o diálogo
+    if (selectedCategory === 'internal' && actionDefinition.name !== 'Atraso') {
+      setNodes((nds) => [...nds, newNode]);
+      setSelectedAction('');
+      return;
+    }
+
+    setTempNode(newNode);
+    setNewNodeConfig(actionDefinition.config || {});
+    setIsConfigDialogOpen(true);
+  };
+
+  const handleConfigSubmit = () => {
+    if (!tempNode) return;
+
+    const finalNode = {
+      ...tempNode,
+      data: {
+        ...tempNode.data,
+        config: newNodeConfig,
+      },
+    };
+
+    setNodes((nds) => [...nds, finalNode]);
+    setIsConfigDialogOpen(false);
+    setTempNode(null);
+    setNewNodeConfig({});
     setSelectedAction('');
+  };
+
+  const renderConfigFields = () => {
+    if (!tempNode) return null;
+
+    // Primeiro verifica o tipo base (whatsapp, openAi ou internal)
+    switch (tempNode.data.name) {
+      case 'whatsapp':
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="to">Número do WhatsApp</Label>
+              <Input
+                id="to"
+                placeholder="+55 (00) 00000-0000"
+                value={newNodeConfig.to || ''}
+                onChange={(e) => setNewNodeConfig({ ...newNodeConfig, to: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="message">Mensagem</Label>
+              <Textarea
+                id="message"
+                placeholder="Digite sua mensagem"
+                value={newNodeConfig.message || ''}
+                onChange={(e) => setNewNodeConfig({ ...newNodeConfig, message: e.target.value })}
+              />
+            </div>
+          </div>
+        );
+      case 'openAi':
+        // Depois verifica o nome específico da ação para mostrar campos diferentes
+        switch (tempNode.data.label) {
+          case 'Modelo':
+            return (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="model">Modelo</Label>
+                  <Select
+                    value={newNodeConfig.model || 'gpt-3.5-turbo'}
+                    onValueChange={(value) => setNewNodeConfig({ ...newNodeConfig, model: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o modelo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
+                      <SelectItem value="gpt-4">GPT-4</SelectItem>
+                      <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="prompt">Prompt</Label>
+                  <Textarea
+                    id="prompt"
+                    placeholder="Digite o prompt"
+                    value={newNodeConfig.prompt || ''}
+                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, prompt: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="temperature">Temperatura</Label>
+                  <Input
+                    id="temperature"
+                    type="number"
+                    min="0"
+                    max="2"
+                    step="0.1"
+                    value={newNodeConfig.temperature || 0.7}
+                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, temperature: parseFloat(e.target.value) })}
+                  />
+                </div>
+              </div>
+            );
+          case 'Memória':
+            return (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="memoryType">Tipo de Memória</Label>
+                  <Select
+                    value={newNodeConfig.memoryType || 'conversation'}
+                    onValueChange={(value) => setNewNodeConfig({ ...newNodeConfig, memoryType: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="conversation">Conversa</SelectItem>
+                      <SelectItem value="summary">Resumo</SelectItem>
+                      <SelectItem value="vector">Vetorial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="maxTokens">Máximo de Tokens</Label>
+                  <Input
+                    id="maxTokens"
+                    type="number"
+                    min="1"
+                    value={newNodeConfig.maxTokens || 1000}
+                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, maxTokens: parseInt(e.target.value) })}
+                  />
+                </div>
+              </div>
+            );
+          case 'Criar Agente':
+            return (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="agentName">Nome do Agente</Label>
+                  <Input
+                    id="agentName"
+                    placeholder="Digite o nome do agente"
+                    value={newNodeConfig.agentName || ''}
+                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, agentName: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="agentDescription">Descrição</Label>
+                  <Textarea
+                    id="agentDescription"
+                    placeholder="Descreva o propósito do agente"
+                    value={newNodeConfig.agentDescription || ''}
+                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, agentDescription: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="capabilities">Capacidades</Label>
+                  <Textarea
+                    id="capabilities"
+                    placeholder="Liste as capacidades do agente (uma por linha)"
+                    value={newNodeConfig.capabilities?.join('\n') || ''}
+                    onChange={(e) => setNewNodeConfig({ 
+                      ...newNodeConfig, 
+                      capabilities: e.target.value.split('\n').filter(v => v.trim()) 
+                    })}
+                  />
+                </div>
+              </div>
+            );
+          case 'Executar Agente':
+            return (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="agentId">ID do Agente</Label>
+                  <Input
+                    id="agentId"
+                    placeholder="Digite o ID do agente"
+                    value={newNodeConfig.agentId || ''}
+                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, agentId: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="input">Input</Label>
+                  <Textarea
+                    id="input"
+                    placeholder="Digite o input para o agente"
+                    value={newNodeConfig.input || ''}
+                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, input: e.target.value })}
+                  />
+                </div>
+              </div>
+            );
+          case 'Ferramenta':
+            return (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="toolName">Nome da Ferramenta</Label>
+                  <Input
+                    id="toolName"
+                    placeholder="Digite o nome da ferramenta"
+                    value={newNodeConfig.toolName || ''}
+                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, toolName: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="toolDescription">Descrição</Label>
+                  <Textarea
+                    id="toolDescription"
+                    placeholder="Descreva a funcionalidade da ferramenta"
+                    value={newNodeConfig.toolDescription || ''}
+                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, toolDescription: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="parameters">Parâmetros (JSON)</Label>
+                  <Textarea
+                    id="parameters"
+                    placeholder='{"param1": "valor1", "param2": "valor2"}'
+                    value={newNodeConfig.parameters || ''}
+                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, parameters: e.target.value })}
+                  />
+                </div>
+              </div>
+            );
+          default:
+            return (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Configuração</Label>
+                  <div className="text-sm text-muted-foreground">
+                    Tipo de ação OpenAI não reconhecido: {tempNode.data.label}
+                  </div>
+                </div>
+              </div>
+            );
+        }
+      case 'internal':
+        // Verifica o nome específico da ação interna
+        if (tempNode.data.label === 'Atraso') {
+          return (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="duration">Duração</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  min="0"
+                  placeholder="Digite a duração"
+                  value={newNodeConfig.duration || 0}
+                  onChange={(e) => setNewNodeConfig({ 
+                    ...newNodeConfig, 
+                    duration: parseInt(e.target.value) || 0 
+                  })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="unit">Unidade</Label>
+                <Select
+                  value={newNodeConfig.unit || 'seconds'}
+                  onValueChange={(value) => setNewNodeConfig({ ...newNodeConfig, unit: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a unidade" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="seconds">Segundos</SelectItem>
+                    <SelectItem value="minutes">Minutos</SelectItem>
+                    <SelectItem value="hours">Horas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          );
+        }
+        return null;
+      default:
+        return null;
+    }
   };
 
   // Add this new function to handle the Code button click
@@ -558,49 +906,10 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
 
       {showJsonEditor && (
         <div className="mb-4 h-[200px] border rounded-lg">
-          <JsonEditor
-            flowData={selectedNode}
-            onSave={(json) => {
-              try {
-                const parsedJson = JSON.parse(json);
-                if (selectedNode) {
-                  // Update single node
-                  const updatedNodes = nodes.map((node) => {
-                    if (node.id === selectedNode.id) {
-                      return {
-                        ...node,
-                        data: {
-                          ...node.data,
-                          config: parsedJson,
-                        },
-                      };
-                    }
-                    return node;
-                  });
-                  setNodes(updatedNodes);
-                } else {
-                  // Update entire flow
-                  if (parsedJson.nodes && Array.isArray(parsedJson.nodes)) {
-                    setNodes(parsedJson.nodes);
-                  }
-                  if (parsedJson.edges && Array.isArray(parsedJson.edges)) {
-                    setEdges(parsedJson.edges);
-                  }
-                }
-                debouncedSave();
-                toast({
-                  title: "Sucesso!",
-                  description: "JSON aplicado com sucesso",
-                });
-              } catch (err) {
-                console.error('Error saving JSON:', err);
-                toast({
-                  title: "Erro",
-                  description: "JSON inválido. Verifique o formato.",
-                  variant: "destructive",
-                });
-              }
-            }}
+          <Textarea
+            value={nodeConfig}
+            onChange={(e) => setNodeConfig(e.target.value)}
+            placeholder='{"message": "Olá!"}'
           />
         </div>
       )}
@@ -648,6 +957,23 @@ export default function FlowEditor({ flowId, initialData, onSave, onOpenDrawer }
               <Button onClick={handleSaveNode}>Salvar</Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isConfigDialogOpen} onOpenChange={setIsConfigDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configurar Nó</DialogTitle>
+          </DialogHeader>
+          {renderConfigFields()}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfigDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleConfigSubmit}>
+              Adicionar
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

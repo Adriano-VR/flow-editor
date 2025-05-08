@@ -1,4 +1,3 @@
-import { MessageCircle, Mail, Brain, Clock, Code, Play } from 'lucide-react';
 import { FaTools, FaWhatsapp, FaRobot } from 'react-icons/fa';
 import { AiOutlineOpenAI } from 'react-icons/ai';
 import { MdMemory } from 'react-icons/md';
@@ -12,12 +11,9 @@ export interface NodeAction {
   type: string;
   category: 'app' | 'internal';
   subcategory?: string;
-  config?: Record<string, any>;
+  config?: Record<string, unknown>;
 }
 
-type AppSubcategory = 'whatsapp' | 'assistant';
-type AppAction = 'send_message' | 'receive_message' | 'model' | 'memory' | 'tool' | 'create_agent' | 'run_agent';
-type InternalAction = 'start' | 'delay' | 'condition';
 
 export interface NodeTypeDefinition {
   id: string;
@@ -25,9 +21,10 @@ export interface NodeTypeDefinition {
   type: string;
   category: 'app' | 'internal';
   subcategory?: string;
-  config: Record<string, any>;
+  config: Record<string, unknown>;
   icon?: React.ComponentType<{ className?: string }>;
   color: string;
+  label?:string;
 }
 
 interface AppNodeTypes {
@@ -95,7 +92,7 @@ export const nodeTypes: {
         icon: MdMemory,
         color: '#3B82F6',
         config: {
-          type: 'short_term' | 'long_term'
+        
         }
       },
       tool: {
@@ -172,7 +169,6 @@ export const nodeTypes: {
       color: '#EAB308',
       config: {
         condition: '',
-        operator: 'equals' | 'contains' | 'greater' | 'less'
       }
     }
   }

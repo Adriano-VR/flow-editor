@@ -14,7 +14,7 @@ export async function GET() {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch flows' }, { status: 500 });
+    return NextResponse.json({ error }, { status: 500 });
   }
 }
 

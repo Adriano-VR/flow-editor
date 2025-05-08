@@ -10,7 +10,7 @@ export const getFlow = async (id: string) => {
   return response.json();
 };
 
-export const createFlow = async (data: any) => {
+export const createFlow = async (data: unknown) => {
   const response = await fetch(BASE_URL, {
     method: 'POST',
     headers: {
@@ -21,7 +21,7 @@ export const createFlow = async (data: any) => {
   return response.json();
 };
 
-export const updateFlow = async (id: string, data: any) => {
+export const updateFlow = async (id: string, data: unknown) => {
   const response = await fetch(`${BASE_URL}/${id}`, {
     method: 'PUT',
     headers: {

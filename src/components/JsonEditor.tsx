@@ -45,6 +45,8 @@ export function JsonEditor({ flowData, onSave }: JsonEditorProps) {
           description: "O JSON está mal formatado",
           variant: "destructive",
         });
+        console.log(err);
+        
       }
     } catch (err) {
       toast({
@@ -52,12 +54,15 @@ export function JsonEditor({ flowData, onSave }: JsonEditorProps) {
         description: "Não foi possível acessar a área de transferência",
         variant: "destructive",
       });
+      console.log(err);
     }
+   
+    
   };
 
   const handleSave = () => {
     try {
-      const parsedJson = JSON.parse(jsonInput);
+     
       onSave(jsonInput);
       setError(null);
       toast({
@@ -71,6 +76,8 @@ export function JsonEditor({ flowData, onSave }: JsonEditorProps) {
         description: "O JSON está mal formatado",
         variant: "destructive",
       });
+      console.log(err);
+      
     }
   };
 
@@ -126,6 +133,8 @@ export function JsonEditor({ flowData, onSave }: JsonEditorProps) {
                 description: "O JSON está mal formatado",
                 variant: "destructive",
               });
+              console.log(err);
+              
             }
           }}
           className="font-mono h-full resize-none bg-background border rounded-md"
