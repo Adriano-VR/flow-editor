@@ -425,6 +425,7 @@ const nodeTypes = {
               />
             </div>
 
+            {/* titulo */}
             <div className="flex items-center gap-4 mb-6">
               <div className="flex items-center justify-center w-12 h-12 rounded-xl shadow-md" 
                 style={{ 
@@ -439,7 +440,8 @@ const nodeTypes = {
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-6 mt-2 px-2 pt-4 border-t border-gray-100">
+            {/* nos */}
+            <div className="flex items-center justify-between gap-2 border-t border-gray-100">
               <div className="flex flex-col items-center relative w-20">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
                   style={{ 
@@ -447,7 +449,6 @@ const nodeTypes = {
                   }}>
                   <div className="text-green-500 text-xs">✓</div>
                 </div>
-                <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#25D366' }}>Sucesso</div>
                 <Handle
                   type="source"
                   position={Position.Bottom}
@@ -463,7 +464,6 @@ const nodeTypes = {
                   }}>
                   <div className="text-red-500 text-xs">✕</div>
                 </div>
-                <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#25D366' }}>Falha</div>
                 <Handle
                   type="source"
                   position={Position.Bottom}
@@ -551,14 +551,15 @@ const nodeTypes = {
   condition: ({ data, onEdit, onDelete }: NodeProps & { onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
     return (
       <div className="flex flex-col items-center group">
+        {/* Componentizar */}
         <div
           className={`
             flex flex-col items-center justify-center
             relative
             bg-white
-            p-6
+            p-5
             rounded-xl
-            min-w-[280px]
+            min-w-[200px]
             backdrop-blur-sm
             transition-all duration-300
             hover:shadow-2xl
@@ -586,51 +587,45 @@ const nodeTypes = {
             />
           </div>
 
-          <div className="flex items-center gap-4 mb-6">
-            <div className="flex items-center justify-center w-12 h-12 rounded-xl shadow-md" 
-              style={{ 
-                backgroundColor: data.color || '#EAB308',
-                boxShadow: `0 4px 12px ${data.color}40`
-              }}>
-              <IconRenderer iconName={data.icon ?? ''} className="text-4xl" />
-            </div>
+          <div className="flex items-center gap-4 ">
+          <IconRenderer iconName={data.icon ?? ''} className="text-4xl" />
             <div className="flex flex-col">
               <div className="text-lg font-bold" style={{ color: data.color || '#EAB308' }}>{data.label}</div>
               <div className="text-sm text-gray-500">Condição</div>
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-6 mt-2 px-2 pt-4 border-t border-gray-100">
-            <div className="flex flex-col items-center relative w-20">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
-                style={{ 
-                  borderColor: data.color || '#EAB308',
-                }}>
-                <div className="text-green-500 text-xs">✓</div>
-              </div>
-              <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#EAB308' }}>Sim</div>
+          <div className="flex mt-2 items-center justify-between gap-2 border-t border-gray-100">
+            <div className="flex flex-col items-center relative w-10">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
+                  style={{ 
+                    borderColor: data.color || '#25D366',
+                  }}>
+                  <div className="text-green-500 text-xs">✓</div>
+                </div>
+              
+             
               <Handle
                 type="source"
                 position={Position.Bottom}
                 id="true"
-                className="absolute bottom-[-4px] opacity-0"
-                style={{ bottom: '-30px', left: '50%' }}
+                className="absolute  "
+                style={{ bottom: '-30px', right: '60px',opacity:0 }}
               />
             </div>
-            <div className="flex flex-col items-center relative w-20">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
-                style={{ 
-                  borderColor: data.color || '#EAB308',
-                }}>
-                <div className="text-red-500 text-xs">✕</div>
-              </div>
-              <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#EAB308' }}>Não</div>
+            <div className="flex flex-col items-center relative w-10">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
+                  style={{ 
+                    borderColor: data.color || '#25D366',
+                  }}>
+                  <div className="text-red-500 text-xs">✕</div>
+                </div>
               <Handle
                 type="source"
                 position={Position.Bottom}
                 id="false"
-                className="absolute bottom-[-4px] opacity-0"
-                style={{ bottom: '-30px', left: '50%' }}
+                className="absolute bottom-[-4px] "
+                style={{ bottom: '-30px', right: '60px',opacity:0 }}
               />
             </div>
           </div>
