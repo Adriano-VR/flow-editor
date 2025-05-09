@@ -13,6 +13,8 @@ import ReactFlow, {
     Handle,
     Position,
     MarkerType,
+    Node as ReactFlowNode,
+    NodeProps,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { getFlow } from "../lib/api";
@@ -43,6 +45,7 @@ import {
   MenubarTrigger,
 } from "@/components/ui/menubar";
 import { JsonEditor } from './JsonEditor';
+import { NodeActionButtons } from './NodeActionButtons';
 
 interface NodeConfig {
   // WhatsApp config
@@ -96,46 +99,10 @@ interface FlowEditorProps {
   onSave?: (data: { nodes: Node[]; edges: Edge[] }) => Promise<void>;
 }
 
-
 const nodeTypes = {
-  trigger: ({ data, onEdit, onDelete }: { data: NodeTypeDefinition; onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
-    const [showMenu, setShowMenu] = useState(false);
-
+  trigger: ({ data, onEdit, onDelete }: NodeProps & { onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
     return (
-      <div 
-        className="flex flex-col items-center relative group"
-        onMouseEnter={() => setShowMenu(true)}
-        onMouseLeave={() => setShowMenu(false)}
-      >
-        {showMenu && (
-          <div className="absolute -top-12 right-0 z-[9999] bg-white rounded-md shadow-lg border p-1">
-            <button
-              className="w-full px-3 py-1 text-sm text-left hover:bg-gray-100 rounded-sm flex items-center gap-2"
-              onClick={() => onEdit({ 
-                id: data.id, 
-                data: {
-                  label: data.name,
-                  config: data.config || {},
-                  icon: data.icon,
-                  name: data.name,
-                  color: data.color
-                },
-                position: { x: 0, y: 0 },
-                type: 'trigger'
-              })}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-              Editar
-            </button>
-            <button
-              className="w-full px-3 py-1 text-sm text-left hover:bg-gray-100 rounded-sm flex items-center gap-2 text-red-500"
-              onClick={() => onDelete(data.id)}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-              Excluir
-            </button>
-          </div>
-        )}
+      <div className="flex flex-col items-center group">
         <div
           className={`
             flex flex-col items-center justify-center
@@ -155,7 +122,6 @@ const nodeTypes = {
             borderColor: data.color || '#3B82F6'
           }}
         >
-         
           <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
             <div 
               className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
@@ -173,18 +139,20 @@ const nodeTypes = {
           <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
             <IconRenderer iconName={data.icon ?? ''} />
           </div>
+
+          <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="trigger" />
         </div>
         <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
         <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
       </div>
     );
   },
-  action: ({ data, onEdit, onDelete }: { data: NodeTypeDefinition; onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
+  action: ({ data, onEdit, onDelete }: NodeProps & { onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
     if (data.name === 'openAi') {
       // Se for Modelo, Memória ou Ferramenta, mostra apenas um handle para cima
       if (data.label && ['Modelo', 'Memória', 'Ferramenta'].includes(data.label)) {
         return (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center group">
             <div
               className={`
                 flex flex-col items-center justify-center
@@ -204,7 +172,6 @@ const nodeTypes = {
                 borderColor: data.color || '#3B82F6'
               }}
             >
-             
               <div className="absolute top-[-35px] left-1/2 -translate-x-1/2 w-8 h-8 z-10">
                 <div 
                   className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
@@ -224,6 +191,8 @@ const nodeTypes = {
               <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
                 <IconRenderer iconName={data.icon ?? ''} />
               </div>
+
+              <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="action" />
             </div>
             <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
             <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
@@ -234,7 +203,7 @@ const nodeTypes = {
       // Design especial para Criar Agente
       if (data.label === 'Criar Agente') {
         return (
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center group">
             <div
               className={`
                 flex flex-col items-center justify-center
@@ -256,7 +225,6 @@ const nodeTypes = {
                 boxShadow: `0 4px 20px ${data.color}20`
               }}
             >
-             
               <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
                 <div 
                   className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
@@ -349,6 +317,8 @@ const nodeTypes = {
                   className="absolute inset-0 opacity-0"
                 />
               </div>
+
+              <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="action" />
             </div>
           </div>
         );
@@ -356,7 +326,7 @@ const nodeTypes = {
 
       // Design padrão para outros nós OpenAI
       return (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center group">
           <div
             className={`
               flex flex-col items-center justify-center
@@ -376,7 +346,6 @@ const nodeTypes = {
               borderColor: data.color || '#3B82F6'
             }}
           >
-           
             <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
               <div 
                 className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
@@ -408,6 +377,8 @@ const nodeTypes = {
                 className="absolute inset-0 opacity-0"
               />
             </div>
+
+            <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="action" />
           </div>
           <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
           <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
@@ -418,7 +389,7 @@ const nodeTypes = {
     // Design para nós WhatsApp
     if (data.name === 'whatsapp') {
       return (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center group">
           <div
             className={`
               flex flex-col items-center justify-center
@@ -440,8 +411,6 @@ const nodeTypes = {
               boxShadow: `0 4px 20px ${data.color}20`
             }}
           >
-           
-
             <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
               <div 
                 className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
@@ -504,6 +473,8 @@ const nodeTypes = {
                 />
               </div>
             </div>
+
+            <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="action" />
           </div>
         </div>
       );
@@ -512,7 +483,7 @@ const nodeTypes = {
     // Design para nós internos (incluindo delay)
     if (data.name === 'internal') {
       return (
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center group">
           <div
             className={`
               flex flex-col items-center justify-center
@@ -566,6 +537,8 @@ const nodeTypes = {
                 className="absolute inset-0 opacity-0"
               />
             </div>
+
+            <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="action" />
           </div>
           <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
           <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
@@ -575,92 +548,94 @@ const nodeTypes = {
 
     return null;
   },
-  condition: ({ data, onEdit, onDelete }: { data: NodeTypeDefinition; onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
+  condition: ({ data, onEdit, onDelete }: NodeProps & { onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
     return (
-      <div
-        className={`
-          flex flex-col items-center justify-center
-          relative
-          bg-white
-          p-6
-          rounded-xl
-          min-w-[280px]
-          backdrop-blur-sm
-          transition-all duration-300
-          hover:shadow-2xl
-          hover:-translate-y-1
-          shadow-[0_8px_30px_rgba(0,0,0,0.12)]
-          border-2
-        `}
-        style={{ 
-          borderColor: data.color || '#EAB308',
-          backgroundColor: `${data.color}08`,
-          boxShadow: `0 4px 20px ${data.color}20`
-        }}
-      >
-      
-
-        <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
-          <div 
-            className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
-            style={{ 
-              borderColor: data.color || '#EAB308',
-            }}
-          />
-          <Handle
-            type="target"
-            position={Position.Left}
-            className="absolute inset-0 opacity-0"
-          />
-        </div>
-
-        <div className="flex items-center gap-4 mb-6">
-          <div className="flex items-center justify-center w-12 h-12 rounded-xl shadow-md" 
-            style={{ 
-              backgroundColor: data.color || '#EAB308',
-              boxShadow: `0 4px 12px ${data.color}40`
-            }}>
-            <IconRenderer iconName={data.icon ?? ''} className="text-4xl" />
-          </div>
-          <div className="flex flex-col">
-            <div className="text-lg font-bold" style={{ color: data.color || '#EAB308' }}>{data.label}</div>
-            <div className="text-sm text-gray-500">Condição</div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-6 mt-2 px-2 pt-4 border-t border-gray-100">
-          <div className="flex flex-col items-center relative w-20">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
+      <div className="flex flex-col items-center group">
+        <div
+          className={`
+            flex flex-col items-center justify-center
+            relative
+            bg-white
+            p-6
+            rounded-xl
+            min-w-[280px]
+            backdrop-blur-sm
+            transition-all duration-300
+            hover:shadow-2xl
+            hover:-translate-y-1
+            shadow-[0_8px_30px_rgba(0,0,0,0.12)]
+            border-2
+          `}
+          style={{ 
+            borderColor: data.color || '#EAB308',
+            backgroundColor: `${data.color}08`,
+            boxShadow: `0 4px 20px ${data.color}20`
+          }}
+        >
+          <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+            <div 
+              className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
               style={{ 
                 borderColor: data.color || '#EAB308',
-              }}>
-              <div className="text-green-500 text-xs">✓</div>
-            </div>
-            <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#EAB308' }}>Sim</div>
+              }}
+            />
             <Handle
-              type="source"
-              position={Position.Bottom}
-              id="true"
-              className="absolute bottom-[-4px] opacity-0"
-              style={{ bottom: '-30px', left: '50%' }}
+              type="target"
+              position={Position.Left}
+              className="absolute inset-0 opacity-0"
             />
           </div>
-          <div className="flex flex-col items-center relative w-20">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
+
+          <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl shadow-md" 
               style={{ 
-                borderColor: data.color || '#EAB308',
+                backgroundColor: data.color || '#EAB308',
+                boxShadow: `0 4px 12px ${data.color}40`
               }}>
-              <div className="text-red-500 text-xs">✕</div>
+              <IconRenderer iconName={data.icon ?? ''} className="text-4xl" />
             </div>
-            <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#EAB308' }}>Não</div>
-            <Handle
-              type="source"
-              position={Position.Bottom}
-              id="false"
-              className="absolute bottom-[-4px] opacity-0"
-              style={{ bottom: '-30px', left: '50%' }}
-            />
+            <div className="flex flex-col">
+              <div className="text-lg font-bold" style={{ color: data.color || '#EAB308' }}>{data.label}</div>
+              <div className="text-sm text-gray-500">Condição</div>
+            </div>
           </div>
+
+          <div className="flex items-center justify-between gap-6 mt-2 px-2 pt-4 border-t border-gray-100">
+            <div className="flex flex-col items-center relative w-20">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
+                style={{ 
+                  borderColor: data.color || '#EAB308',
+                }}>
+                <div className="text-green-500 text-xs">✓</div>
+              </div>
+              <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#EAB308' }}>Sim</div>
+              <Handle
+                type="source"
+                position={Position.Bottom}
+                id="true"
+                className="absolute bottom-[-4px] opacity-0"
+                style={{ bottom: '-30px', left: '50%' }}
+              />
+            </div>
+            <div className="flex flex-col items-center relative w-20">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
+                style={{ 
+                  borderColor: data.color || '#EAB308',
+                }}>
+                <div className="text-red-500 text-xs">✕</div>
+              </div>
+              <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#EAB308' }}>Não</div>
+              <Handle
+                type="source"
+                position={Position.Bottom}
+                id="false"
+                className="absolute bottom-[-4px] opacity-0"
+                style={{ bottom: '-30px', left: '50%' }}
+              />
+            </div>
+          </div>
+
+          <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="condition" />
         </div>
       </div>
     );
@@ -671,6 +646,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   const [nodes, setNodes, onNodesChange] = useNodesState(initialData?.nodes || []);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialData?.edges || []);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [editingNode, setEditingNode] = useState<Node | null>(null);
   const [nodeConfig, setNodeConfig] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -684,11 +660,6 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   const [tempNode, setTempNode] = useState<Node | null>(null);
   const [flowData, setFlowData] = useState<FlowData | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [contextMenu, setContextMenu] = useState<{
-    nodeId: string;
-    x: number;
-    y: number;
-  } | null>(null);
 
   const categories = getNodeCategories();
 
@@ -746,23 +717,15 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
 
   // Modified node config save handler
   const handleSaveNode = () => {
-    if (!selectedNode) return;
-
-    const updatedNodes = nodes.map((node) => {
-      if (node.id === selectedNode.id) {
-        return {
-          ...node,
-          data: {
-            ...node.data,
-            config: nodeConfig ? JSON.parse(nodeConfig) : {},
-          },
-        };
+    if (!editingNode) return;
+    setNodes((nds) => nds.map((node) => {
+      if (node.id === editingNode.id) {
+        return editingNode;
       }
       return node;
-    });
-
-    setNodes(updatedNodes);
+    }));
     setSelectedNode(null);
+    setEditingNode(null);
     debouncedSave();
   };
 
@@ -839,8 +802,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
 
   const handleNodeClick = useCallback((event: React.MouseEvent | null, node: Node) => {
     setSelectedNode(node);
-    setNodeConfig(node.data.config ? JSON.stringify(node.data.config) : '');
-    setShowJsonEditor(true);
+    setEditingNode(node);
   }, []);
 
 
@@ -1165,67 +1127,8 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   };
 
   const handleNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
-    event.preventDefault();
-    setContextMenu({
-      nodeId: node.id,
-      x: event.clientX,
-      y: event.clientY,
-    });
+    // Do nothing - we're not using context menu anymore
   }, []);
-
-  const handleContextMenuClose = useCallback(() => {
-    setContextMenu(null);
-  }, []);
-
-  useEffect(() => {
-    const handleClick = () => {
-      setContextMenu(null);
-    };
-
-    document.addEventListener('click', handleClick);
-    return () => {
-      document.removeEventListener('click', handleClick);
-    };
-  }, []);
-
-  const nodeTypesWithHandlers = {
-    trigger: (props: { data: NodeTypeDefinition }) => 
-      nodeTypes.trigger({ 
-        ...props, 
-        onEdit: (node: Node) => handleNodeClick(null, node), 
-        onDelete: (nodeId: string) => {
-          setNodes((nds) => nds.filter((node) => node.id !== nodeId));
-          setEdges((eds) => eds.filter(
-            (edge) => edge.source !== nodeId && edge.target !== nodeId
-          ));
-          debouncedSave();
-        }
-      }),
-    action: (props: { data: NodeTypeDefinition }) => 
-      nodeTypes.action({ 
-        ...props, 
-        onEdit: (node: Node) => handleNodeClick(null, node), 
-        onDelete: (nodeId: string) => {
-          setNodes((nds) => nds.filter((node) => node.id !== nodeId));
-          setEdges((eds) => eds.filter(
-            (edge) => edge.source !== nodeId && edge.target !== nodeId
-          ));
-          debouncedSave();
-        }
-      }),
-    condition: (props: { data: NodeTypeDefinition }) => 
-      nodeTypes.condition({ 
-        ...props, 
-        onEdit: (node: Node) => handleNodeClick(null, node), 
-        onDelete: (nodeId: string) => {
-          setNodes((nds) => nds.filter((node) => node.id !== nodeId));
-          setEdges((eds) => eds.filter(
-            (edge) => edge.source !== nodeId && edge.target !== nodeId
-          ));
-          debouncedSave();
-        }
-      }),
-  };
 
   const handleCreateFlowFromJson = useCallback((nodes: Node[], edges: Edge[]) => {
     setNodes(nodes);
@@ -1339,9 +1242,8 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
           onEdgesChange={handleEdgesChange}
           onConnect={onConnect}
           onNodeClick={handleNodeClick}
-          onNodeContextMenu={handleNodeContextMenu}
           onEdgeClick={handleDeleteEdge}
-          nodeTypes={nodeTypesWithHandlers}
+          nodeTypes={nodeTypes}
           fitView
           className="cursor-crosshair bg-gray-50 rounded-2xl"
           style={{ cursor: 'crosshair' }}
@@ -1349,61 +1251,184 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
           <Background color="#94a3b8" gap={16} size={1} />
           <Controls />
         </ReactFlow>
-
-        {contextMenu && (
-          <div 
-            className="fixed z-[9999] bg-white rounded-md shadow-lg border p-1"
-            style={{
-              left: contextMenu.x,
-              top: contextMenu.y,
-            }}
-          >
-            <button
-              className="w-full px-3 py-1 text-sm text-left hover:bg-gray-100 rounded-sm flex items-center gap-2"
-              onClick={() => {
-                const node = nodes.find(n => n.id === contextMenu.nodeId);
-                if (node) {
-                  handleNodeClick(null, node);
-                }
-                setContextMenu(null);
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
-              Editar
-            </button>
-            <button
-              className="w-full px-3 py-1 text-sm text-left hover:bg-gray-100 rounded-sm flex items-center gap-2 text-red-500"
-              onClick={() => {
-                const nodeId = contextMenu.nodeId;
-                setNodes((nds) => nds.filter((node) => node.id !== nodeId));
-                setEdges((eds) => eds.filter(
-                  (edge) => edge.source !== nodeId && edge.target !== nodeId
-                ));
-                debouncedSave();
-                setContextMenu(null);
-              }}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-              Excluir
-            </button>
-          </div>
-        )}
       </div>
 
-      <Dialog open={!!selectedNode} onOpenChange={() => setSelectedNode(null)}>
+      <Dialog open={!!selectedNode} onOpenChange={() => {
+        setSelectedNode(null);
+        setEditingNode(null);
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Editar Nó</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium">Configuração (JSON)</label>
-              <Input
-                value={nodeConfig}
-                onChange={(e) => setNodeConfig(e.target.value)}
-                placeholder='{"message": "Olá!"}'
-              />
-            </div>
+            {editingNode && (
+              <>
+                {editingNode.data.name === 'whatsapp' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="to">Número do WhatsApp</Label>
+                      <Input
+                        id="to"
+                        placeholder="+55 (00) 00000-0000"
+                        value={editingNode.data.config?.to || ''}
+                        onChange={(e) => {
+                          setEditingNode({
+                            ...editingNode,
+                            data: {
+                              ...editingNode.data,
+                              config: {
+                                ...(editingNode.data.config || {}),
+                                to: e.target.value
+                              }
+                            }
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="message">Mensagem</Label>
+                      <Textarea
+                        id="message"
+                        placeholder="Digite sua mensagem"
+                        value={editingNode.data.config?.message || ''}
+                        onChange={(e) => {
+                          setEditingNode({
+                            ...editingNode,
+                            data: {
+                              ...editingNode.data,
+                              config: {
+                                ...(editingNode.data.config || {}),
+                                message: e.target.value
+                              }
+                            }
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {editingNode.data.name === 'openAi' && editingNode.data.label === 'Criar Agente' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="agentName">Nome do Agente</Label>
+                      <Input
+                        id="agentName"
+                        placeholder="Digite o nome do agente"
+                        value={editingNode.data.config?.agentName || ''}
+                        onChange={(e) => {
+                          setEditingNode({
+                            ...editingNode,
+                            data: {
+                              ...editingNode.data,
+                              config: {
+                                ...(editingNode.data.config || {}),
+                                agentName: e.target.value
+                              }
+                            }
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="agentDescription">Descrição</Label>
+                      <Textarea
+                        id="agentDescription"
+                        placeholder="Descreva o propósito do agente"
+                        value={editingNode.data.config?.agentDescription || ''}
+                        onChange={(e) => {
+                          setEditingNode({
+                            ...editingNode,
+                            data: {
+                              ...editingNode.data,
+                              config: {
+                                ...(editingNode.data.config || {}),
+                                agentDescription: e.target.value
+                              }
+                            }
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="capabilities">Capacidades</Label>
+                      <Textarea
+                        id="capabilities"
+                        placeholder="Liste as capacidades do agente (uma por linha)"
+                        value={editingNode.data.config?.capabilities?.join('\n') || ''}
+                        onChange={(e) => {
+                          setEditingNode({
+                            ...editingNode,
+                            data: {
+                              ...editingNode.data,
+                              config: {
+                                ...(editingNode.data.config || {}),
+                                capabilities: e.target.value.split('\n').filter(v => v.trim())
+                              }
+                            }
+                          });
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {editingNode.data.name === 'internal' && editingNode.data.label === 'Atraso' && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="duration">Duração</Label>
+                      <Input
+                        id="duration"
+                        type="number"
+                        min="0"
+                        placeholder="Digite a duração"
+                        value={editingNode.data.config?.duration || 0}
+                        onChange={(e) => {
+                          setEditingNode({
+                            ...editingNode,
+                            data: {
+                              ...editingNode.data,
+                              config: {
+                                ...(editingNode.data.config || {}),
+                                duration: parseInt(e.target.value) || 0
+                              }
+                            }
+                          });
+                        }}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="unit">Unidade</Label>
+                      <Select
+                        value={editingNode.data.config?.unit || 'seconds'}
+                        onValueChange={(value: 'seconds' | 'minutes' | 'hours') => {
+                          setEditingNode({
+                            ...editingNode,
+                            data: {
+                              ...editingNode.data,
+                              config: {
+                                ...(editingNode.data.config || {}),
+                                unit: value
+                              }
+                            }
+                          });
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione a unidade" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="seconds">Segundos</SelectItem>
+                          <SelectItem value="minutes">Minutos</SelectItem>
+                          <SelectItem value="hours">Horas</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
             <div className="flex justify-between">
               <Button 
                 onClick={handleDeleteNode}

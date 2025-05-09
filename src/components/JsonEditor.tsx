@@ -153,7 +153,7 @@ export function JsonEditor({ flowData, onSave, onCreateFlow, completeFlow }: Jso
       <DrawerTrigger asChild>
         <Button variant="outline" size="icon">
           <Code className="h-4 w-4" />
-        </Button>
+          </Button>
       </DrawerTrigger>
       <DrawerContent className="h-full w-[400px] right-0 top-0 bottom-0 rounded-r-lg rounded-l-none">
         <div className="mx-auto w-full max-w-2xl">
@@ -164,39 +164,39 @@ export function JsonEditor({ flowData, onSave, onCreateFlow, completeFlow }: Jso
             </DrawerDescription>
           </DrawerHeader>
           <div className="p-4">
-            {error && (
+      {error && (
               <div className="flex items-center gap-2 text-red-500 text-sm p-4 bg-red-50 border-b mb-4">
-                <AlertCircle className="h-4 w-4" />
-                <span>{error}</span>
-              </div>
-            )}
-            <Textarea
-              value={jsonInput}
-              onChange={(e) => {
-                setJsonInput(e.target.value);
-                setError(null);
-              }}
-              onPaste={(e) => {
-                e.preventDefault();
-                const pastedText = e.clipboardData.getData('text');
-                try {
-                  JSON.parse(pastedText);
-                  setJsonInput(pastedText);
-                  setError(null);
-                } catch (err) {
-                  setError("JSON inválido. Por favor, verifique a formatação.");
-                }
-              }}
+          <AlertCircle className="h-4 w-4" />
+          <span>{error}</span>
+        </div>
+      )}
+        <Textarea
+          value={jsonInput}
+          onChange={(e) => {
+            setJsonInput(e.target.value);
+            setError(null);
+          }}
+          onPaste={(e) => {
+            e.preventDefault();
+            const pastedText = e.clipboardData.getData('text');
+            try {
+              JSON.parse(pastedText);
+              setJsonInput(pastedText);
+              setError(null);
+            } catch (err) {
+              setError("JSON inválido. Por favor, verifique a formatação.");
+            }
+          }}
               className="font-mono h-[500px] resize-none bg-background border rounded-md"
-              placeholder="Cole ou edite o JSON do fluxo aqui..."
-              style={{
-                tabSize: 2,
-                whiteSpace: "pre",
-                wordWrap: "normal",
-                overflowX: "auto"
-              }}
-            />
-          </div>
+          placeholder="Cole ou edite o JSON do fluxo aqui..."
+          style={{
+            tabSize: 2,
+            whiteSpace: "pre",
+            wordWrap: "normal",
+            overflowX: "auto"
+          }}
+        />
+      </div>
           <DrawerFooter>
             <div className="flex justify-between items-center">
               <div className="flex gap-2">
@@ -221,7 +221,7 @@ export function JsonEditor({ flowData, onSave, onCreateFlow, completeFlow }: Jso
               </div>
             </div>
           </DrawerFooter>
-        </div>
+    </div>
       </DrawerContent>
     </Drawer>
   );

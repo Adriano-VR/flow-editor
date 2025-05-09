@@ -13,15 +13,40 @@ export interface Flow {
   };
 }
 
+export interface NodeConfig {
+  // WhatsApp config
+  to?: string;
+  message?: string;
+  template?: string;
+  phone?: string;
+  
+  // OpenAI/Assistant config
+  model?: string;
+  temperature?: number;
+  prompt?: string;
+  memoryType?: string;
+  maxTokens?: number;
+  agentName?: string;
+  agentDescription?: string;
+  capabilities?: string[];
+  toolName?: string;
+  toolDescription?: string;
+  parameters?: Record<string, unknown>;
+  agentId?: string;
+  input?: string;
+  
+  // Internal config
+  duration?: number;
+  unit?: 'seconds' | 'minutes' | 'hours';
+  condition?: string;
+}
+
 export type Node = ReactFlowNode<{
   label: string;
-  config: unknown;
-  icon?: string;
-  subcategory?: string;
-  color?: string;
-  name:string;
-  onAddNode?: () => void;
-  data?:string
+  name: string;
+  icon: string;
+  color: string;
+  config?: NodeConfig;
 }>;
 
 export type Edge = ReactFlowEdge & {
