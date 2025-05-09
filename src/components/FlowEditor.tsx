@@ -35,6 +35,14 @@ import { IconRenderer } from "@/lib/IconRenderer";
 import { LiaBrainSolid } from "react-icons/lia";
 import { FaMemory } from "react-icons/fa";
 import { FiTool } from "react-icons/fi";
+import {
+  Menubar,
+  MenubarContent,
+  MenubarItem,
+  MenubarMenu,
+  MenubarTrigger,
+} from "@/components/ui/menubar";
+import { JsonEditor } from './JsonEditor';
 
 interface NodeConfig {
   // WhatsApp config
@@ -90,9 +98,44 @@ interface FlowEditorProps {
 
 
 const nodeTypes = {
-  trigger: ({ data }: { data: NodeTypeDefinition }) => {
+  trigger: ({ data, onEdit, onDelete }: { data: NodeTypeDefinition; onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
+    const [showMenu, setShowMenu] = useState(false);
+
     return (
-      <div className="flex flex-col items-center">
+      <div 
+        className="flex flex-col items-center relative group"
+        onMouseEnter={() => setShowMenu(true)}
+        onMouseLeave={() => setShowMenu(false)}
+      >
+        {showMenu && (
+          <div className="absolute -top-12 right-0 z-[9999] bg-white rounded-md shadow-lg border p-1">
+            <button
+              className="w-full px-3 py-1 text-sm text-left hover:bg-gray-100 rounded-sm flex items-center gap-2"
+              onClick={() => onEdit({ 
+                id: data.id, 
+                data: {
+                  label: data.name,
+                  config: data.config || {},
+                  icon: data.icon,
+                  name: data.name,
+                  color: data.color
+                },
+                position: { x: 0, y: 0 },
+                type: 'trigger'
+              })}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+              Editar
+            </button>
+            <button
+              className="w-full px-3 py-1 text-sm text-left hover:bg-gray-100 rounded-sm flex items-center gap-2 text-red-500"
+              onClick={() => onDelete(data.id)}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+              Excluir
+            </button>
+          </div>
+        )}
         <div
           className={`
             flex flex-col items-center justify-center
@@ -136,7 +179,7 @@ const nodeTypes = {
       </div>
     );
   },
-  action: ({ data }: { data: NodeTypeDefinition }) => {
+  action: ({ data, onEdit, onDelete }: { data: NodeTypeDefinition; onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
     if (data.name === 'openAi') {
       // Se for Modelo, Memória ou Ferramenta, mostra apenas um handle para cima
       if (data.label && ['Modelo', 'Memória', 'Ferramenta'].includes(data.label)) {
@@ -532,7 +575,7 @@ const nodeTypes = {
 
     return null;
   },
-  condition: ({ data }: { data: NodeTypeDefinition }) => {
+  condition: ({ data, onEdit, onDelete }: { data: NodeTypeDefinition; onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
     return (
       <div
         className={`
@@ -641,6 +684,11 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   const [tempNode, setTempNode] = useState<Node | null>(null);
   const [flowData, setFlowData] = useState<FlowData | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [contextMenu, setContextMenu] = useState<{
+    nodeId: string;
+    x: number;
+    y: number;
+  } | null>(null);
 
   const categories = getNodeCategories();
 
@@ -789,11 +837,11 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     }
   }, [initialData]);
 
-  const handleNodeClick = (event: React.MouseEvent, node: Node) => {
+  const handleNodeClick = useCallback((event: React.MouseEvent | null, node: Node) => {
     setSelectedNode(node);
     setNodeConfig(node.data.config ? JSON.stringify(node.data.config) : '');
     setShowJsonEditor(true);
-  };
+  }, []);
 
 
   const handleAddNode = () => {
@@ -1116,6 +1164,75 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     }
   };
 
+  const handleNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
+    event.preventDefault();
+    setContextMenu({
+      nodeId: node.id,
+      x: event.clientX,
+      y: event.clientY,
+    });
+  }, []);
+
+  const handleContextMenuClose = useCallback(() => {
+    setContextMenu(null);
+  }, []);
+
+  useEffect(() => {
+    const handleClick = () => {
+      setContextMenu(null);
+    };
+
+    document.addEventListener('click', handleClick);
+    return () => {
+      document.removeEventListener('click', handleClick);
+    };
+  }, []);
+
+  const nodeTypesWithHandlers = {
+    trigger: (props: { data: NodeTypeDefinition }) => 
+      nodeTypes.trigger({ 
+        ...props, 
+        onEdit: (node: Node) => handleNodeClick(null, node), 
+        onDelete: (nodeId: string) => {
+          setNodes((nds) => nds.filter((node) => node.id !== nodeId));
+          setEdges((eds) => eds.filter(
+            (edge) => edge.source !== nodeId && edge.target !== nodeId
+          ));
+          debouncedSave();
+        }
+      }),
+    action: (props: { data: NodeTypeDefinition }) => 
+      nodeTypes.action({ 
+        ...props, 
+        onEdit: (node: Node) => handleNodeClick(null, node), 
+        onDelete: (nodeId: string) => {
+          setNodes((nds) => nds.filter((node) => node.id !== nodeId));
+          setEdges((eds) => eds.filter(
+            (edge) => edge.source !== nodeId && edge.target !== nodeId
+          ));
+          debouncedSave();
+        }
+      }),
+    condition: (props: { data: NodeTypeDefinition }) => 
+      nodeTypes.condition({ 
+        ...props, 
+        onEdit: (node: Node) => handleNodeClick(null, node), 
+        onDelete: (nodeId: string) => {
+          setNodes((nds) => nds.filter((node) => node.id !== nodeId));
+          setEdges((eds) => eds.filter(
+            (edge) => edge.source !== nodeId && edge.target !== nodeId
+          ));
+          debouncedSave();
+        }
+      }),
+  };
+
+  const handleCreateFlowFromJson = useCallback((nodes: Node[], edges: Edge[]) => {
+    setNodes(nodes);
+    setEdges(edges);
+    debouncedSave();
+  }, [debouncedSave]);
+
   if (loading) {
     return <div className="flex items-center justify-center h-[80vh]">Loading...</div>;
   }
@@ -1188,28 +1305,33 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
               Último salvamento: {lastSaved.toLocaleTimeString()}
             </div>
           )}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleCodeButtonClick}
-            className={showJsonEditor ? "bg-muted" : ""}
-          >
-            <Code className="h-4 w-4" />
-          </Button>
+          <JsonEditor 
+            flowData={selectedNode} 
+            onSave={(json) => {
+              if (selectedNode) {
+                const updatedNodes = nodes.map((node) => {
+                  if (node.id === selectedNode.id) {
+                    return {
+                      ...node,
+                      data: {
+                        ...node.data,
+                        config: JSON.parse(json),
+                      },
+                    };
+                  }
+                  return node;
+                });
+                setNodes(updatedNodes);
+                debouncedSave();
+              }
+            }}
+            onCreateFlow={handleCreateFlowFromJson}
+            completeFlow={{ nodes, edges }}
+          />
         </div>
       </div>
 
-      {showJsonEditor && (
-        <div className="mb-4 h-[200px] border rounded-lg">
-          <Textarea
-            value={nodeConfig}
-            onChange={(e) => setNodeConfig(e.target.value)}
-            placeholder='{"message": "Olá!"}'
-          />
-        </div>
-      )}
-
-      <div className="flex-1 border rounded-lg">
+      <div className="flex-1 border rounded-lg relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -1217,8 +1339,9 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
           onEdgesChange={handleEdgesChange}
           onConnect={onConnect}
           onNodeClick={handleNodeClick}
+          onNodeContextMenu={handleNodeContextMenu}
           onEdgeClick={handleDeleteEdge}
-          nodeTypes={nodeTypes}
+          nodeTypes={nodeTypesWithHandlers}
           fitView
           className="cursor-crosshair bg-gray-50 rounded-2xl"
           style={{ cursor: 'crosshair' }}
@@ -1226,6 +1349,45 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
           <Background color="#94a3b8" gap={16} size={1} />
           <Controls />
         </ReactFlow>
+
+        {contextMenu && (
+          <div 
+            className="fixed z-[9999] bg-white rounded-md shadow-lg border p-1"
+            style={{
+              left: contextMenu.x,
+              top: contextMenu.y,
+            }}
+          >
+            <button
+              className="w-full px-3 py-1 text-sm text-left hover:bg-gray-100 rounded-sm flex items-center gap-2"
+              onClick={() => {
+                const node = nodes.find(n => n.id === contextMenu.nodeId);
+                if (node) {
+                  handleNodeClick(null, node);
+                }
+                setContextMenu(null);
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-pencil"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+              Editar
+            </button>
+            <button
+              className="w-full px-3 py-1 text-sm text-left hover:bg-gray-100 rounded-sm flex items-center gap-2 text-red-500"
+              onClick={() => {
+                const nodeId = contextMenu.nodeId;
+                setNodes((nds) => nds.filter((node) => node.id !== nodeId));
+                setEdges((eds) => eds.filter(
+                  (edge) => edge.source !== nodeId && edge.target !== nodeId
+                ));
+                debouncedSave();
+                setContextMenu(null);
+              }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+              Excluir
+            </button>
+          </div>
+        )}
       </div>
 
       <Dialog open={!!selectedNode} onOpenChange={() => setSelectedNode(null)}>

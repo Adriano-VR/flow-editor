@@ -23,6 +23,6 @@ interface IconRendererProps {
 
 export const IconRenderer = ({ iconName, className = 'text-white size-25' }: IconRendererProps) => {
   const IconComponent = iconMap[iconName as keyof typeof iconMap];
-  if (!IconComponent) return <span>Ícone não encontrado</span>;
+  if (!IconComponent) return <span>X</span>;
   return <IconComponent className={className} />;
 };
