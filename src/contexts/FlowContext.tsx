@@ -1,15 +1,43 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { createFlow,getFlow, updateFlow } from "@/lib/api";
+import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createFlow, getFlow, updateFlow, deleteFlow, getFlows } from "@/lib/api";
 import { nodeTypes as nodeTypeDefinitions } from "@/lib/nodeTypes";
-import { Flow, Node, Edge, Action, FlowContextType, actionConfig } from "@/types/flow";
+import { Flow, Node, Edge, Action, actionConfig } from "@/types/flow";
+import { Flow as FlowType } from "@/types/sidebar";
+
+interface FlowContextType {
+  flows: Flow[];
+  selectedFlowId: string | null;
+  setSelectedFlowId: (id: string | null) => void;
+  isCreating: boolean;
+  isDeleting: string | null;
+  flowData: Flow | null;
+  flowName: string;
+  isDrawerOpen: boolean;
+  setIsDrawerOpen: (isOpen: boolean) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  isActionModalOpen: boolean;
+  setIsActionModalOpen: (isOpen: boolean) => void;
+  selectedAction: Action | null;
+  setSelectedAction: (action: Action | null) => void;
+  actionConfig: actionConfig;
+  setActionConfig: (config: actionConfig) => void;
+  handleCreateFlow: (name: string) => Promise<string | null>;
+  handleDeleteFlow: (flowId: string) => Promise<void>;
+  handleSaveFlow: (data: { nodes: Node[]; edges: Edge[] }) => Promise<void>;
+  handleActionSelect: (action: Action) => void;
+  handleActionConfigSubmit: () => Promise<void>;
+  handleJsonUpdate: (json: string) => Promise<void>;
+}
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
 
 export function FlowProvider({ children }: { children: ReactNode }) {
   const [selectedFlowId, setSelectedFlowId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [flowData, setFlowData] = useState<Flow | null>(null);
   const [flowName, setFlowName] = useState("Novo Flow");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -17,9 +45,73 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<Action | null>(null);
   const [actionConfig, setActionConfig] = useState<actionConfig>({});
-  
+  const [flows, setFlows] = useState<FlowType[]>([]);
 
+  const handleCreateFlow = async (name: string): Promise<string | null> => {
+    if (!name.trim()) return null;
 
+    try {
+      setIsCreating(true);
+      const flowData = {
+        data: {
+          name: name.trim(),
+          status: "draft",
+          billing: "free",
+          published: true,
+          data: {
+            nodes: [],
+            edges: []
+          }
+        }
+      };
+
+      const response = await createFlow(flowData);
+
+      if (response && response.data && response.data.id) {
+        const updatedResponse = await getFlows();
+        setFlows([updatedResponse.data[0], ...updatedResponse.data.slice(1)]);
+        setSelectedFlowId(response.data.id.toString());
+        return response.data.id.toString();
+      }
+      return null;
+    } catch (err) {
+      console.error('Error creating flow:', err);
+      return null;
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  const handleDeleteFlow = async (flowId: string): Promise<void> => {
+    if (!confirm('Tem certeza que deseja excluir este flow?')) {
+      return;
+    }
+
+    try {
+      setIsDeleting(flowId);
+      await deleteFlow(flowId);
+      const updatedResponse = await getFlows();
+      setFlows(updatedResponse.data);
+    } catch (err) {
+      console.error('Error deleting flow:', err);
+      throw err;
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
+  useEffect(() => {
+    const fetchFlows = async () => {
+      try {
+        const response = await getFlows();
+        setFlows(response.data);
+      } catch (err) {
+        console.error('Error fetching flows:', err);
+      }
+    };
+
+    fetchFlows();
+  }, []);
 
   useEffect(() => {
     const loadFlowData = async () => {
@@ -36,32 +128,6 @@ export function FlowProvider({ children }: { children: ReactNode }) {
 
     loadFlowData();
   }, [selectedFlowId]);
-
-  const handleCreateFlow = async () => {
-    try {
-      setIsCreating(true);
-      const newFlow = await createFlow({
-        data: {
-          name: flowName,
-          status: "draft",
-          billing: "free",
-          published: true,
-          data: {
-            nodes: [],
-            edges: []
-          }
-        }
-      });
-      
-      if (newFlow.data?.id) {
-        setSelectedFlowId(newFlow.data.id.toString());
-      }
-    } catch (error) {
-      console.error('Error creating flow:', error);
-    } finally {
-      setIsCreating(false);
-    }
-  };
 
   const handleSaveFlow = async (data: { nodes: Node[]; edges: Edge[] }) => {
     if (!selectedFlowId) return;
@@ -194,13 +260,14 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const value = {
+  const value: FlowContextType = {
+    flows,
     selectedFlowId,
     setSelectedFlowId,
+    isCreating,
+    isDeleting,
     flowData,
     flowName,
-    setFlowName,
-    isCreating,
     isDrawerOpen,
     setIsDrawerOpen,
     searchQuery,
@@ -212,6 +279,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     actionConfig,
     setActionConfig,
     handleCreateFlow,
+    handleDeleteFlow,
     handleSaveFlow,
     handleActionSelect,
     handleActionConfigSubmit,

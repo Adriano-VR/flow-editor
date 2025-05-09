@@ -1,10 +1,3 @@
-import { FaTools, FaWhatsapp, FaRobot } from 'react-icons/fa';
-import { AiOutlineOpenAI } from 'react-icons/ai';
-import { MdMemory } from 'react-icons/md';
-import { VscDebugStart } from 'react-icons/vsc';
-import { IoTime } from 'react-icons/io5';
-import { TbAirConditioning } from 'react-icons/tb';
-
 export interface NodeAction {
   id: string;
   name: string;
@@ -121,20 +114,6 @@ export const nodeTypes: {
           description: '',
           capabilities: []
         }
-      },
-      run_agent: {
-        id: 'assistant_run_agent',
-        name: 'Executar Agente',
-        type: 'action',
-        category: 'app',
-        subcategory: 'assistant',
-        icon: 'FaRobot',
-        color: '#3B82F6',
-        config: {
-          agent_id: '',
-          input: '',
-          parameters: {}
-        }
       }
     }
   },
@@ -155,6 +134,7 @@ export const nodeTypes: {
       category: 'internal',
       icon: 'IoTime',
       color: '#EAB308',
+      label: 'Atraso',
       config: {
         duration: 0,
         unit: 'seconds'

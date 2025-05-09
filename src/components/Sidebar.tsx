@@ -1,111 +1,53 @@
 "use client"
 
-import { useEffect, useState } from "react";
-import { getFlows, createFlow, deleteFlow } from "@/lib/api";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Plus, Loader2, X, Save, Trash2 } from "lucide-react";
+import { Plus, Loader2, X, Save, Trash2, Pencil } from "lucide-react";
 import { useSearch } from "@/contexts/SearchContext";
-
-interface Flow {
-  id: string;
-  attributes: {
-    name: string;
-    status: string;
-    created_at: string;
-  };
-}
-
-interface SidebarProps {
-  onSelectFlow: (flowId: string) => void;
-}
+import { SidebarProps } from "@/types/sidebar";
+import { useFlow } from "@/contexts/FlowContext";
 
 export default function Sidebar({ onSelectFlow }: SidebarProps) {
-  const [flows, setFlows] = useState<Flow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [showNewFlowInput, setShowNewFlowInput] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
-  const [selectedFlowId, setSelectedFlowId] = useState<string | null>(null);
+  const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
   const { searchInput } = useSearch();
+  const { 
+    flows, 
+    selectedFlowId, 
+    setSelectedFlowId, 
+    isCreating, 
+    isDeleting, 
+    handleCreateFlow, 
+    handleDeleteFlow 
+  } = useFlow();
 
   useEffect(() => {
-    const fetchFlows = async () => {
-      try {
-        setLoading(true);
-        const response = await getFlows();
-        setFlows(response.data);
-        setError(null);
-      } catch (err) {
-        setError('Erro ao carregar flows');
-        console.error('Error fetching flows:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    setLocalSelectedId(selectedFlowId);
+  }, [selectedFlowId]);
 
-    fetchFlows();
-  }, []);
-
-  const handleCreateFlow = async () => {
-    if (!newFlowName.trim()) return;
-
+  const handleCreateFlowClick = async () => {
     try {
-      setIsCreating(true);
-      const flowData = {
-        data: {
-          name: newFlowName.trim(),
-          status: "draft",
-          billing: "free",
-          published: true,
-          data: {
-            nodes: [],
-            edges: []
-          }
-        }
-      };
-
-
-      const response = await createFlow(flowData);
-
-      if (response && response.data && response.data.id) {
-        const updatedResponse = await getFlows();
-        setFlows(updatedResponse.data);
+      const newFlowId = await handleCreateFlow(newFlowName);
+      if (newFlowId) {
         setNewFlowName("");
         setShowNewFlowInput(false);
-        onSelectFlow(response.data.id.toString());
-      } else {
-        console.error('Invalid response format:', response);
-        throw new Error('Failed to create flow: Invalid response format');
+        setLocalSelectedId(newFlowId);
+        setSelectedFlowId(newFlowId);
+        onSelectFlow(newFlowId);
       }
-    } catch (err) {
-      console.error('Error creating flow:', err);
-      setError('Erro ao criar flow');
-    } finally {
-      setIsCreating(false);
+    } catch (error) {
+      console.error('Error creating flow:', error);
     }
   };
 
-  const handleDeleteFlow = async (flowId: string, e: React.MouseEvent) => {
+  const handleDeleteFlowClick = async (flowId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    if (!confirm('Tem certeza que deseja excluir este flow?')) {
-      return;
-    }
-
     try {
-      setIsDeleting(flowId);
-      await deleteFlow(flowId);
-      const updatedResponse = await getFlows();
-      setFlows(updatedResponse.data);
-      setError(null);
-    } catch (err) {
-      console.error('Error deleting flow:', err);
-      setError('Erro ao excluir flow');
-    } finally {
-      setIsDeleting(null);
+      await handleDeleteFlow(flowId);
+    } catch (error) {
+      console.error('Error deleting flow:', error);
     }
   };
 
@@ -138,7 +80,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       console.log('Enter pressed');
-                      handleCreateFlow();
+                      handleCreateFlowClick();
                     }
                   }}
                   disabled={isCreating}
@@ -160,7 +102,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                 className="w-full"
                 onClick={() => {
                   console.log('Save button clicked');
-                  handleCreateFlow();
+                  handleCreateFlowClick();
                 }}
                 disabled={isCreating || !newFlowName.trim()}
               >
@@ -175,40 +117,39 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
           )}
         </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center py-4">
-            <Loader2 className="h-6 w-6 animate-spin" />
-          </div>
-        ) : error ? (
-          <div className="text-red-500 text-sm text-center py-4">
-            {error}
-          </div>
-        ) : (
-          <ul className="space-y-2 mt-4">
-            {flows.filter((flow) => 
+        <ul className="space-y-2 mt-4">
+          {flows
+            .filter((flow) => 
               flow.attributes?.name?.toLowerCase().includes(searchInput.toLowerCase()) ?? false
-            ).map((flow) => (
-              <li key={flow.id} className="group relative  ">
+            )
+            .sort((a, b) => Number(b.id) - Number(a.id))
+            .slice(0, 12)
+            .map((flow) => (
+              <li key={flow.id} className="group relative">
                 <Button 
-                  variant="ghost" 
-                  className={`h-11 w-full justify-start truncate  ${selectedFlowId === flow.id ? 'bg-primary text-green-200 hover:bg-primary/90 hover:text-green-200' : ''}`}
+                  variant="ghost"
+                  className={`h-11 w-full justify-start truncate ${localSelectedId === flow.id ? 'bg-primary text-white hover:bg-primary/90 hover:text-white' : ''}`}
                   onClick={() => {
+                    setLocalSelectedId(flow.id);
                     setSelectedFlowId(flow.id);
                     onSelectFlow(flow.id);
                   }}
                 >
-                  <div className="flex gap-1 flex-col items-start cursor-pointer">
-                    <span className="font-medium capitalize">{flow.attributes.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {flow.attributes.status}
-                    </span>
+                  <div className="flex items-center gap-2">
+                    {localSelectedId === flow.id && <Pencil className="h-4 w-4" />}
+                    <div className="flex gap-1 flex-col items-start cursor-pointer">
+                      <span className="font-medium capitalize">{flow.attributes.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {flow.attributes.status}
+                      </span>
+                    </div>
                   </div>
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className= " cursor-pointer absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={(e) => handleDeleteFlow(flow.id, e)}
+                  className="cursor-pointer absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => handleDeleteFlowClick(flow.id, e)}
                   disabled={isDeleting === flow.id}
                 >
                   {isDeleting === flow.id ? (
@@ -219,8 +160,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                 </Button>
               </li>
             ))}
-          </ul>
-        )}
+        </ul>
       </div>
     </aside>
   );

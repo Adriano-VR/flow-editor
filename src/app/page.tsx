@@ -21,46 +21,15 @@ export default function Home() {
     selectedFlowId,
     setSelectedFlowId,
     flowData,
-    flowName,
-    setFlowName,
-    isCreating,
-    isDrawerOpen,
-    setIsDrawerOpen,
-    searchQuery,
-    setSearchQuery,
     isActionModalOpen,
     setIsActionModalOpen,
     selectedAction,
     actionConfig,
     setActionConfig,
-    handleCreateFlow,
     handleSaveFlow,
-    handleActionSelect,
     handleActionConfigSubmit,
   } = useFlow();
 
-  const actions = [
-    { 
-      id: "whatsapp-send-message", 
-      name: "Enviar Mensagem WhatsApp", 
-      description: "Envia uma mensagem para um número específico",
-      category: "whatsapp"
-    },
-    { 
-      id: "whatsapp-receive-message", 
-      name: "Enviar Template WhatsApp", 
-      description: "Envia uma mensagem usando um template aprovado",
-      category: "whatsapp"
-    },
-  ];
-
-  const filteredActions = searchQuery
-    ? actions.filter(action =>
-        action.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        action.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        action.category.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : actions;
 
   const renderActionConfigFields = () => {
     if (!selectedAction) return null;
@@ -150,26 +119,7 @@ export default function Home() {
                 onSave={handleSaveFlow as any}
                 
               />
-              <Button
-                size="lg"
-                onClick={() => setIsDrawerOpen(true)}
-                className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M5 12h14" />
-                  <path d="M12 5v14" />
-                </svg>
-              </Button>
+             
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-4">

@@ -16,14 +16,13 @@ const iconMap = {
   TbAirConditioning,
 };
 
-
 interface IconRendererProps {
   iconName: string;
+  className?: string; // nova prop para estilos
 }
 
-export const IconRenderer = ({ iconName }: IconRendererProps) => {
+export const IconRenderer = ({ iconName, className = 'text-white size-25' }: IconRendererProps) => {
   const IconComponent = iconMap[iconName as keyof typeof iconMap];
-
   if (!IconComponent) return <span>Ícone não encontrado</span>;
-  return <IconComponent className='text-white size-25' />;
+  return <IconComponent className={className} />;
 };
