@@ -2,61 +2,364 @@
   "nodes": [
     {
       "id": "trigger-1",
-      "type": "trigger",
       "data": {
-        "label": "Início",
-        "name": "trigger",
         "icon": "VscDebugStart",
-        "color": "#3B82F6"
+        "name": "trigger",
+        "color": "#3B82F6",
+        "label": "Início"
       },
-      "position": { "x": 100, "y": 100 }
+      "type": "trigger",
+      "width": 144,
+      "height": 184,
+      "dragging": false,
+      "position": {
+        "x": -17.0488603371449,
+        "y": 145.05366988094488
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": -17.0488603371449,
+        "y": 145.05366988094488
+      }
     },
     {
       "id": "whatsapp-1",
-      "type": "action",
       "data": {
-        "label": "Enviar Mensagem",
-        "name": "whatsapp",
         "icon": "FaWhatsapp",
+        "name": "whatsapp",
         "color": "#25D366",
+        "label": "Enviar Mensagem",
         "config": {
           "to": "+5511999999999",
           "message": "Olá! Como posso ajudar?"
         }
       },
-      "position": { "x": 300, "y": 100 }
+      "type": "action",
+      "width": 280,
+      "height": 157,
+      "dragging": false,
+      "position": {
+        "x": 366.71263599904034,
+        "y": -211.6337077545337
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 366.71263599904034,
+        "y": -211.6337077545337
+      }
     },
     {
       "id": "openai-1",
-      "type": "action",
       "data": {
-        "label": "Criar Agente",
-        "name": "openAi",
         "icon": "AiOutlineOpenAI",
+        "name": "openAi",
         "color": "#3B82F6",
+        "label": "Criar Agente",
         "config": {
           "agentName": "Assistente de Vendas",
-          "agentDescription": "Ajuda com dúvidas sobre produtos",
-          "capabilities": ["Responder perguntas", "Fazer recomendações"]
+          "capabilities": [
+            "Responder perguntas",
+            "Fazer recomendações"
+          ],
+          "agentDescription": "Ajuda com dúvidas sobre produtos"
         }
       },
-      "position": { "x": 500, "y": 100 }
+      "type": "action",
+      "width": 356,
+      "height": 197,
+      "dragging": false,
+      "position": {
+        "x": 333.6595320979417,
+        "y": 119.665920569047
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 333.6595320979417,
+        "y": 119.665920569047
+      }
+    },
+    {
+      "id": "whatsapp_receive_message-1746819710034",
+      "data": {
+        "icon": "FaWhatsapp",
+        "name": "whatsapp",
+        "color": "#25D366",
+        "label": "Receber Mensagem",
+        "config": {
+          "to": "dadaw",
+          "message": "awdawd"
+        }
+      },
+      "type": "trigger",
+      "width": 144,
+      "height": 184,
+      "dragging": false,
+      "position": {
+        "x": -18.03061410424357,
+        "y": -204.89756304847805
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": -18.03061410424357,
+        "y": -204.89756304847805
+      }
+    },
+    {
+      "id": "assistant_model-1746819986058",
+      "data": {
+        "icon": "AiOutlineOpenAI",
+        "name": "openAi",
+        "color": "#3B82F6",
+        "label": "Modelo",
+        "config": {
+          "model": "",
+          "temperature": 0.7
+        }
+      },
+      "type": "action",
+      "width": 144,
+      "height": 184,
+      "dragging": false,
+      "position": {
+        "x": 241.36062419514724,
+        "y": 414.5327770333715
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 241.36062419514724,
+        "y": 414.5327770333715
+      }
+    },
+    {
+      "id": "assistant_memory-1746820018063",
+      "data": {
+        "icon": "MdMemory",
+        "name": "openAi",
+        "color": "#3B82F6",
+        "label": "Memória",
+        "config": {}
+      },
+      "type": "action",
+      "width": 144,
+      "height": 184,
+      "dragging": false,
+      "position": {
+        "x": 428.9440712388441,
+        "y": 436.79716075443343
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 428.9440712388441,
+        "y": 436.79716075443343
+      }
+    },
+    {
+      "id": "assistant_tool-1746820038926",
+      "data": {
+        "icon": "FaTools",
+        "name": "openAi",
+        "color": "#3B82F6",
+        "label": "Ferramenta",
+        "config": {
+          "tool": "",
+          "parameters": {}
+        }
+      },
+      "type": "action",
+      "width": 144,
+      "height": 184,
+      "dragging": false,
+      "position": {
+        "x": 614.6722243021646,
+        "y": 465.07774215284064
+      },
+      "selected": true,
+      "positionAbsolute": {
+        "x": 614.6722243021646,
+        "y": 465.07774215284064
+      }
     }
   ],
   "edges": [
     {
-      "id": "e1-2",
-      "source": "trigger-1",
-      "target": "whatsapp-1",
+      "id": "reactflow__edge-whatsapp_receive_message-1746819710034-whatsapp-1",
       "type": "smoothstep",
-      "animated": true
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "whatsapp_receive_message-1746819710034",
+      "target": "whatsapp-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#ffffff",
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
     },
     {
-      "id": "e2-3",
-      "source": "whatsapp-1",
-      "target": "openai-1",
+      "id": "reactflow__edge-trigger-1-openai-1",
       "type": "smoothstep",
-      "animated": true
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "trigger-1",
+      "target": "openai-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#ffffff",
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "reactflow__edge-assistant_model-1746819986058-openai-1model",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "assistant_model-1746819986058",
+      "target": "openai-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#ffffff",
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": "model",
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "reactflow__edge-assistant_memory-1746820018063-openai-1memory",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "assistant_memory-1746820018063",
+      "target": "openai-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#ffffff",
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": "memory",
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "reactflow__edge-assistant_tool-1746820038926-openai-1tool",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2,
+        "strokeDasharray": "5,5"
+      },
+      "source": "assistant_tool-1746820038926",
+      "target": "openai-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#ffffff",
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": "tool",
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
     }
   ]
-} 
+}

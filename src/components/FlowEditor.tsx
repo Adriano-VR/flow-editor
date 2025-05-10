@@ -4,7 +4,7 @@ import ReactFlow, {
     Controls,
     Background,
     addEdge,
-    Edge,
+    Edge as ReactFlowEdge,
     Connection,
     NodeChange,
     EdgeChange,
@@ -13,7 +13,6 @@ import ReactFlow, {
     Handle,
     Position,
     MarkerType,
-    Node as ReactFlowNode,
     NodeProps,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -29,23 +28,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Code } from 'lucide-react';
-import { Node } from "@/types/flow";
+import { Node, Edge } from "@/types/flow";
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { IconRenderer } from "@/lib/IconRenderer";
 import { LiaBrainSolid } from "react-icons/lia";
 import { FaMemory } from "react-icons/fa";
 import { FiTool } from "react-icons/fi";
-import {
-  Menubar,
-  MenubarContent,
-  MenubarItem,
-  MenubarMenu,
-  MenubarTrigger,
-} from "@/components/ui/menubar";
 import { JsonEditor } from './JsonEditor';
 import { NodeActionButtons } from './NodeActionButtons';
+import { NodeProvider } from '../contexts/NodeContext';
 
 interface NodeConfig {
   // WhatsApp config
@@ -83,7 +75,7 @@ interface FlowData {
       status: string;
       data: {
         nodes: Node[];
-        edges: Edge[];
+        edges: ReactFlowEdge[];
       } | null;
     };
   };
@@ -100,7 +92,7 @@ interface FlowEditorProps {
 }
 
 const nodeTypes = {
-  trigger: ({ data, onEdit, onDelete }: NodeProps & { onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
+  trigger: ({ data }: NodeProps) => {
     return (
       <div className="flex flex-col items-center group">
         <div
@@ -140,14 +132,14 @@ const nodeTypes = {
             <IconRenderer iconName={data.icon ?? ''} />
           </div>
 
-          <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="trigger" />
+          <NodeActionButtons data={data} type="trigger" />
         </div>
         <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
         <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
       </div>
     );
   },
-  action: ({ data, onEdit, onDelete }: NodeProps & { onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
+  action: ({ data }: NodeProps) => {
     if (data.name === 'openAi') {
       // Se for Modelo, Memória ou Ferramenta, mostra apenas um handle para cima
       if (data.label && ['Modelo', 'Memória', 'Ferramenta'].includes(data.label)) {
@@ -192,7 +184,7 @@ const nodeTypes = {
                 <IconRenderer iconName={data.icon ?? ''} />
               </div>
 
-              <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="action" />
+              <NodeActionButtons data={data} type="action" />
             </div>
             <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
             <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
@@ -318,7 +310,7 @@ const nodeTypes = {
                 />
               </div>
 
-              <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="action" />
+              <NodeActionButtons data={data} type="action" />
             </div>
           </div>
         );
@@ -378,7 +370,7 @@ const nodeTypes = {
               />
             </div>
 
-            <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="action" />
+            <NodeActionButtons data={data} type="action" />
           </div>
           <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
           <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
@@ -474,7 +466,7 @@ const nodeTypes = {
               </div>
             </div>
 
-            <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="action" />
+            <NodeActionButtons data={data} type="action" />
           </div>
         </div>
       );
@@ -538,7 +530,7 @@ const nodeTypes = {
               />
             </div>
 
-            <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="action" />
+            <NodeActionButtons data={data} type="action" />
           </div>
           <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
           <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
@@ -548,7 +540,7 @@ const nodeTypes = {
 
     return null;
   },
-  condition: ({ data, onEdit, onDelete }: NodeProps & { onEdit: (node: Node) => void; onDelete: (nodeId: string) => void }) => {
+  condition: ({ data }: NodeProps) => {
     return (
       <div className="flex flex-col items-center group">
         {/* Componentizar */}
@@ -630,7 +622,7 @@ const nodeTypes = {
             </div>
           </div>
 
-          <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="condition" />
+          <NodeActionButtons data={data} type="condition" />
         </div>
       </div>
     );
@@ -639,17 +631,15 @@ const nodeTypes = {
 
 export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialData?.nodes || []);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialData?.edges || []);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialData?.edges || []);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [editingNode, setEditingNode] = useState<Node | null>(null);
-  const [nodeConfig, setNodeConfig] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
   const [selectedAction, setSelectedAction] = useState<string>('');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [showJsonEditor, setShowJsonEditor] = useState(false);
   const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false);
   const [newNodeConfig, setNewNodeConfig] = useState<NodeConfig>({});
   const [tempNode, setTempNode] = useState<Node | null>(null);
@@ -686,14 +676,19 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
 
   // Modified connect handler
   const onConnect = useCallback((params: Connection) => {
-    setEdges((eds) => addEdge({
-      ...params,
+    if (!params.source || !params.target) return;
+    
+    const newEdge: Edge = {
+      id: `edge-${Date.now()}`,
+      source: params.source,
+      target: params.target,
+      sourceHandle: params.sourceHandle || null,
+      targetHandle: params.targetHandle || null,
       type: 'smoothstep',
       animated: true,
       style: { 
         stroke: '#64748b',
         strokeWidth: 2,
-        strokeDasharray: '5,5',
       },
       markerEnd: {
         type: MarkerType.ArrowClosed,
@@ -701,12 +696,21 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
         height: 20,
         color: '#64748b',
       },
-     
-      labelStyle: { fill: '#64748b', fontWeight: 700 },
-      labelBgStyle: { fill: '#ffffff', fillOpacity: 0.8 },
+      label: '×',
+      labelStyle: { 
+        fill: '#ef4444',
+        fontWeight: 700,
+        fontSize: 20,
+        cursor: 'pointer',
+      },
+      labelBgStyle: { 
+        fill: '#ffffff',
+        fillOpacity: 0.8,
+      },
       labelBgPadding: [4, 4],
       labelBgBorderRadius: 4,
-    }, eds));
+    };
+    setEdges((eds) => addEdge(newEdge, eds));
     debouncedSave();
   }, [debouncedSave]);
 
@@ -736,7 +740,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     debouncedSave();
   };
 
-  const handleDeleteEdge = (event: React.MouseEvent, edge: Edge) => {
+  const handleDeleteEdge = (event: React.MouseEvent, edge: ReactFlowEdge) => {
     setEdges((eds) => eds.filter((e) => e.id !== edge.id));
     debouncedSave();
   };
@@ -800,6 +804,10 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     setEditingNode(node);
   }, []);
 
+  const handleNodeEdit = useCallback((node: Node) => {
+    setSelectedNode(node);
+    setEditingNode(node);
+  }, []);
 
   const handleAddNode = () => {
     if (!selectedAction || !selectedCategory) return;
@@ -835,7 +843,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
       type: actionDefinition.type,
       data: {
         label: actionDefinition.name,
-        icon: actionDefinition.icon,
+        icon: actionDefinition.icon ?? '',
         name: actionTypes[actionDefinition.name] ?? 'internal',
         color: actionDefinition.color,
         config: actionDefinition.config || {},
@@ -1112,18 +1120,6 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     }
   };
 
-  // Add this new function to handle the Code button click
-  const handleCodeButtonClick = () => {
-    setShowJsonEditor(!showJsonEditor);
-    if (!showJsonEditor) {
-      // When showing the editor, set the selected node to null to show the full flow
-      setSelectedNode(null);
-    }
-  };
-
-  const handleNodeContextMenu = useCallback((event: React.MouseEvent, node: Node) => {
-    // Do nothing - we're not using context menu anymore
-  }, []);
 
   const handleCreateFlowFromJson = useCallback((nodes: Node[], edges: Edge[]) => {
     setNodes(nodes);
@@ -1230,22 +1226,24 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
       </div>
 
       <div className="flex-1 border rounded-lg relative">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={handleNodesChange}
-          onEdgesChange={handleEdgesChange}
-          onConnect={onConnect}
-          onNodeClick={handleNodeClick}
-          onEdgeClick={handleDeleteEdge}
-          nodeTypes={nodeTypes}
-          fitView
-          className="cursor-crosshair bg-gray-50 rounded-2xl"
-          style={{ cursor: 'crosshair' }}
-        >
-          <Background color="#94a3b8" gap={16} size={1} />
-          <Controls />
-        </ReactFlow>
+        <NodeProvider onEdit={handleNodeEdit} onDelete={handleDeleteNode}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            onNodesChange={handleNodesChange}
+            onEdgesChange={handleEdgesChange}
+            onConnect={onConnect}
+            onNodeClick={handleNodeClick}
+            onEdgeClick={handleDeleteEdge}
+            nodeTypes={nodeTypes}
+            fitView
+            className="cursor-crosshair bg-gray-50 rounded-2xl"
+            style={{ cursor: 'crosshair' }}
+          >
+            <Background color="#94a3b8" gap={16} size={1} />
+            <Controls />
+          </ReactFlow>
+        </NodeProvider>
       </div>
 
       <Dialog open={!!selectedNode} onOpenChange={() => {

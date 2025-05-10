@@ -5,15 +5,18 @@ import { NodeActionButtons } from './NodeActionButtons';
 
 interface ConditionNodeProps {
   data: {
+    id: string;
+    name: string;
     label: string;
     icon?: string;
     color?: string;
+    config?: Record<string, unknown>;
   };
-  onEdit: (node: any) => void;
+  onEdit: (node: { label: string; icon?: string; color?: string }) => void;
   onDelete: (nodeId: string) => void;
 }
 
-export function ConditionNode({ data, onEdit, onDelete }: ConditionNodeProps) {
+export function ConditionNode({ data}: ConditionNodeProps) {
   return (
     <div className="flex flex-col items-center group">
       <div
@@ -94,7 +97,7 @@ export function ConditionNode({ data, onEdit, onDelete }: ConditionNodeProps) {
           </div>
         </div>
 
-        <NodeActionButtons data={data} onEdit={onEdit} onDelete={onDelete} type="condition" />
+        <NodeActionButtons data={data} type="condition" />
       </div>
     </div>
   );

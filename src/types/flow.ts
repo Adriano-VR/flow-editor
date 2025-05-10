@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from 'react';
-import { Node as ReactFlowNode, Edge as ReactFlowEdge, MarkerType } from 'reactflow';
+import { Node as ReactFlowNode, Edge as ReactFlowEdge } from 'reactflow';
 
 export interface Flow {
   id: string;
@@ -49,18 +49,7 @@ export type Node = ReactFlowNode<{
   config?: NodeConfig;
 }>;
 
-export type Edge = ReactFlowEdge & {
-  style?: {
-    stroke: string;
-    strokeWidth: number;
-  };
-  markerEnd?: {
-    type: MarkerType;
-    width: number;
-    height: number;
-    color: string;
-  };
-};
+export type Edge = ReactFlowEdge;
 
 export interface Action {
   id: string;

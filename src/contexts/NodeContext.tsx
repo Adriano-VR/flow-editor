@@ -3,7 +3,7 @@ import { Node as ReactFlowNode } from 'reactflow';
 import { MessageSquare, Bot, GitBranch } from 'lucide-react';
 
 interface NodeType {
-  icon: any;
+  icon: React.ElementType;
   color: string;
   borderColor: string;
   iconColor: string;

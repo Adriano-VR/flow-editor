@@ -9,7 +9,7 @@ interface NodeActionButtonsProps {
     name: string;
     icon?: string;
     color?: string;
-    config?: any;
+    config?: Record<string, unknown>;
   };
   type: string;
 }
@@ -18,7 +18,7 @@ export function NodeActionButtons({ data, type }: NodeActionButtonsProps) {
   const { onEdit, onDelete } = useNode();
 
   return (
-    <div className="border border-gray-300 rounded-lg absolute -top-11 left-1/2 -translate-x-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+    <div className= " z-50 border border-gray-300 rounded-lg absolute -top-11 left-1/2 -translate-x-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
       <div className="flex gap-2 bg-white/60 backdrop-blur-sm p-1 rounded-lg">
         <button
           className="cursor-pointer p-1.5 rounded-lg hover:bg-white/80"

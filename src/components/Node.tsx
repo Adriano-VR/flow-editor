@@ -2,7 +2,7 @@ import { NodeProps } from 'reactflow';
 import { NodeActionButtons } from './NodeActionButtons';
 import { useNode } from '../contexts/NodeContext';
 
-export function Node({ data, id, type }: NodeProps) {
+export function Node({ data, type }: NodeProps) {
   const { nodeTypes } = useNode();
   const nodeType = nodeTypes[type as keyof typeof nodeTypes];
   const Icon = nodeType?.icon;

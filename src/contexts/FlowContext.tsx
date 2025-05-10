@@ -196,7 +196,9 @@ export function FlowProvider({ children }: { children: ReactNode }) {
       data: {
         label: actionDefinition.name,
         config: config,
-        name: actionDefinition.name, // campo obrigatório
+        name: actionDefinition.name,
+        icon: actionDefinition.icon || '',
+        color: actionDefinition.color || '#3B82F6',
       },
       position: {
         x: Math.random() * 500,
