@@ -38,6 +38,7 @@ import { FiTool } from "react-icons/fi";
 import { JsonEditor } from './JsonEditor';
 import { NodeActionButtons } from './NodeActionButtons';
 import { NodeProvider } from '../contexts/NodeContext';
+import { EditNodeDialog } from './EditNodeDialog';
 
 interface NodeConfig {
   // WhatsApp config
@@ -136,6 +137,11 @@ const nodeTypes = {
         </div>
         <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
         <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
+        {data.label === 'Início' && data.config?.condition && (
+          <div className="text-xs text-gray-600 text-center px-1 mt-1 max-w-[200px] break-words">
+            {data.config.condition}
+          </div>
+        )}
       </div>
     );
   },
@@ -645,6 +651,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   const [tempNode, setTempNode] = useState<Node | null>(null);
   const [flowData, setFlowData] = useState<FlowData | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const categories = getNodeCategories();
 
@@ -714,19 +721,6 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     debouncedSave();
   }, [debouncedSave]);
 
-  // Modified node config save handler
-  const handleSaveNode = () => {
-    if (!editingNode) return;
-    setNodes((nds) => nds.map((node) => {
-      if (node.id === editingNode.id) {
-        return editingNode;
-      }
-      return node;
-    }));
-    setSelectedNode(null);
-    setEditingNode(null);
-    debouncedSave();
-  };
 
   // Modified delete handlers
   const handleDeleteNode = () => {
@@ -800,8 +794,13 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   }, [initialData]);
 
   const handleNodeClick = useCallback((event: React.MouseEvent | null, node: Node) => {
+    // Não abre o diálogo para nós do tipo condição
+    if (node.type === 'condition') {
+      return;
+    }
     setSelectedNode(node);
     setEditingNode(node);
+    setIsEditDialogOpen(true);
   }, []);
 
   const handleNodeEdit = useCallback((node: Node) => {
@@ -855,13 +854,13 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     };
 
     // Se for um nó interno que não é delay, adiciona diretamente sem mostrar o diálogo
-    if (selectedCategory === 'internal' && actionDefinition.name !== 'Atraso') {
+    if (selectedCategory === 'internal' && actionDefinition.name !== 'Atraso' && actionDefinition.name !== 'Início') {
       setNodes((nds) => [...nds, newNode]);
       setSelectedAction('');
       return;
     }
 
-    // Para o nó de delay, sempre mostra o diálogo de configuração
+    // Para o nó de delay e início, sempre mostra o diálogo de configuração
     setTempNode(newNode);
     setNewNodeConfig(actionDefinition.config || {});
     setIsConfigDialogOpen(true);
@@ -1054,9 +1053,9 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
                     onChange={(e) => {
                       try {
                         const parsed = JSON.parse(e.target.value);
-                        setNewNodeConfig({ ...newNodeConfig, parameters: parsed });
+                        setNewNodeConfig({ ...newNodeConfig, parameters: parsed as Record<string, unknown> });
                       } catch {
-                        // If parsing fails, store as an empty object
+                        // If parsing fails, store as empty object
                         setNewNodeConfig({ ...newNodeConfig, parameters: {} });
                       }
                     }}
@@ -1110,6 +1109,23 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
                     <SelectItem value="hours">Horas</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+          );
+        } else if (tempNode.data.label === 'Início') {
+          return (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="condition">Condição de Início</Label>
+                <Textarea
+                  id="condition"
+                  placeholder="Digite a condição de início (opcional)"
+                  value={newNodeConfig.condition || ''}
+                  onChange={(e) => setNewNodeConfig({ 
+                    ...newNodeConfig, 
+                    condition: e.target.value 
+                  })}
+                />
               </div>
             </div>
           );
@@ -1226,7 +1242,23 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
       </div>
 
       <div className="flex-1 border rounded-lg relative">
-        <NodeProvider onEdit={handleNodeEdit} onDelete={handleDeleteNode}>
+        <NodeProvider 
+          onEdit={handleNodeEdit} 
+          onDelete={(nodeId) => {
+            console.log('Deleting node:', nodeId); // Debug log
+            setNodes((nds) => {
+              console.log('Current nodes:', nds); // Debug log
+              return nds.filter((node) => node.id !== nodeId);
+            });
+            setEdges((eds) => {
+              console.log('Current edges:', eds); // Debug log
+              return eds.filter(
+                (edge) => edge.source !== nodeId && edge.target !== nodeId
+              );
+            });
+            debouncedSave();
+          }}
+        >
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -1246,194 +1278,30 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
         </NodeProvider>
       </div>
 
-      <Dialog open={!!selectedNode} onOpenChange={() => {
-        setSelectedNode(null);
-        setEditingNode(null);
-      }}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Editar Nó</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            {editingNode && (
-              <>
-                {editingNode.data.name === 'whatsapp' && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="to">Número do WhatsApp</Label>
-                      <Input
-                        id="to"
-                        placeholder="+55 (00) 00000-0000"
-                        value={editingNode.data.config?.to || ''}
-                        onChange={(e) => {
-                          setEditingNode({
-                            ...editingNode,
-                            data: {
-                              ...editingNode.data,
-                              config: {
-                                ...(editingNode.data.config || {}),
-                                to: e.target.value
-                              }
-                            }
-                          });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="message">Mensagem</Label>
-                      <Textarea
-                        id="message"
-                        placeholder="Digite sua mensagem"
-                        value={editingNode.data.config?.message || ''}
-                        onChange={(e) => {
-                          setEditingNode({
-                            ...editingNode,
-                            data: {
-                              ...editingNode.data,
-                              config: {
-                                ...(editingNode.data.config || {}),
-                                message: e.target.value
-                              }
-                            }
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {editingNode.data.name === 'openAi' && editingNode.data.label === 'Criar Agente' && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="agentName">Nome do Agente</Label>
-                      <Input
-                        id="agentName"
-                        placeholder="Digite o nome do agente"
-                        value={editingNode.data.config?.agentName || ''}
-                        onChange={(e) => {
-                          setEditingNode({
-                            ...editingNode,
-                            data: {
-                              ...editingNode.data,
-                              config: {
-                                ...(editingNode.data.config || {}),
-                                agentName: e.target.value
-                              }
-                            }
-                          });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="agentDescription">Descrição</Label>
-                      <Textarea
-                        id="agentDescription"
-                        placeholder="Descreva o propósito do agente"
-                        value={editingNode.data.config?.agentDescription || ''}
-                        onChange={(e) => {
-                          setEditingNode({
-                            ...editingNode,
-                            data: {
-                              ...editingNode.data,
-                              config: {
-                                ...(editingNode.data.config || {}),
-                                agentDescription: e.target.value
-                              }
-                            }
-                          });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="capabilities">Capacidades</Label>
-                      <Textarea
-                        id="capabilities"
-                        placeholder="Liste as capacidades do agente (uma por linha)"
-                        value={editingNode.data.config?.capabilities?.join('\n') || ''}
-                        onChange={(e) => {
-                          setEditingNode({
-                            ...editingNode,
-                            data: {
-                              ...editingNode.data,
-                              config: {
-                                ...(editingNode.data.config || {}),
-                                capabilities: e.target.value.split('\n').filter(v => v.trim())
-                              }
-                            }
-                          });
-                        }}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {editingNode.data.name === 'internal' && editingNode.data.label === 'Atraso' && (
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="duration">Duração</Label>
-                      <Input
-                        id="duration"
-                        type="number"
-                        min="0"
-                        placeholder="Digite a duração"
-                        value={editingNode.data.config?.duration || 0}
-                        onChange={(e) => {
-                          setEditingNode({
-                            ...editingNode,
-                            data: {
-                              ...editingNode.data,
-                              config: {
-                                ...(editingNode.data.config || {}),
-                                duration: parseInt(e.target.value) || 0
-                              }
-                            }
-                          });
-                        }}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="unit">Unidade</Label>
-                      <Select
-                        value={editingNode.data.config?.unit || 'seconds'}
-                        onValueChange={(value: 'seconds' | 'minutes' | 'hours') => {
-                          setEditingNode({
-                            ...editingNode,
-                            data: {
-                              ...editingNode.data,
-                              config: {
-                                ...(editingNode.data.config || {}),
-                                unit: value
-                              }
-                            }
-                          });
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione a unidade" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="seconds">Segundos</SelectItem>
-                          <SelectItem value="minutes">Minutos</SelectItem>
-                          <SelectItem value="hours">Horas</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                )}
-              </>
-            )}
-            <div className="flex justify-between">
-              <Button 
-                onClick={handleDeleteNode}
-                variant="destructive"
-              >
-                Deletar Nó
-              </Button>
-              <Button onClick={handleSaveNode}>Salvar</Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <EditNodeDialog
+        open={isEditDialogOpen}
+        onOpenChange={(open) => {
+          setIsEditDialogOpen(open);
+          if (!open) {
+            setSelectedNode(null);
+            setEditingNode(null);
+          }
+        }}
+        editingNode={editingNode}
+        onSave={(node) => {
+          setNodes((nds) => nds.map((n) => {
+            if (n.id === node.id) {
+              return node;
+            }
+            return n;
+          }));
+          setSelectedNode(null);
+          setEditingNode(null);
+          setIsEditDialogOpen(false);
+          debouncedSave();
+        }}
+        onDelete={handleDeleteNode}
+      />
 
       <Dialog open={isConfigDialogOpen} onOpenChange={setIsConfigDialogOpen}>
         <DialogContent>

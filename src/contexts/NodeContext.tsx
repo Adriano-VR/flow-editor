@@ -16,7 +16,11 @@ interface NodeContextData {
   onDelete: (nodeId: string) => void;
 }
 
-const NodeContext = createContext<NodeContextData>({} as NodeContextData);
+const NodeContext = createContext<NodeContextData>({
+  nodeTypes: {},
+  onEdit: () => {},
+  onDelete: () => {}
+});
 
 const nodeTypes = {
   'criar-agente': {
