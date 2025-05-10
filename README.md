@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Flow Editor
 
-## Getting Started
+Uma aplicação web interativa para criação e edição de fluxos personalizados.
 
-First, run the development server:
+🔗 **Acesse o site online**: [https://flow-editor-kohl.vercel.app](https://flow-editor-kohl.vercel.app)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## ✨ Funcionalidades
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Interface intuitiva com editor visual de fluxos
+- Suporte a triggers com input dinâmico
+- Compartilhamento e visualização online
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Tecnologias
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- React Flow
+- Next
+- TypeScript
+- Tailwind CSS
+- Vercel (deploy)
 
-## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+## 📋 Como Contribuir
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Fork este repositório
+2. Crie uma branch: `git checkout -b minha-feature`
+3. Faça suas alterações e commit: `git commit -m 'feat: nova funcionalidade'`
+4. Envie sua branch: `git push origin minha-feature`
+5. Abra um Pull Request
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Feito com ❤️ por Adriano.
