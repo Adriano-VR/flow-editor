@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const API_URL = process.env.API_URL || 'https://api.xbase.app/api/flows';
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // GET /api/flows/[id] - Obter um flow específico
 export async function GET(request: NextRequest) {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const API_URL = 'https://api.xbase.app/api/flows';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:1337';
 
 export async function GET() {
   try {
