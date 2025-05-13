@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { IconRenderer } from "@/lib/IconRenderer";
 import { getNodeCategories, NodeTypeDefinition } from "@/lib/nodeTypes";
-import { Plus, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 interface NodeSelectionDrawerProps {
@@ -53,6 +53,9 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
         node.name.toLowerCase().includes(searchQuery.toLowerCase())
       );
     };
+
+    NodeSelectionDrawer.displayName = 'NodeSelectionDrawer';
+
 
     return (
       <Drawer open={open} onOpenChange={handleOpenChange}>

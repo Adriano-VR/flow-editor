@@ -1,4 +1,4 @@
-import { Pencil, Trash, Save, MessageSquare, Brain, Timer, Play, List, Wrench, Code, FileText, User, Thermometer, Database, Hash, Clock, SaveAll, Info } from 'lucide-react';
+import { Pencil, Trash, MessageSquare, Brain, Timer, Play, List, Wrench, Code, FileText, User, Thermometer, Database, Hash, Clock, SaveAll, Info } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -15,7 +15,8 @@ interface EditNodeDialogProps {
   onDelete: () => void;
 }
 
-export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDelete }: EditNodeDialogProps) {
+// eslint-disable-next-line react/display-name
+export function EditNodeDialog({ onOpenChange, editingNode, onSave, onDelete }: EditNodeDialogProps) {
   const [localNode, setLocalNode] = useState<Node | null>(null);
 
   useEffect(() => {

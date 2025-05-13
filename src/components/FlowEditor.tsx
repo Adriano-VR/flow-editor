@@ -20,7 +20,7 @@ import { getFlow } from "../lib/api";
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { nodeTypes as nodeTypeDefinitions, NodeTypeDefinition } from '@/lib/nodeTypes';
+import { NodeTypeDefinition } from '@/lib/nodeTypes';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { IconRenderer } from "@/lib/IconRenderer";
