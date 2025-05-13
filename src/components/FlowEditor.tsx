@@ -20,15 +20,7 @@ import { getFlow } from "../lib/api";
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { nodeTypes as nodeTypeDefinitions, getNodeCategories, NodeTypeDefinition } from '@/lib/nodeTypes';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Node, Edge } from "@/types/flow";
+import { nodeTypes as nodeTypeDefinitions, NodeTypeDefinition } from '@/lib/nodeTypes';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { IconRenderer } from "@/lib/IconRenderer";
@@ -39,6 +31,16 @@ import { JsonEditor } from './JsonEditor';
 import { NodeActionButtons } from './NodeActionButtons';
 import { NodeProvider } from '../contexts/NodeContext';
 import { EditNodeDialog } from './EditNodeDialog';
+import { NodeSelectionDrawer, NodeSelectionDrawerRef } from './NodeSelectionDrawer';
+import { Node, Edge } from "@/types/flow";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { NodeContextMenu } from './NodeContextMenu';
 
 interface NodeConfig {
   // WhatsApp config
@@ -642,9 +644,6 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   const [editingNode, setEditingNode] = useState<Node | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
-  const [selectedAction, setSelectedAction] = useState<string>('');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false);
   const [newNodeConfig, setNewNodeConfig] = useState<NodeConfig>({});
@@ -652,8 +651,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   const [flowData, setFlowData] = useState<FlowData | null>(null);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-
-  const categories = getNodeCategories();
+  const drawerRef = useRef<NodeSelectionDrawerRef>(null);
 
   // Debounced save function
   const debouncedSave = useCallback(() => {
@@ -808,24 +806,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     setEditingNode(node);
   }, []);
 
-  const handleAddNode = () => {
-    if (!selectedAction || !selectedCategory) return;
-
-    let actionDefinition: NodeTypeDefinition | undefined;
-
-    if (selectedCategory === 'app' && selectedSubcategory) {
-      const actionName = selectedAction.split('_').slice(1).join('_');
-      actionDefinition = nodeTypeDefinitions.app[selectedSubcategory]?.[actionName];
-    } else if (selectedCategory === 'internal') {
-      const actionName = selectedAction.split('_').slice(1).join('_');
-      actionDefinition = nodeTypeDefinitions.internal[actionName];
-    }
-
-    if (!actionDefinition) {
-      console.error('Action definition not found:', { selectedCategory, selectedSubcategory, selectedAction });
-      return;
-    }
-
+  const handleNodeTypeSelect = (actionDefinition: NodeTypeDefinition) => {
     const actionTypes: Record<string, string> = {
       "Enviar Mensagem": "whatsapp",
       "Receber Mensagem": "whatsapp",
@@ -854,9 +835,8 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     };
 
     // Se for um nó interno que não é delay, adiciona diretamente sem mostrar o diálogo
-    if (selectedCategory === 'internal' && actionDefinition.name !== 'Atraso' && actionDefinition.name !== 'Início') {
+    if (actionDefinition.name !== 'Atraso' && actionDefinition.name !== 'Início') {
       setNodes((nds) => [...nds, newNode]);
-      setSelectedAction('');
       return;
     }
 
@@ -881,7 +861,6 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     setIsConfigDialogOpen(false);
     setTempNode(null);
     setNewNodeConfig({});
-    setSelectedAction('');
   };
 
   const renderConfigFields = () => {
@@ -1156,58 +1135,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
       <div className="flex justify-between items-center mb-4 font-semibold">
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-bold">{flowData?.data?.attributes?.name || 'Novo Flow'}</h2>
-          <div className="flex gap-2">
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-              <SelectTrigger className="w-[180px] ">
-                <SelectValue placeholder="Selecione uma categoria" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(categories).map(([key, category]) => (
-                  <SelectItem key={key} value={key} className="font-semibold">
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {selectedCategory === 'app' && (
-              <Select value={selectedSubcategory} onValueChange={setSelectedSubcategory}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Selecione um app" />
-                </SelectTrigger>
-                <SelectContent >
-                  {Object.entries(categories.app.subcategories).map(([key, subcategory]) => (
-                    <SelectItem key={key} value={key} className="font-semibold">
-                      {subcategory.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-
-            <Select value={selectedAction} onValueChange={setSelectedAction}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Selecione uma ação" />
-              </SelectTrigger>
-              <SelectContent>
-                {selectedCategory === 'app' && selectedSubcategory
-                  ? categories.app.subcategories[selectedSubcategory].actions.map((action: NodeTypeDefinition) => (
-                      <SelectItem key={action.id} value={action.id}>
-                        {action.name}
-                      </SelectItem>
-                    ))
-                  : categories.internal.actions.map((action: NodeTypeDefinition) => (
-                      <SelectItem key={action.id} value={action.id} className="font-semibold">
-                        {action.name}
-                      </SelectItem>
-                    ))}
-              </SelectContent>
-            </Select>
-
-            <Button onClick={handleAddNode} disabled={!selectedAction}>
-              Adicionar Nó
-            </Button>
-          </div>
+          <NodeSelectionDrawer ref={drawerRef} onNodeSelect={handleNodeTypeSelect} />
         </div>
         <div className="flex items-center gap-2">
           {lastSaved && (
@@ -1242,40 +1170,42 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
       </div>
 
       <div className="flex-1 border rounded-lg relative">
-        <NodeProvider 
-          onEdit={handleNodeEdit} 
-          onDelete={(nodeId) => {
-            console.log('Deleting node:', nodeId); // Debug log
-            setNodes((nds) => {
-              console.log('Current nodes:', nds); // Debug log
-              return nds.filter((node) => node.id !== nodeId);
-            });
-            setEdges((eds) => {
-              console.log('Current edges:', eds); // Debug log
-              return eds.filter(
-                (edge) => edge.source !== nodeId && edge.target !== nodeId
-              );
-            });
-            debouncedSave();
-          }}
-        >
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={handleNodesChange}
-            onEdgesChange={handleEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={handleNodeClick}
-            onEdgeClick={handleDeleteEdge}
-            nodeTypes={nodeTypes}
-            fitView
-            className="cursor-crosshair bg-gray-50 rounded-2xl"
-            style={{ cursor: 'crosshair' }}
+        <NodeContextMenu onAddNode={() => drawerRef.current?.open()}>
+          <NodeProvider 
+            onEdit={handleNodeEdit} 
+            onDelete={(nodeId) => {
+              console.log('Deleting node:', nodeId);
+              setNodes((nds) => {
+                console.log('Current nodes:', nds);
+                return nds.filter((node) => node.id !== nodeId);
+              });
+              setEdges((eds) => {
+                console.log('Current edges:', eds);
+                return eds.filter(
+                  (edge) => edge.source !== nodeId && edge.target !== nodeId
+                );
+              });
+              debouncedSave();
+            }}
           >
-            <Background color="#94a3b8" gap={16} size={1} />
-            <Controls />
-          </ReactFlow>
-        </NodeProvider>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={handleNodesChange}
+              onEdgesChange={handleEdgesChange}
+              onConnect={onConnect}
+              onNodeClick={handleNodeClick}
+              onEdgeClick={handleDeleteEdge}
+              nodeTypes={nodeTypes}
+              fitView
+              className="cursor-crosshair bg-gray-50 rounded-2xl"
+              style={{ cursor: 'crosshair' }}
+            >
+              <Background color="#94a3b8" gap={16} size={1} />
+              <Controls />
+            </ReactFlow>
+          </NodeProvider>
+        </NodeContextMenu>
       </div>
 
       <EditNodeDialog
