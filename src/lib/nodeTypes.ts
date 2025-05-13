@@ -150,6 +150,17 @@ export const nodeTypes: {
       config: {
         condition: '',
       }
+    },
+    finish: {
+      id: 'internal_finish',
+      name: 'Fim',
+      type: 'action',
+      category: 'internal',
+      icon: 'GiFinishLine',
+      color: '#EAB308',
+      config: {
+        condition: '',
+      }
     }
   }
 };

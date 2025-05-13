@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { IconRenderer } from "@/lib/IconRenderer";
 import { getNodeCategories, NodeTypeDefinition } from "@/lib/nodeTypes";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface NodeSelectionDrawerProps {
   onNodeSelect: (nodeType: NodeTypeDefinition) => void;
@@ -24,27 +25,62 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
   ({ onNodeSelect }, ref) => {
     const categories = getNodeCategories();
     const [open, setOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
 
     useImperativeHandle(ref, () => ({
-      open: () => setOpen(true)
+      open: () => {
+        setOpen(true);
+        setSearchQuery("");
+      }
     }));
 
     const handleNodeSelect = (action: NodeTypeDefinition) => {
       onNodeSelect(action);
       setOpen(false);
+      setSearchQuery("");
+    };
+
+    const handleOpenChange = (newOpen: boolean) => {
+      if (!newOpen) {
+        setSearchQuery("");
+      }
+      setOpen(newOpen);
+    };
+
+    const filterNodes = (nodes: NodeTypeDefinition[]) => {
+      if (!searchQuery) return nodes;
+      return nodes.filter(node => 
+        node.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     };
 
     return (
-      <Drawer open={open} onOpenChange={setOpen}>
+      <Drawer open={open} onOpenChange={handleOpenChange}>
         <DrawerTrigger asChild>
-          <Button className="gap-2">
-            <Plus className="h-4 w-4" />
-            Adicionar Nó
-          </Button>
+         
         </DrawerTrigger>
         <DrawerContent className="h-full" data-vaul-drawer-direction="right">
           <DrawerHeader>
             <DrawerTitle>Selecione um Nó</DrawerTitle>
+            <div className="relative mt-4" onClick={(e) => e.stopPropagation()}>
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Pesquisar nós..."
+                value={searchQuery}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  setSearchQuery(e.target.value);
+                }}
+                className="pl-9"
+                autoComplete="off"
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={(e) => e.stopPropagation()}
+                onKeyUp={(e) => e.stopPropagation()}
+                onKeyPress={(e) => e.stopPropagation()}
+                onFocus={(e) => e.stopPropagation()}
+                onBlur={(e) => e.stopPropagation()}
+              />
+            </div>
           </DrawerHeader>
           <ScrollArea className="h-[calc(100vh-8rem)]">
             <div className="p-4 space-y-6">
@@ -55,7 +91,7 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
                   <div key={key} className="space-y-2">
                     <h4 className="font-medium text-sm text-muted-foreground">{subcategory.name}</h4>
                     <div className="grid grid-cols-2 gap-2">
-                      {subcategory.actions.map((action) => (
+                      {filterNodes(subcategory.actions).map((action) => (
                         <Button
                           key={action.id}
                           variant="outline"
@@ -77,7 +113,7 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">{categories.internal.name}</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {categories.internal.actions.map((action) => (
+                  {filterNodes(categories.internal.actions).map((action) => (
                     <Button
                       key={action.id}
                       variant="outline"

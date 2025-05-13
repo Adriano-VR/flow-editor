@@ -41,6 +41,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { NodeContextMenu } from './NodeContextMenu';
+import { PlayButton } from './PlayButton';
 
 interface NodeConfig {
   // WhatsApp config
@@ -109,12 +110,15 @@ const nodeTypes = {
             hover:shadow-2xl
             hover:-translate-y-1
             shadow-[0_8px_30px_rgba(0,0,0,0.12)]
+            ${data.isActive ? 'animate-pulse' : ''}
+            ${data.isExecuting ? 'ring-4 ring-blue-500 ring-opacity-50' : ''}
           `}
           style={{ 
             minWidth: 96, 
             minHeight: 96,
             backgroundColor: data.color || '#3B82F6',
-            borderColor: data.color || '#3B82F6'
+            borderColor: data.color || '#3B82F6',
+            animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
           }}
         >
           <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
@@ -148,251 +152,20 @@ const nodeTypes = {
     );
   },
   action: ({ data }: NodeProps) => {
-    if (data.name === 'openAi') {
-      // Se for Modelo, Memória ou Ferramenta, mostra apenas um handle para cima
-      if (data.label && ['Modelo', 'Memória', 'Ferramenta'].includes(data.label)) {
-        return (
-          <div className="flex flex-col items-center group">
-            <div
-              className={`
-                flex flex-col items-center justify-center
-                rounded-full
-                border-2
-                w-36 h-36
-                relative
-                transition-all duration-300
-                hover:shadow-2xl
-                hover:-translate-y-1
-                shadow-[0_8px_30px_rgba(0,0,0,0.12)]
-              `}
-              style={{ 
-                minWidth: 96, 
-                minHeight: 96,
-                backgroundColor: data.color || '#3B82F6',
-                borderColor: data.color || '#3B82F6'
-              }}
-            >
-              <div className="absolute top-[-35px] left-1/2 -translate-x-1/2 w-8 h-8 z-10">
-                <div 
-                  className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
-                  style={{ 
-                    borderColor: data.color || '#3B82F6',
-                  }}
-                >
-                  <IconRenderer iconName={data.icon ?? ''} />
-                </div>
-                <Handle
-                  type="source"
-                  position={Position.Top}
-                  className="absolute inset-0 opacity-0"
-                />
-              </div>
+    const isEndNode = data.label === 'Fim';
+    const isModelNode = data.label === 'Modelo';
+    const isMemoryNode = data.label === 'Memória';
+    const isToolNode = data.label === 'Ferramenta';
+    const isSpecialNode = isModelNode || isMemoryNode || isToolNode;
 
-              <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
-                <IconRenderer iconName={data.icon ?? ''} />
-              </div>
-
-              <NodeActionButtons data={data} type="action" />
-            </div>
-            <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
-            <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
-          </div>
-        );
-      }
-
-      // Design especial para Criar Agente
-      if (data.label === 'Criar Agente') {
-        return (
-          <div className="flex flex-col items-center group">
-            <div
-              className={`
-                flex flex-col items-center justify-center
-                border-2 
-                relative
-                bg-white
-                p-6
-                rounded-xl
-                min-w-[280px]
-                backdrop-blur-sm
-                transition-all duration-300
-                hover:shadow-2xl
-                hover:-translate-y-1
-                shadow-[0_8px_30px_rgba(0,0,0,0.12)]
-              `}
-              style={{ 
-                borderColor: data.color || '#3B82F6',
-                backgroundColor: `${data.color}08`,
-                boxShadow: `0 4px 20px ${data.color}20`
-              }}
-            >
-              <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
-                <div 
-                  className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
-                  style={{ 
-                    borderColor: data.color || '#3B82F6',
-                  }}
-                />
-                <Handle
-                  type="target"
-                  position={Position.Left}
-                  className="absolute inset-0 opacity-0"
-                />
-              </div>
-
-              <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center justify-center w-12 h-12 rounded-xl shadow-md" 
-                  style={{ 
-                    backgroundColor: data.color || '#3B82F6',
-                    boxShadow: `0 4px 12px ${data.color}40`
-                  }}>
-                  <IconRenderer iconName={data.icon ?? ''} />
-                </div>
-                <div className="flex flex-col">
-                  <div className="text-lg font-bold" style={{ color: data.color || '#3B82F6' }}>{data.label}</div>
-                  <div className="text-sm text-gray-500">Assistente Virtual</div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between gap-6 mt-2 px-2 pt-4 border-t border-gray-100">
-                <div className="flex flex-col items-center relative w-20">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
-                    style={{ 
-                      borderColor: data.color || '#3B82F6',
-                    }}>
-                    <LiaBrainSolid color="#3B82F6" />
-                  </div>
-                  <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#3B82F6' }}>Modelo</div>
-                  <Handle
-                    type="target"
-                    position={Position.Bottom}
-                    id="model"
-                    className="absolute bottom-[-4px]"
-                    style={{ bottom: '-30px', left: '50%' }}
-                  />
-                </div>
-                <div className="flex flex-col items-center relative w-20">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
-                    style={{ 
-                      borderColor: data.color || '#3B82F6',
-                    }}>
-                    <FaMemory color="#3B82F6" />
-                  </div>
-                  <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#3B82F6' }}>Memória</div>
-                  <Handle
-                    type="target"
-                    position={Position.Bottom}
-                    id="memory"
-                    className="absolute bottom-[-4px]"
-                    style={{ bottom: '-30px', left: '50%' }}
-                  />
-                </div>
-                <div className="flex flex-col items-center relative w-20">
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
-                    style={{ 
-                      borderColor: data.color || '#3B82F6',
-                    }}>
-                    <FiTool color="#3B82F6" />
-                  </div>
-                  <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#3B82F6' }}>Ferramenta</div>
-                  <Handle
-                    type="target"
-                    position={Position.Bottom}
-                    id="tool"
-                    className="absolute bottom-[-4px]"
-                    style={{ bottom: '-30px', left: '50%' }}
-                  />
-                </div>
-              </div>
-              
-              <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
-                <div 
-                  className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
-                  style={{ 
-                    borderColor: data.color || '#3B82F6',
-                  }}
-                />
-                <Handle
-                  type="source"
-                  position={Position.Right}
-                  className="absolute inset-0 opacity-0"
-                />
-              </div>
-
-              <NodeActionButtons data={data} type="action" />
-            </div>
-          </div>
-        );
-      }
-
-      // Design padrão para outros nós OpenAI
+    // Design especial para Criar Agente
+    if (data.name === 'openAi' && data.label === 'Criar Agente') {
       return (
         <div className="flex flex-col items-center group">
           <div
             className={`
               flex flex-col items-center justify-center
-              rounded-full
-              border-2
-              w-36 h-36
-              relative
-              transition-all duration-300
-              hover:shadow-2xl
-              hover:-translate-y-1
-              shadow-[0_8px_30px_rgba(0,0,0,0.12)]
-            `}
-            style={{ 
-              minWidth: 96, 
-              minHeight: 96,
-              backgroundColor: data.color || '#3B82F6',
-              borderColor: data.color || '#3B82F6'
-            }}
-          >
-            <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
-              <div 
-                className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
-                style={{ 
-                  borderColor: data.color || '#25D366',
-                }}
-              />
-              <Handle
-                type="target"
-                position={Position.Left}
-                className="absolute inset-0 opacity-0"
-              />
-            </div>
-
-            <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
-              <IconRenderer iconName={data.icon ?? ''} />
-            </div>
-            
-            <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
-              <div 
-                className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
-                style={{ 
-                  borderColor: data.color || '#25D366',
-                }}
-              />
-              <Handle
-                type="source"
-                position={Position.Right}
-                className="absolute inset-0 opacity-0"
-              />
-            </div>
-
-            <NodeActionButtons data={data} type="action" />
-          </div>
-          <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
-          <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
-        </div>
-      );
-    }
-
-    // Design para nós WhatsApp
-    if (data.name === 'whatsapp') {
-      return (
-        <div className="flex flex-col items-center group">
-          <div
-            className={`
-              flex flex-col items-center justify-center
+              border-2 
               relative
               bg-white
               p-6
@@ -403,19 +176,21 @@ const nodeTypes = {
               hover:shadow-2xl
               hover:-translate-y-1
               shadow-[0_8px_30px_rgba(0,0,0,0.12)]
-              border-2
+              ${data.isActive ? 'animate-pulse' : ''}
+              ${data.isExecuting ? 'ring-4 ring-blue-500 ring-opacity-50' : ''}
             `}
             style={{ 
-              borderColor: data.color || '#25D366',
+              borderColor: data.color || '#3B82F6',
               backgroundColor: `${data.color}08`,
-              boxShadow: `0 4px 20px ${data.color}20`
+              boxShadow: `0 4px 20px ${data.color}20`,
+              animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
             }}
           >
             <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
               <div 
                 className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
                 style={{ 
-                  borderColor: data.color || '#25D366',
+                  borderColor: data.color || '#3B82F6',
                 }}
               />
               <Handle
@@ -425,53 +200,83 @@ const nodeTypes = {
               />
             </div>
 
-            {/* titulo */}
-            <div className="flex items-center gap-4 mb-6">
+            <div className="flex items-center gap-4 mb-4">
               <div className="flex items-center justify-center w-12 h-12 rounded-xl shadow-md" 
                 style={{ 
-                  backgroundColor: data.color || '#25D366',
+                  backgroundColor: data.color || '#3B82F6',
                   boxShadow: `0 4px 12px ${data.color}40`
                 }}>
-                <IconRenderer iconName={data.icon ?? ''} className="text-4xl" />
+                <IconRenderer iconName={data.icon ?? ''} />
               </div>
               <div className="flex flex-col">
-                <div className="text-lg font-bold" style={{ color: data.color || '#25D366' }}>{data.label}</div>
-                <div className="text-sm text-gray-500">WhatsApp</div>
+                <div className="text-lg font-bold" style={{ color: data.color || '#3B82F6' }}>{data.label}</div>
+                <div className="text-sm text-gray-500">Assistente Virtual</div>
               </div>
             </div>
 
-            {/* nos */}
-            <div className="flex items-center justify-between gap-2 border-t border-gray-100">
+            <div className="flex items-center justify-between gap-6 mt-2 px-2 pt-4 border-t border-gray-100">
               <div className="flex flex-col items-center relative w-20">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
                   style={{ 
-                    borderColor: data.color || '#25D366',
+                    borderColor: data.color || '#3B82F6',
                   }}>
-                  <div className="text-green-500 text-xs">✓</div>
+                  <LiaBrainSolid color="#3B82F6" />
                 </div>
+                <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#3B82F6' }}>Modelo</div>
                 <Handle
-                  type="source"
+                  type="target"
                   position={Position.Bottom}
-                  id="success"
-                  className="absolute bottom-[-4px] opacity-0"
+                  id="model"
+                  className="absolute bottom-[-4px]"
                   style={{ bottom: '-30px', left: '50%' }}
                 />
               </div>
               <div className="flex flex-col items-center relative w-20">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
                   style={{ 
-                    borderColor: data.color || '#25D366',
+                    borderColor: data.color || '#3B82F6',
                   }}>
-                  <div className="text-red-500 text-xs">✕</div>
+                  <FaMemory color="#3B82F6" />
                 </div>
+                <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#3B82F6' }}>Memória</div>
                 <Handle
-                  type="source"
+                  type="target"
                   position={Position.Bottom}
-                  id="error"
-                  className="absolute bottom-[-4px] opacity-0"
+                  id="memory"
+                  className="absolute bottom-[-4px]"
                   style={{ bottom: '-30px', left: '50%' }}
                 />
               </div>
+              <div className="flex flex-col items-center relative w-20">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+                  style={{ 
+                    borderColor: data.color || '#3B82F6',
+                  }}>
+                  <FiTool color="#3B82F6" />
+                </div>
+                <div className="text-xs mt-2 font-medium text-center" style={{ color: data.color || '#3B82F6' }}>Ferramenta</div>
+                <Handle
+                  type="target"
+                  position={Position.Bottom}
+                  id="tool"
+                  className="absolute bottom-[-4px]"
+                  style={{ bottom: '-30px', left: '50%' }}
+                />
+              </div>
+            </div>
+            
+            <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+              <div 
+                className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+                style={{ 
+                  borderColor: data.color || '#3B82F6',
+                }}
+              />
+              <Handle
+                type="source"
+                position={Position.Right}
+                className="absolute inset-0 opacity-0"
+              />
             </div>
 
             <NodeActionButtons data={data} type="action" />
@@ -480,8 +285,8 @@ const nodeTypes = {
       );
     }
 
-    // Design para nós internos (incluindo delay)
-    if (data.name === 'internal') {
+    // Design especial para Modelo, Memória e Ferramenta
+    if (isSpecialNode) {
       return (
         <div className="flex flex-col items-center group">
           <div
@@ -495,27 +300,29 @@ const nodeTypes = {
               hover:shadow-2xl
               hover:-translate-y-1
               shadow-[0_8px_30px_rgba(0,0,0,0.12)]
+              ${data.isActive ? 'animate-pulse' : ''}
+              ${data.isExecuting ? 'ring-4 ring-blue-500 ring-opacity-50' : ''}
             `}
             style={{ 
               minWidth: 96, 
               minHeight: 96,
               backgroundColor: data.color || '#3B82F6',
-              borderColor: data.color || '#3B82F6'
+              borderColor: data.color || '#3B82F6',
+              animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
             }}
           >
-            <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold shadow-md">
-              Action
-            </div>
-            <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+            <div className="absolute top-[-35px] left-1/2 -translate-x-1/2 w-8 h-8 z-10">
               <div 
                 className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
                 style={{ 
-                  borderColor: data.color || '#25D366',
+                  borderColor: data.color || '#3B82F6',
                 }}
-              />
+              >
+                <IconRenderer iconName={data.icon ?? ''} />
+              </div>
               <Handle
-                type="target"
-                position={Position.Left}
+                type="source"
+                position={Position.Top}
                 className="absolute inset-0 opacity-0"
               />
             </div>
@@ -523,7 +330,58 @@ const nodeTypes = {
             <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
               <IconRenderer iconName={data.icon ?? ''} />
             </div>
-            
+
+            <NodeActionButtons data={data} type="action" />
+          </div>
+          <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
+          <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col items-center group">
+        <div
+          className={`
+            flex flex-col items-center justify-center
+            rounded-full
+            border-2
+            w-36 h-36
+            relative
+            transition-all duration-300
+            hover:shadow-2xl
+            hover:-translate-y-1
+            shadow-[0_8px_30px_rgba(0,0,0,0.12)]
+            ${data.isActive ? 'animate-pulse' : ''}
+            ${data.isExecuting ? 'ring-4 ring-blue-500 ring-opacity-50' : ''}
+          `}
+          style={{ 
+            minWidth: 96, 
+            minHeight: 96,
+            backgroundColor: data.color || '#3B82F6',
+            borderColor: data.color || '#3B82F6',
+            animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
+          }}
+        >
+          <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+            <div 
+              className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+              style={{ 
+                borderColor: data.color || '#25D366',
+              }}
+            />
+            <Handle
+              type="target"
+              position={Position.Left}
+              className="absolute inset-0 opacity-0"
+            />
+          </div>
+
+          <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
+            <IconRenderer iconName={data.icon ?? ''} />
+          </div>
+          
+          {!isEndNode && (
             <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
               <div 
                 className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
@@ -537,16 +395,14 @@ const nodeTypes = {
                 className="absolute inset-0 opacity-0"
               />
             </div>
+          )}
 
-            <NodeActionButtons data={data} type="action" />
-          </div>
-          <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
-          <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
+          <NodeActionButtons data={data} type="action" />
         </div>
-      );
-    }
-
-    return null;
+        <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
+        <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
+      </div>
+    );
   },
   condition: ({ data }: NodeProps) => {
     return (
@@ -566,11 +422,14 @@ const nodeTypes = {
             hover:-translate-y-1
             shadow-[0_8px_30px_rgba(0,0,0,0.12)]
             border-2
+            ${data.isActive ? 'animate-pulse' : ''}
+            ${data.isExecuting ? 'ring-4 ring-blue-500 ring-opacity-50' : ''}
           `}
           style={{ 
             borderColor: data.color || '#EAB308',
             backgroundColor: `${data.color}08`,
-            boxShadow: `0 4px 20px ${data.color}20`
+            boxShadow: `0 4px 20px ${data.color}20`,
+            animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
           }}
         >
           <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
@@ -652,6 +511,8 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const drawerRef = useRef<NodeSelectionDrawerRef>(null);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
 
   // Debounced save function
   const debouncedSave = useCallback(() => {
@@ -709,7 +570,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
         cursor: 'pointer',
       },
       labelBgStyle: { 
-        fill: '#ffffff',
+        fill: '#e5e7eb',
         fillOpacity: 0.8,
       },
       labelBgPadding: [4, 4],
@@ -792,10 +653,6 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   }, [initialData]);
 
   const handleNodeClick = useCallback((event: React.MouseEvent | null, node: Node) => {
-    // Não abre o diálogo para nós do tipo condição
-    if (node.type === 'condition') {
-      return;
-    }
     setSelectedNode(node);
     setEditingNode(node);
     setIsEditDialogOpen(true);
@@ -1115,12 +972,83 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     }
   };
 
-
   const handleCreateFlowFromJson = useCallback((nodes: Node[], edges: Edge[]) => {
     setNodes(nodes);
     setEdges(edges);
     debouncedSave();
   }, [debouncedSave]);
+
+  const handleExecuteFlow = async () => {
+    try {
+      setIsExecuting(true);
+      const startNode = nodes.find(node => node.type === 'trigger');
+      if (!startNode) return;
+
+      // Função para processar um nó
+      const processNode = async (nodeId: string) => {
+        // Ativa o nó atual
+        setActiveNodeId(nodeId);
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simula processamento
+
+        // Encontra as arestas que saem deste nó
+        const outgoingEdges = edges.filter(edge => edge.source === nodeId);
+        
+        // Processa os próximos nós em sequência
+        for (const edge of outgoingEdges) {
+          // Ativa a aresta atual
+          setEdges(eds => eds.map(e => ({
+            ...e,
+            style: {
+              ...e.style,
+              stroke: e.id === edge.id ? '#3B82F6' : '#64748b',
+              strokeWidth: e.id === edge.id ? 3 : 2,
+            }
+          })));
+
+          const nextNode = nodes.find(n => n.id === edge.target);
+          if (nextNode) {
+            await processNode(nextNode.id);
+          }
+
+          // Desativa a aresta após processar
+          setEdges(eds => eds.map(e => ({
+            ...e,
+            style: {
+              ...e.style,
+              stroke: '#64748b',
+              strokeWidth: 2,
+            }
+          })));
+        }
+      };
+
+      await processNode(startNode.id);
+    } catch (error) {
+      console.error('Error executing flow:', error);
+    } finally {
+      setActiveNodeId(null);
+      setIsExecuting(false);
+      // Reseta todas as arestas
+      setEdges(eds => eds.map(e => ({
+        ...e,
+        style: {
+          ...e.style,
+          stroke: '#64748b',
+          strokeWidth: 2,
+        }
+      })));
+    }
+  };
+
+  // Modifica os nós para incluir a animação
+  const nodesWithAnimation = nodes.map(node => ({
+    ...node,
+    data: {
+      ...node.data,
+      isActive: activeNodeId === node.id,
+      isExecuting
+    }
+  }));
 
   if (loading) {
     return <div className="flex items-center justify-center h-[80vh]">Loading...</div>;
@@ -1143,6 +1071,10 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
               Último salvamento: {lastSaved.toLocaleTimeString()}
             </div>
           )}
+          <PlayButton 
+            onPlay={handleExecuteFlow} 
+            onExecutionStateChange={setIsExecuting}
+          />
           <JsonEditor 
             flowData={selectedNode} 
             onSave={(json) => {
@@ -1186,10 +1118,34 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
                 );
               });
               debouncedSave();
+              setIsEditDialogOpen(false);
             }}
           >
+            <div className="absolute top-4 right-4 z-10">
+              <Button
+                onClick={() => drawerRef.current?.open()}
+                size="icon"
+                className="rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-4 w-4"
+                >
+                  <path d="M5 12h14" />
+                  <path d="M12 5v14" />
+                </svg>
+              </Button>
+            </div>
             <ReactFlow
-              nodes={nodes}
+              nodes={nodesWithAnimation}
               edges={edges}
               onNodesChange={handleNodesChange}
               onEdgesChange={handleEdgesChange}

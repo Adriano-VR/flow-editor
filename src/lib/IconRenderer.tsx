@@ -4,6 +4,7 @@ import { MdMemory } from 'react-icons/md';
 import { VscDebugStart } from 'react-icons/vsc';
 import { IoTime } from 'react-icons/io5';
 import { TbAirConditioning } from 'react-icons/tb';
+import { GiFinishLine } from "react-icons/gi";
 
 const iconMap = {
   FaTools,
@@ -14,6 +15,7 @@ const iconMap = {
   VscDebugStart,
   IoTime,
   TbAirConditioning,
+  GiFinishLine,
 };
 
 interface IconRendererProps {
