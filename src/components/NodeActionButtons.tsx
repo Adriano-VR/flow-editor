@@ -1,4 +1,4 @@
-import { Pencil } from 'lucide-react';
+import { Pencil, Copy } from 'lucide-react';
 import React from 'react';
 import { Node as ReactFlowNode } from 'reactflow';
 import { useNode } from '../contexts/NodeContext';
@@ -12,11 +12,11 @@ interface NodeActionButtonsProps {
     config?: Record<string, unknown>;
   };
   type: string;
+  onDuplicate?: (nodeId: string) => void;
 }
 
-export function NodeActionButtons({ data, type }: NodeActionButtonsProps) {
+export function NodeActionButtons({ data, type, onDuplicate }: NodeActionButtonsProps) {
   const { onEdit } = useNode();
-
 
   return (
     <div className="z-50 border border-gray-300 rounded-lg absolute -top-11 left-1/2 -translate-x-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -38,6 +38,14 @@ export function NodeActionButtons({ data, type }: NodeActionButtonsProps) {
         >
           <Pencil className="w-4 h-4" />
         </button>
+        {onDuplicate && (
+          <button
+            className="cursor-pointer p-1.5 rounded-lg hover:bg-white/80"
+            onClick={() => onDuplicate(data.id)}
+          >
+            <Copy className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </div>  
   );

@@ -38,7 +38,30 @@ export async function PUT(request: NextRequest) {
   const id = request.nextUrl.pathname.split('/').pop(); // Aqui pegamos o 'id' da URL
 
   try {
-    const body = await request.json();
+    // Log the raw request body for debugging
+    const rawBody = await request.text();
+    console.log('Raw request body:', rawBody);
+
+    // Parse the body only if it's not empty
+    let body;
+    try {
+      body = rawBody ? JSON.parse(rawBody) : {};
+    } catch (parseError) {
+      console.error('Error parsing request body:', parseError);
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      );
+    }
+
+    console.log('Parsed request body:', body);
+
+    if (!body.data) {
+      return NextResponse.json(
+        { error: 'Missing data in request body' },
+        { status: 400 }
+      );
+    }
 
     const response = await fetch(`${API_URL}/${id}`, {
       method: 'PUT',
@@ -51,8 +74,10 @@ export async function PUT(request: NextRequest) {
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API error response:', errorText);
       return NextResponse.json(
-        { error: `HTTP error! status: ${response.status}` },
+        { error: `HTTP error! status: ${response.status}`, details: errorText },
         { status: response.status }
       );
     }
@@ -62,7 +87,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     console.error('Error updating flow:', error);
     return NextResponse.json(
-      { error: 'Failed to update flow' },
+      { error: 'Failed to update flow', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

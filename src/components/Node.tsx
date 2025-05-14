@@ -2,7 +2,11 @@ import { NodeProps } from 'reactflow';
 import { NodeActionButtons } from './NodeActionButtons';
 import { useNode } from '../contexts/NodeContext';
 
-export function Node({ data, type }: NodeProps) {
+interface CustomNodeProps extends NodeProps {
+  onDuplicate?: (nodeId: string) => void;
+}
+
+export function Node({ data, type, onDuplicate }: CustomNodeProps) {
   const { nodeTypes } = useNode();
   const nodeType = nodeTypes[type as keyof typeof nodeTypes];
   const Icon = nodeType?.icon;
@@ -15,7 +19,7 @@ export function Node({ data, type }: NodeProps) {
         </div>
         <span className={`font-medium ${nodeType?.textColor}`}>{data.label}</span>
       </div>
-      <NodeActionButtons data={data} type={type} />
+      <NodeActionButtons data={data} type={type} onDuplicate={onDuplicate} />
     </div>
   );
 } 

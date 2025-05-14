@@ -42,6 +42,17 @@ import {
 } from "@/components/ui/select";
 import { NodeContextMenu } from './NodeContextMenu';
 import { PlayButton } from './PlayButton';
+import { createNode, updateNode, deleteNode, duplicateNode } from '@/lib/nodeOperations';
+
+// Add styles for edge hover effect
+const edgeStyles = `
+  .react-flow__edge:hover .edge-delete-label {
+    opacity: 1 !important;
+  }
+  .react-flow__edge:hover .edge-delete-label + .react-flow__edge-labelbg {
+    opacity: 0.8 !important;
+  }
+`;
 
 interface NodeConfig {
   // WhatsApp config
@@ -168,9 +179,9 @@ const nodeTypes = {
               border-2 
               relative
               bg-white
-              p-6
+              p-3
               rounded-xl
-              min-w-[280px]
+              h-auto
               backdrop-blur-sm
               transition-all duration-300
               hover:shadow-2xl
@@ -206,7 +217,10 @@ const nodeTypes = {
                   backgroundColor: data.color || '#3B82F6',
                   boxShadow: `0 4px 12px ${data.color}40`
                 }}>
-                <IconRenderer iconName={data.icon ?? ''} />
+                  <div className=" rounded-lg p-1" style={{ backgroundColor: data.color || '#EAB308' }}>
+
+<IconRenderer iconName={data.icon ?? ''} className="text-4xl text-white" />
+  </div>
               </div>
               <div className="flex flex-col">
                 <div className="text-lg font-bold" style={{ color: data.color || '#3B82F6' }}>{data.label}</div>
@@ -214,7 +228,7 @@ const nodeTypes = {
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-6 mt-2 px-2 pt-4 border-t border-gray-100">
+            <div className="flex items-center justify-between gap-1">
               <div className="flex flex-col items-center relative w-20">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
                   style={{ 
@@ -228,7 +242,7 @@ const nodeTypes = {
                   position={Position.Bottom}
                   id="model"
                   className="absolute bottom-[-4px]"
-                  style={{ bottom: '-30px', left: '50%' }}
+                  style={{ bottom: '-20px', left: '50%' }}
                 />
               </div>
               <div className="flex flex-col items-center relative w-20">
@@ -244,7 +258,7 @@ const nodeTypes = {
                   position={Position.Bottom}
                   id="memory"
                   className="absolute bottom-[-4px]"
-                  style={{ bottom: '-30px', left: '50%' }}
+                  style={{ bottom: '-20px', left: '50%' }}
                 />
               </div>
               <div className="flex flex-col items-center relative w-20">
@@ -260,7 +274,7 @@ const nodeTypes = {
                   position={Position.Bottom}
                   id="tool"
                   className="absolute bottom-[-4px]"
-                  style={{ bottom: '-30px', left: '50%' }}
+                  style={{ bottom: '-20px', left: '50%' }}
                 />
               </div>
             </div>
@@ -294,7 +308,7 @@ const nodeTypes = {
               flex flex-col items-center justify-center
               rounded-full
               border-2
-              w-36 h-36
+              w-32 h-32
               relative
               transition-all duration-300
               hover:shadow-2xl
@@ -311,14 +325,14 @@ const nodeTypes = {
               animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
             }}
           >
-            <div className="absolute top-[-35px] left-1/2 -translate-x-1/2 w-8 h-8 z-10">
+            <div className="absolute top-[-25px] left-1/2 -translate-x-1/2 w-5 h-5 z-10">
               <div 
+          
                 className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
                 style={{ 
                   borderColor: data.color || '#3B82F6',
                 }}
               >
-                <IconRenderer iconName={data.icon ?? ''} />
               </div>
               <Handle
                 type="source"
@@ -328,7 +342,7 @@ const nodeTypes = {
             </div>
 
             <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
-              <IconRenderer iconName={data.icon ?? ''} />
+              <IconRenderer className="text-7xl text-white" iconName={data.icon ?? ''} />
             </div>
 
             <NodeActionButtons data={data} type="action" />
@@ -413,7 +427,8 @@ const nodeTypes = {
             flex flex-col items-center justify-center
             relative
             bg-white
-            p-5
+            p-2
+            gap-1
             rounded-xl
             min-w-[200px]
             backdrop-blur-sm
@@ -446,8 +461,11 @@ const nodeTypes = {
             />
           </div>
 
-          <div className="flex items-center gap-4 ">
-          <IconRenderer iconName={data.icon ?? ''} className="text-4xl" />
+          <div className="flex items-center gap-4  ">
+            <div className=" rounded-lg p-1" style={{ backgroundColor: data.color || '#EAB308' }}>
+
+          <IconRenderer iconName={data.icon ?? ''} className="text-4xl text-white" />
+            </div>
             <div className="flex flex-col">
               <div className="text-lg font-bold" style={{ color: data.color || '#EAB308' }}>{data.label}</div>
               <div className="text-sm text-gray-500">Condição</div>
@@ -469,7 +487,7 @@ const nodeTypes = {
                 position={Position.Bottom}
                 id="true"
                 className="absolute  "
-                style={{ bottom: '-30px', right: '60px',opacity:0 }}
+                style={{ bottom: '-20px', right: '60px',opacity:0 }}
               />
             </div>
             <div className="flex flex-col items-center relative w-10">
@@ -484,7 +502,7 @@ const nodeTypes = {
                 position={Position.Bottom}
                 id="false"
                 className="absolute bottom-[-4px] "
-                style={{ bottom: '-30px', right: '60px',opacity:0 }}
+                style={{ bottom: '-20px', right: '60px',opacity:0 }}
               />
             </div>
           </div>
@@ -568,10 +586,12 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
         fontWeight: 700,
         fontSize: 20,
         cursor: 'pointer',
+        opacity: 0,
       },
       labelBgStyle: { 
         fill: '#e5e7eb',
         fillOpacity: 0.8,
+        opacity: 0,
       },
       labelBgPadding: [4, 4],
       labelBgBorderRadius: 4,
@@ -580,17 +600,72 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     debouncedSave();
   }, [debouncedSave]);
 
+  // Add edge mouse enter handler
+  const onEdgeMouseEnter = useCallback((event: React.MouseEvent, edge: Edge) => {
+    setEdges((eds) => eds.map((e) => {
+      if (e.id === edge.id) {
+        return {
+          ...e,
+          labelStyle: {
+            ...e.labelStyle,
+            opacity: 1,
+          },
+          labelBgStyle: {
+            ...e.labelBgStyle,
+            opacity: 0.8,
+          },
+        };
+      }
+      return e;
+    }));
+  }, []);
 
-  // Modified delete handlers
-  const handleDeleteNode = () => {
-    if (!selectedNode) return;
+  // Add edge mouse leave handler
+  const onEdgeMouseLeave = useCallback((event: React.MouseEvent, edge: Edge) => {
+    setEdges((eds) => eds.map((e) => {
+      if (e.id === edge.id) {
+        return {
+          ...e,
+          labelStyle: {
+            ...e.labelStyle,
+            opacity: 0,
+          },
+          labelBgStyle: {
+            ...e.labelBgStyle,
+            opacity: 0,
+          },
+        };
+      }
+      return e;
+    }));
+  }, []);
 
-    setNodes((nds) => nds.filter((node) => node.id !== selectedNode.id));
-    setEdges((eds) => eds.filter(
-      (edge) => edge.source !== selectedNode.id && edge.target !== selectedNode.id
-    ));
-    setSelectedNode(null);
-    debouncedSave();
+  // Single node deletion handler
+  const handleNodeDelete = async (nodeId: string) => {
+    try {
+      // Primeiro atualiza o estado local
+      const result = deleteNode(nodes, edges, nodeId);
+      
+      // Limpa o nó selecionado e fecha o diálogo
+      setSelectedNode(null);
+      setEditingNode(null);
+      setIsEditDialogOpen(false);
+      
+      // Salva as mudanças na API
+      if (onSave) {
+        await onSave({ nodes: result.nodes, edges: result.edges });
+        setLastSaved(new Date());
+        
+        // Atualiza o estado local após a confirmação da API
+        setNodes(result.nodes);
+        setEdges(result.edges);
+      }
+    } catch (error) {
+      console.error('Error deleting node:', error);
+      // Reverte as mudanças locais em caso de erro
+      setNodes(nodes);
+      setEdges(edges);
+    }
   };
 
   const handleDeleteEdge = (event: React.MouseEvent, edge: ReactFlowEdge) => {
@@ -620,19 +695,21 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
           throw new Error('No flow attributes found in response');
         }
 
+        // Initialize with empty arrays if no data exists
         if (!flowData.data.attributes.data) {
-          // Initialize with empty nodes and edges if data is null
           setNodes([]);
           setEdges([]);
           return;
         }
 
         const { nodes: flowNodes, edges: flowEdges } = flowData.data.attributes.data;
-        console.log('Nodes:', flowNodes);
-        console.log('Edges:', flowEdges);
-
-        setNodes(flowNodes || []);
-        setEdges(flowEdges || []);
+        
+        // Only load data if we don't have any nodes yet
+        if (nodes.length === 0) {
+          setNodes(flowNodes || []);
+          setEdges(flowEdges || []);
+        }
+        
         setFlowData(flowData);
       } catch (err) {
         console.error('Error loading flow:', err);
@@ -1050,6 +1127,17 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     }
   }));
 
+
+
+  const handleNodeUpdate = (nodeId: string, updates: Partial<Node>) => {
+    const result = updateNode(nodes, edges, nodeId, updates);
+    setNodes(result.nodes);
+    setEdges(result.edges);
+    debouncedSave();
+  };
+
+
+
   if (loading) {
     return <div className="flex items-center justify-center h-[80vh]">Loading...</div>;
   }
@@ -1060,6 +1148,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
 
   return (
     <div className="h-full flex flex-col">
+      <style>{edgeStyles}</style>
       <div className="flex justify-between items-center mb-4 font-semibold">
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-bold">{flowData?.data?.attributes?.name || 'Novo Flow'}</h2>
@@ -1105,21 +1194,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
         <NodeContextMenu onAddNode={() => drawerRef.current?.open()}>
           <NodeProvider 
             onEdit={handleNodeEdit} 
-            onDelete={(nodeId) => {
-              console.log('Deleting node:', nodeId);
-              setNodes((nds) => {
-                console.log('Current nodes:', nds);
-                return nds.filter((node) => node.id !== nodeId);
-              });
-              setEdges((eds) => {
-                console.log('Current edges:', eds);
-                return eds.filter(
-                  (edge) => edge.source !== nodeId && edge.target !== nodeId
-                );
-              });
-              debouncedSave();
-              setIsEditDialogOpen(false);
-            }}
+            onDelete={handleNodeDelete}
           >
             <div className="absolute top-4 right-4 z-10">
               <Button
@@ -1152,6 +1227,8 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
               onConnect={onConnect}
               onNodeClick={handleNodeClick}
               onEdgeClick={handleDeleteEdge}
+              onEdgeMouseEnter={onEdgeMouseEnter}
+              onEdgeMouseLeave={onEdgeMouseLeave}
               nodeTypes={nodeTypes}
               fitView
               className="cursor-crosshair bg-gray-50 rounded-2xl"
@@ -1175,18 +1252,12 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
         }}
         editingNode={editingNode}
         onSave={(node) => {
-          setNodes((nds) => nds.map((n) => {
-            if (n.id === node.id) {
-              return node;
-            }
-            return n;
-          }));
+          handleNodeUpdate(node.id, node);
           setSelectedNode(null);
           setEditingNode(null);
           setIsEditDialogOpen(false);
-          debouncedSave();
         }}
-        onDelete={handleDeleteNode}
+        onDelete={() => selectedNode && handleNodeDelete(selectedNode.id)}
       />
 
       <Dialog open={isConfigDialogOpen} onOpenChange={setIsConfigDialogOpen}>

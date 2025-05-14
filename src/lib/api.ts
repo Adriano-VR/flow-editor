@@ -1,3 +1,5 @@
+import { Flow } from '@/types/flow';
+
 const BASE_URL = "/api/flows";
 
 export const getFlows = async () => {
@@ -10,13 +12,26 @@ export const getFlow = async (id: string) => {
   return response.json();
 };
 
-export const createFlow = async (data: unknown) => {
+export const createFlow = async (data: Partial<Flow>) => {
+  // Ensure the flow is created with empty edges
+  const flowData = {
+    ...data,
+    attributes: {
+      ...data.attributes,
+      data: {
+        ...data.attributes?.data,
+        edges: [],
+        nodes: data.attributes?.data?.nodes || []
+      }
+    }
+  };
+
   const response = await fetch(BASE_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(data),
+    body: JSON.stringify(flowData),
   });
   return response.json();
 };

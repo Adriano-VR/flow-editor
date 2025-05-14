@@ -19,8 +19,8 @@ export function NodeContextMenu({ children, onAddNode }: NodeContextMenuProps) {
         {children}
       </ContextMenuTrigger>
       <ContextMenuContent>
-        <ContextMenuItem onClick={onAddNode} className="gap-2">
-          <Plus className="h-4 w-4" />
+        <ContextMenuItem onClick={onAddNode} className="gap-2 font-semibold cursor-pointer">
+          <Plus className="h-4 w-4 " strokeWidth={4} />
           Adicionar Nó
         </ContextMenuItem>
       </ContextMenuContent>

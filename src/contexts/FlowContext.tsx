@@ -65,7 +65,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
         }
       };
 
-      const response = await createFlow(flowData);
+      const response = await createFlow(flowData as Partial<Flow>);
 
       if (response && response.data && response.data.id) {
         const updatedResponse = await getFlows();
@@ -83,10 +83,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   };
 
   const handleDeleteFlow = async (flowId: string): Promise<void> => {
-    if (!confirm('Tem certeza que deseja excluir este flow?')) {
-      return;
-    }
-
+   
     try {
       setIsDeleting(flowId);
       await deleteFlow(flowId);
