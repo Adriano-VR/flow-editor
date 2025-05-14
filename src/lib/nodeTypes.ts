@@ -38,7 +38,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'whatsapp',
-    icon: 'FaRegCommentDots',
+    icon: 'FaWhatsapp',
     color: '#25D366',
     config: {
       message: '',
@@ -52,7 +52,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'whatsapp',
-    icon: 'FaRegImage',
+    icon: 'FaWhatsapp',
     color: '#25D366',
     config: {
       message: '',
@@ -66,7 +66,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'whatsapp',
-    icon: 'FaRegPlayCircle',
+    icon: 'FaWhatsapp',
     color: '#25D366',
     config: {
       message: '',
@@ -80,7 +80,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'whatsapp',
-    icon: 'FaReply',
+    icon: 'FaWhatsapp',
     color: '#25D366',
     config: {}
   },
@@ -90,7 +90,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'whatsapp',
-    icon: 'FaListUl',
+    icon: 'FaWhatsapp',
     color: '#25D366',
     config: {}
   },
@@ -115,7 +115,7 @@ const assistantActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'assistant',
-    icon: 'AiOutlineOpenAI',
+    icon: 'MdAssistant',
     color: '#3B82F6',
     config: {
       model: '',
@@ -168,7 +168,7 @@ const openaiActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'openai',
-    icon: 'AiOutlineRobot',
+    icon: 'AiOutlineOpenAI',
     color: '#10A37F',
     config: {}
   },
@@ -264,7 +264,7 @@ const conversionActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'conversion',
-    icon: 'FaRegCommentDots',
+    icon: 'SiConvertio',
     color: '#6366F1',
     config: {}
   },
@@ -284,7 +284,7 @@ const conversionActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'conversion',
-    icon: 'FaRegImage',
+    icon: 'FaWhatsapp',
     color: '#6366F1',
     config: {}
   },
@@ -347,7 +347,7 @@ const veo2Actions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'veo2',
-    icon: 'FaVideo',
+    icon: 'AiOutlineGoogle',
     color: '#0EA5E9',
     config: {}
   }
@@ -360,7 +360,7 @@ const klingaiActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'klingai',
-    icon: 'FaMicrophone',
+    icon: 'RiSparkling2Line',
     color: '#A21CAF',
     config: {}
   }
@@ -373,7 +373,7 @@ const elevenlabsActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'elevenlabs',
-    icon: 'FaVolumeUp',
+    icon: 'SiElevenlabs',
     color: '#F59E42',
     config: {}
   }

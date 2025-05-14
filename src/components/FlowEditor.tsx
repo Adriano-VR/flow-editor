@@ -43,6 +43,8 @@ import {
 import { NodeContextMenu } from './NodeContextMenu';
 import { PlayButton } from './PlayButton';
 import {updateNode, deleteNode } from '@/lib/nodeOperations';
+import { nodeTypes as allNodeTypes } from "@/lib/nodeTypes";
+import { IntegrationDialog } from './IntegrationDialog';
 
 // Add styles for edge hover effect
 const edgeStyles = `
@@ -110,6 +112,25 @@ interface FlowEditorProps {
   };
   onSave?: (data: { nodes: Node[]; edges: Edge[] }) => Promise<void>;
 }
+
+// Gere actionTypes automaticamente a partir do allNodeTypes
+const appActionTypes = Object.values(allNodeTypes.app.subcategories)
+  .flatMap((subcat: any) => subcat.actions)
+  .reduce((acc: Record<string, string>, action: any) => {
+    acc[action.name] = action.subcategory || action.category || "app";
+    return acc;
+  }, {} as Record<string, string>);
+
+const internalActionTypes = Object.values(allNodeTypes.internal)
+  .reduce((acc: Record<string, string>, action: any) => {
+    acc[action.name] = "internal";
+    return acc;
+  }, {} as Record<string, string>);
+
+const actionTypes: Record<string, string> = {
+  ...appActionTypes,
+  ...internalActionTypes,
+};
 
 const nodeTypes = {
   trigger: ({ data }: NodeProps) => {
@@ -993,16 +1014,8 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   }, []);
 
   const handleNodeTypeSelect = (actionDefinition: NodeTypeDefinition) => {
-    const actionTypes: Record<string, string> = {
-      "Enviar Mensagem": "whatsapp",
-      "Receber Mensagem": "whatsapp",
-      "Modelo": "openAi",
-      "Memória": "openAi",
-      "Ferramenta": "openAi",
-      "Criar Agente": "openAi",
-      "Executar Agente": "openAi",
-      "Atraso": "internal"
-    };
+    // Se já estiver com um diálogo aberto, não abre outro
+    if (isConfigDialogOpen) return;
 
     const newNode: Node = {
       id: `${actionDefinition.id}-${Date.now()}`,
@@ -1020,20 +1033,30 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
       },
     };
 
-    // Se for um nó interno que não é delay, adiciona diretamente sem mostrar o diálogo
-    if (actionDefinition.name !== 'Atraso' && actionDefinition.name !== 'Início') {
-      setNodes((nds) => [...nds, newNode]);
+    // Para todos os nós que precisam de configuração, abre o diálogo
+    if (
+      actionDefinition.name === 'Atraso' ||
+      actionDefinition.name === 'Início' ||
+      actionDefinition.category === 'app' ||
+      actionDefinition.name === 'Comentário' ||
+      actionDefinition.name === 'Banco de Dados' ||
+      actionDefinition.name === 'Webhook'
+    ) {
+      setTempNode(newNode);
+      setNewNodeConfig(actionDefinition.config || {});
+      setIsConfigDialogOpen(true);
       return;
     }
 
-    // Para o nó de delay e início, sempre mostra o diálogo de configuração
-    setTempNode(newNode);
-    setNewNodeConfig(actionDefinition.config || {});
-    setIsConfigDialogOpen(true);
+    // Para outros nós internos simples, adiciona direto
+    setNodes((nds) => [...nds, newNode]);
   };
 
   const handleConfigSubmit = () => {
     if (!tempNode) return;
+
+    // Evita duplo submit/dupla abertura
+    if (!isConfigDialogOpen) return;
 
     const finalNode = {
       ...tempNode,
@@ -1313,7 +1336,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
           return (
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="condition">Condição de Início</Label>
+                <Label htmlFor="condition" className="text-white">Condição de Início</Label>
                 <Textarea
                   id="condition"
                   placeholder="Digite a condição de início (opcional)"
@@ -1322,6 +1345,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
                     ...newNodeConfig, 
                     condition: e.target.value 
                   })}
+                  className="bg-[#2d3748] text-white border-gray-600 focus:border-green-500 focus:ring-green-500 placeholder-gray-400"
                 />
               </div>
             </div>
@@ -1608,22 +1632,44 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
         onDelete={() => selectedNode && handleNodeDelete(selectedNode.id)}
       />
 
-      <Dialog open={isConfigDialogOpen} onOpenChange={setIsConfigDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Configurar Nó</DialogTitle>
-          </DialogHeader>
-          {renderConfigFields()}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsConfigDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleConfigSubmit}>
-              Adicionar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <IntegrationDialog
+        open={isConfigDialogOpen}
+        onOpenChange={setIsConfigDialogOpen}
+        icon={tempNode?.data.icon ?? ''}
+        name={tempNode?.data.label ?? ''}
+        description={`Configure the ${tempNode?.data.label ?? ''} node`}
+        config={newNodeConfig}
+        renderConfigFields={(config, setConfig) => {
+          // Atualiza o newNodeConfig quando o config mudar
+          const handleConfigChange = (newConfig: any) => {
+            setNewNodeConfig(newConfig);
+            setConfig(newConfig);
+          };
+
+          return (
+            <div className="[&_input]:bg-[#2d3748] [&_input]:text-white [&_input]:border-gray-600 [&_select]:bg-[#2d3748] [&_select]:text-white [&_select]:border-gray-600 [&_select]:focus:border-green-500 [&_select]:focus:ring-green-500 [&_textarea]:bg-[#2d3748] [&_textarea]:text-white [&_textarea]:border-gray-600 [&_textarea]:focus:border-green-500 [&_textarea]:focus:ring-green-500 [&_label]:text-white">
+              {tempNode?.data.label === 'Início' ? (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="condition" className="text-white">Condição de Início</Label>
+                    <Textarea
+                      id="condition"
+                      placeholder="Digite a condição de início (opcional)"
+                      value={config.condition || ''}
+                      onChange={(e) => handleConfigChange({ ...config, condition: e.target.value })}
+                      className="bg-[#2d3748] text-white border-gray-600 focus:border-green-500 focus:ring-green-500 placeholder-gray-400"
+                    />
+                  </div>
+                </div>
+              ) : (
+                renderConfigFields()
+              )}
+            </div>
+          );
+        }}
+        onSave={handleConfigSubmit}
+        isInternal={tempNode?.data.name === 'internal'}
+      />
     </div>
   );
 }

@@ -6,6 +6,16 @@ import { IoTime } from 'react-icons/io5';
 import { TbAirConditioning } from 'react-icons/tb';
 import { GiFinishLine } from "react-icons/gi";
 import { FaCommentAlt } from "react-icons/fa";
+import { MdAssistant } from "react-icons/md";
+import { FaInstagram } from "react-icons/fa";
+import { SiConvertio } from "react-icons/si";
+import { AiOutlineGoogle } from "react-icons/ai";
+import { RiSparkling2Line } from "react-icons/ri";
+import { SiElevenlabs } from "react-icons/si";
+import { RiApps2AddFill } from "react-icons/ri";
+import { CgInternal } from "react-icons/cg";
+
+
 
 const iconMap = {
   FaTools,
@@ -18,6 +28,14 @@ const iconMap = {
   TbAirConditioning,
   GiFinishLine,
   FaCommentAlt,
+  MdAssistant,
+  FaInstagram,
+  SiConvertio,
+  AiOutlineGoogle,
+  RiSparkling2Line,
+  SiElevenlabs,
+  RiApps2AddFill,
+  CgInternal
 };
 
 interface IconRendererProps {
