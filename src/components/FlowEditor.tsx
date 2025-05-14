@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/select";
 import { NodeContextMenu } from './NodeContextMenu';
 import { PlayButton } from './PlayButton';
-import { createNode, updateNode, deleteNode, duplicateNode } from '@/lib/nodeOperations';
+import {updateNode, deleteNode } from '@/lib/nodeOperations';
 
 // Add styles for edge hover effect
 const edgeStyles = `
@@ -80,6 +80,11 @@ interface NodeConfig {
   duration?: number;
   unit?: 'seconds' | 'minutes' | 'hours';
   condition?: string;
+  comment?: string;
+  query?: string;
+  endpoint?: string;
+  method?: string;
+  url?: string;
 }
 
 interface FlowData {
@@ -168,6 +173,7 @@ const nodeTypes = {
     const isMemoryNode = data.label === 'Memória';
     const isToolNode = data.label === 'Ferramenta';
     const isSpecialNode = isModelNode || isMemoryNode || isToolNode;
+    const isDelayNode = data.label === 'Atraso';
 
     // Design especial para Criar Agente
     if (data.name === 'openAi' && data.label === 'Criar Agente') {
@@ -218,9 +224,8 @@ const nodeTypes = {
                   boxShadow: `0 4px 12px ${data.color}40`
                 }}>
                   <div className=" rounded-lg p-1" style={{ backgroundColor: data.color || '#EAB308' }}>
-
-<IconRenderer iconName={data.icon ?? ''} className="text-4xl text-white" />
-  </div>
+                    <IconRenderer iconName={data.icon ?? ''} className="text-4xl text-white" />
+                  </div>
               </div>
               <div className="flex flex-col">
                 <div className="text-lg font-bold" style={{ color: data.color || '#3B82F6' }}>{data.label}</div>
@@ -306,10 +311,13 @@ const nodeTypes = {
           <div
             className={`
               flex flex-col items-center justify-center
-              rounded-full
               border-2
-              w-32 h-32
               relative
+              bg-white
+              p-3
+              rounded-xl
+              min-w-[200px]
+              backdrop-blur-sm
               transition-all duration-300
               hover:shadow-2xl
               hover:-translate-y-1
@@ -318,22 +326,19 @@ const nodeTypes = {
               ${data.isExecuting ? 'ring-4 ring-blue-500 ring-opacity-50' : ''}
             `}
             style={{ 
-              minWidth: 96, 
-              minHeight: 96,
-              backgroundColor: data.color || '#3B82F6',
               borderColor: data.color || '#3B82F6',
+              backgroundColor: `${data.color}08`,
+              boxShadow: `0 4px 20px ${data.color}20`,
               animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
             }}
           >
             <div className="absolute top-[-25px] left-1/2 -translate-x-1/2 w-5 h-5 z-10">
               <div 
-          
                 className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
                 style={{ 
                   borderColor: data.color || '#3B82F6',
                 }}
-              >
-              </div>
+              />
               <Handle
                 type="source"
                 position={Position.Top}
@@ -341,14 +346,75 @@ const nodeTypes = {
               />
             </div>
 
-            <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
-              <IconRenderer className="text-7xl text-white" iconName={data.icon ?? ''} />
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-12 h-12 rounded-xl shadow-md" 
+                style={{ 
+                  backgroundColor: data.color || '#3B82F6',
+                  boxShadow: `0 4px 12px ${data.color}40`
+                }}>
+                <IconRenderer className="text-4xl text-white" iconName={data.icon ?? ''} />
+              </div>
+              <div className="flex flex-col">
+                <div className="text-lg font-bold" style={{ color: data.color || '#3B82F6' }}>{data.label}</div>
+                <div className="text-sm text-gray-500">{data.name}</div>
+              </div>
             </div>
 
             <NodeActionButtons data={data} type="action" />
           </div>
-          <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
-          <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
+        </div>
+      );
+    }
+
+    if (isDelayNode) {
+
+      return (
+        <div className="flex flex-col items-center group">
+          <div
+            className={`
+              flex items-center justify-center
+              backdrop-blur-sm
+              w-26 h-20
+              rounded-l-md rounded-r-full
+              shadow
+              relative
+              border-2
+            `}
+            style={{ minWidth: 80, minHeight: 48,borderColor: data.color || '#3B82F6' }}
+          >
+            <div className="text-base font-bold text-gray-800 text-center w-full">
+              {data.label}
+            </div>
+            {/* Handles para conexão */}
+            <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-3 h-3 z-10">
+              <div 
+                className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+                style={{ 
+                  borderColor: data.color || '#3B82F6',
+                }}
+              />
+              <Handle
+                type="target"
+                position={Position.Left}
+                className="absolute inset-0 opacity-0"
+              />
+            </div>
+          
+             <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-3 h-3 z-10">
+              <div 
+                className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+                style={{ 
+                  borderColor: data.color || '#3B82F6',
+                }}
+              />
+              <Handle
+                type="source"
+                position={Position.Right}
+                className="absolute inset-0 opacity-0"
+              />
+            </div>
+          
+          </div>
         </div>
       );
     }
@@ -358,10 +424,13 @@ const nodeTypes = {
         <div
           className={`
             flex flex-col items-center justify-center
-            rounded-full
             border-2
-            w-36 h-36
             relative
+            bg-white
+            p-3
+            rounded-xl
+            min-w-[200px]
+            backdrop-blur-sm
             transition-all duration-300
             hover:shadow-2xl
             hover:-translate-y-1
@@ -370,10 +439,9 @@ const nodeTypes = {
             ${data.isExecuting ? 'ring-4 ring-blue-500 ring-opacity-50' : ''}
           `}
           style={{ 
-            minWidth: 96, 
-            minHeight: 96,
-            backgroundColor: data.color || '#3B82F6',
             borderColor: data.color || '#3B82F6',
+            backgroundColor: `${data.color}08`,
+            boxShadow: `0 4px 20px ${data.color}20`,
             animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
           }}
         >
@@ -391,8 +459,18 @@ const nodeTypes = {
             />
           </div>
 
-          <div className="flex items-center justify-center w-11/12 h-11/12 rounded-full mb-2">
-            <IconRenderer iconName={data.icon ?? ''} />
+          <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl shadow-md" 
+              style={{ 
+                backgroundColor: data.color || '#3B82F6',
+                boxShadow: `0 4px 12px ${data.color}40`
+              }}>
+              <IconRenderer iconName={data.icon ?? ''} className="text-4xl text-white" />
+            </div>
+            <div className="flex flex-col">
+              <div className="text-lg font-bold" style={{ color: data.color || '#3B82F6' }}>{data.label}</div>
+              <div className="text-sm text-gray-500">{data.name}</div>
+            </div>
           </div>
           
           {!isEndNode && (
@@ -413,24 +491,19 @@ const nodeTypes = {
 
           <NodeActionButtons data={data} type="action" />
         </div>
-        <div className="text-xs font-bold text-black text-center px-1 mt-1 capitalize">{data.name}</div>
-        <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
       </div>
     );
   },
   condition: ({ data }: NodeProps) => {
     return (
       <div className="flex flex-col items-center group">
-        {/* Componentizar */}
         <div
           className={`
             flex flex-col items-center justify-center
             relative
             bg-white
-            p-2
-            gap-1
-            rounded-xl
-            min-w-[200px]
+            p-4
+            gap-2
             backdrop-blur-sm
             transition-all duration-300
             hover:shadow-2xl
@@ -444,10 +517,14 @@ const nodeTypes = {
             borderColor: data.color || '#EAB308',
             backgroundColor: `${data.color}08`,
             boxShadow: `0 4px 20px ${data.color}20`,
-            animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
+            animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none',
+            width: '120px',
+            height: '120px',
+            transform: 'rotate(45deg)',
+            margin: '20px'
           }}
         >
-          <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+          <div className="absolute top-1/2 left-[-85px] -translate-y-1/2 w-5 h-5 z-10" style={{ transform: 'rotate(-45deg)' }}>
             <div 
               className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
               style={{ 
@@ -461,53 +538,228 @@ const nodeTypes = {
             />
           </div>
 
-          <div className="flex items-center gap-4  ">
-            <div className=" rounded-lg p-1" style={{ backgroundColor: data.color || '#EAB308' }}>
-
-          <IconRenderer iconName={data.icon ?? ''} className="text-4xl text-white" />
+          <div className="flex flex-col items-center justify-center -rotate-45">
+            <div className="rounded-lg p-1 mb-2" style={{ backgroundColor: data.color || '#EAB308' }}>
+              <IconRenderer iconName={data.icon ?? ''} className="text-3xl text-white" />
             </div>
-            <div className="flex flex-col">
-              <div className="text-lg font-bold" style={{ color: data.color || '#EAB308' }}>{data.label}</div>
-              <div className="text-sm text-gray-500">Condição</div>
+            <div className="text-center">
+              <div className="text-sm font-bold" style={{ color: data.color || '#EAB308' }}>{data.label}</div>
+              <div className="text-xs text-gray-500">Condição</div>
             </div>
           </div>
 
-          <div className="flex mt-2 items-center justify-between gap-2 border-t border-gray-100">
-            <div className="flex flex-col items-center relative w-10">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
-                  style={{ 
-                    borderColor: data.color || '#25D366',
-                  }}>
-                  <div className="text-green-500 text-xs">✓</div>
-                </div>
-              
-             
+          <div className="absolute bottom-[-25px] left-1/2 -translate-x-1/2 flex items-center justify-between gap-4">
+            <div className="flex flex-col items-center relative">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
+                style={{ 
+                  borderColor: data.color || '#25D366',
+                }}>
+                <div className="text-green-500 text-xs">✓</div>
+              </div>
               <Handle
                 type="source"
                 position={Position.Bottom}
                 id="true"
-                className="absolute  "
-                style={{ bottom: '-20px', right: '60px',opacity:0 }}
+                className="absolute bottom-[-20px] left-1/2 -translate-x-1/2 opacity-0"
               />
             </div>
-            <div className="flex flex-col items-center relative w-10">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
-                  style={{ 
-                    borderColor: data.color || '#25D366',
-                  }}>
-                  <div className="text-red-500 text-xs">✕</div>
-                </div>
+            <div className="flex flex-col items-center relative">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white"
+                style={{ 
+                  borderColor: data.color || '#25D366',
+                }}>
+                <div className="text-red-500 text-xs">✕</div>
+              </div>
               <Handle
                 type="source"
                 position={Position.Bottom}
                 id="false"
-                className="absolute bottom-[-4px] "
-                style={{ bottom: '-20px', right: '60px',opacity:0 }}
+                className="absolute bottom-[-20px] left-1/2 -translate-x-1/2 opacity-0"
               />
             </div>
           </div>
 
           <NodeActionButtons data={data} type="condition" />
+        </div>
+      </div>
+    );
+  },
+  comment: ({ data }: NodeProps) => {
+    return (
+      <div className="flex flex-col items-center group">
+        <div
+          className={`
+            flex items-center justify-center
+            bg-yellow-200
+            border border-yellow-400
+            rounded-xl
+            shadow
+            px-4 py-2
+            min-w-[120px] min-h-[40px]
+            max-w-[220px]
+            relative
+          `}
+        >
+          <div className="flex items-center gap-2 w-full">
+            <span className="text-yellow-700 text-xl">
+              <IconRenderer iconName={data.icon ?? ''} className="text-xl text-yellow-500" />
+            </span>
+            <span className="text-sm text-gray-800 text-center break-words w-full">
+              {data.config?.comment || 'Comentário'}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  },
+  database: ({ data }: NodeProps) => {
+    return (
+      <div className="flex flex-col items-center group">
+        <div
+          className={`
+            flex flex-col items-center justify-center
+            w-24 h-24
+            bg-yellow-400
+            border border-gray-400
+            rounded-t-2xl rounded-b-sm
+            shadow
+            overflow-hidden
+            relative
+          `}
+          style={{ minWidth: 80, minHeight: 64 }}
+        >
+          <div className="text-base font-bold text-gray-800 text-center w-full">
+            {data.label || "Database"}
+          </div>
+          {/* Handles para conexão */}
+          <Handle
+            type="target"
+            position={Position.Left}
+            className="absolute left-0 top-1/2 -translate-y-1/2 opacity-0"
+          />
+          <Handle
+            type="source"
+            position={Position.Right}
+            className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0"
+          />
+        </div>
+      </div>
+    );
+  },
+  api: ({ data }: NodeProps) => {
+    return (
+      <div className="flex flex-col items-center group">
+        <div
+          className={`
+            flex flex-col items-center justify-center
+            border-2
+            bg-sky-300
+            rounded-xl
+            shadow
+            px-4 py-3
+            min-w-[180px] min-h-[60px]
+            max-w-[320px]
+            relative
+          `}
+          style={{ borderColor: data.color || '#38BDF8' }}
+        >
+          {/* Handle esquerdo */}
+          <div className="absolute left-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+            <div 
+              className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+              style={{ borderColor: data.color || '#38BDF8' }}
+            />
+            <Handle
+              type="target"
+              position={Position.Left}
+              className="absolute inset-0 opacity-0"
+            />
+          </div>
+          <div className="flex items-center gap-2 mb-1">
+            <IconRenderer iconName={data.icon ?? ''} className="text-2xl text-sky-700" />
+            <span className="text-base font-bold text-sky-900">{data.label}</span>
+          </div>
+          {data.config?.endpoint && (
+            <div className="text-xs text-sky-900 bg-sky-100 rounded p-1 mt-1 w-full break-words text-center">
+              {data.config.endpoint}
+            </div>
+          )}
+          {data.config?.method && (
+            <div className="text-xs text-sky-800 font-semibold mt-1">
+              {data.config.method}
+            </div>
+          )}
+          {/* Handle direito */}
+          <div className="absolute right-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+            <div 
+              className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+              style={{ borderColor: data.color || '#38BDF8' }}
+            />
+            <Handle
+              type="source"
+              position={Position.Right}
+              className="absolute inset-0 opacity-0"
+            />
+          </div>
+        </div>
+      </div>
+    );
+  },
+  webhook: ({ data }: NodeProps) => {
+    return (
+      <div className="flex flex-col items-center group">
+        <div
+          className={`
+            flex flex-col items-center justify-center
+            border-2
+            bg-purple-200
+            rounded-xl
+            shadow
+            px-4 py-3
+            min-w-[180px] min-h-[60px]
+            max-w-[320px]
+            relative
+          `}
+          style={{ borderColor: data.color || '#A21CAF' }}
+        >
+          {/* Handle esquerdo */}
+          <div className="absolute left-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+            <div 
+              className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+              style={{ borderColor: data.color || '#A21CAF' }}
+            />
+            <Handle
+              type="target"
+              position={Position.Left}
+              className="absolute inset-0 opacity-0"
+            />
+          </div>
+          <div className="flex items-center gap-2 mb-1">
+            <IconRenderer iconName={data.icon ?? ''} className="text-2xl text-purple-700" />
+            <span className="text-base font-bold text-purple-900">{data.label}</span>
+          </div>
+          {data.config?.url && (
+            <div className="text-xs text-purple-900 bg-purple-100 rounded p-1 mt-1 w-full break-words text-center">
+              {data.config.url}
+            </div>
+          )}
+          {data.config?.method && (
+            <div className="text-xs text-purple-800 font-semibold mt-1">
+              {data.config.method}
+            </div>
+          )}
+          {/* Handle direito */}
+          <div className="absolute right-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+            <div 
+              className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+              style={{ borderColor: data.color || '#A21CAF' }}
+            />
+            <Handle
+              type="source"
+              position={Position.Right}
+              className="absolute inset-0 opacity-0"
+            />
+          </div>
         </div>
       </div>
     );
@@ -976,6 +1228,38 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
                 </div>
               </div>
             );
+          case 'API':
+            return (
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="endpoint">Endpoint</Label>
+                  <Input
+                    id="endpoint"
+                    placeholder="https://api.exemplo.com/endpoint"
+                    value={newNodeConfig.endpoint || ''}
+                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, endpoint: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="method">Método</Label>
+                  <Select
+                    value={newNodeConfig.method || 'GET'}
+                    onValueChange={(value) => setNewNodeConfig({ ...newNodeConfig, method: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o método" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="GET">GET</SelectItem>
+                      <SelectItem value="POST">POST</SelectItem>
+                      <SelectItem value="PUT">PUT</SelectItem>
+                      <SelectItem value="DELETE">DELETE</SelectItem>
+                      <SelectItem value="PATCH">PATCH</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            );
           default:
             return (
               <div className="space-y-4">
@@ -1039,6 +1323,70 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
                     condition: e.target.value 
                   })}
                 />
+              </div>
+            </div>
+          );
+        }
+        // Adicionar suporte ao node de comentário
+        if (tempNode.data.label === 'Comentário') {
+          return (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="comment">Comentário</Label>
+                <Textarea
+                  id="comment"
+                  placeholder="Digite seu comentário"
+                  value={newNodeConfig.comment || ''}
+                  onChange={(e) => setNewNodeConfig({ ...newNodeConfig, comment: e.target.value })}
+                />
+              </div>
+            </div>
+          );
+        }
+        if (tempNode.data.label === 'Banco de Dados') {
+          return (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="query">Query SQL</Label>
+                <Textarea
+                  id="query"
+                  placeholder="Digite a query SQL"
+                  value={newNodeConfig.query || ''}
+                  onChange={(e) => setNewNodeConfig({ ...newNodeConfig, query: e.target.value })}
+                />
+              </div>
+            </div>
+          );
+        }
+        if (tempNode.data.label === 'Webhook') {
+          return (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="url">URL</Label>
+                <Input
+                  id="url"
+                  placeholder="https://webhook.site/unique-url"
+                  value={newNodeConfig.url || ''}
+                  onChange={(e) => setNewNodeConfig({ ...newNodeConfig, url: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="method">Método</Label>
+                <Select
+                  value={newNodeConfig.method || 'POST'}
+                  onValueChange={(value) => setNewNodeConfig({ ...newNodeConfig, method: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o método" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="POST">POST</SelectItem>
+                    <SelectItem value="GET">GET</SelectItem>
+                    <SelectItem value="PUT">PUT</SelectItem>
+                    <SelectItem value="DELETE">DELETE</SelectItem>
+                    <SelectItem value="PATCH">PATCH</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           );

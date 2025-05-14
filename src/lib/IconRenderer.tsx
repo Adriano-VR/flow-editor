@@ -5,6 +5,7 @@ import { VscDebugStart } from 'react-icons/vsc';
 import { IoTime } from 'react-icons/io5';
 import { TbAirConditioning } from 'react-icons/tb';
 import { GiFinishLine } from "react-icons/gi";
+import { FaCommentAlt } from "react-icons/fa";
 
 const iconMap = {
   FaTools,
@@ -16,6 +17,7 @@ const iconMap = {
   IoTime,
   TbAirConditioning,
   GiFinishLine,
+  FaCommentAlt,
 };
 
 interface IconRendererProps {

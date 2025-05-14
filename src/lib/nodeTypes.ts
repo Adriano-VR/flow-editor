@@ -52,7 +52,7 @@ export const nodeTypes: {
       receive_message: {
         id: 'whatsapp_receive_message',
         name: 'Receber Mensagem',
-        type: 'trigger',
+        type: 'action',
         category: 'app',
         subcategory: 'whatsapp',
         icon: 'FaWhatsapp',
@@ -160,6 +160,56 @@ export const nodeTypes: {
       color: '#EAB308',
       config: {
         condition: '',
+      }
+    },
+    comment: {
+      id: 'internal_comment',
+      name: 'Comentário',
+      type: 'comment',
+      category: 'internal',
+      icon: 'FaCommentAlt',
+      color: '#FACC15',
+      label: 'Comentário',
+      config: {
+        comment: ''
+      }
+    },
+    database: {
+      id: 'internal_database',
+      name: 'Banco de Dados',
+      type: 'database',
+      category: 'internal',
+      icon: 'FaDatabase',
+      color: '#2563EB',
+      label: 'Banco de Dados',
+      config: {
+        query: ''
+      }
+    },
+    api: {
+      id: 'internal_api',
+      name: 'API',
+      type: 'api',
+      category: 'internal',
+      icon: 'FaGlobe',
+      color: '#38BDF8',
+      label: 'API',
+      config: {
+        endpoint: '',
+        method: 'GET'
+      }
+    },
+    webhook: {
+      id: 'internal_webhook',
+      name: 'Webhook',
+      type: 'webhook',
+      category: 'internal',
+      icon: 'FaLink',
+      color: '#A21CAF',
+      label: 'Webhook',
+      config: {
+        url: '',
+        method: 'POST'
       }
     }
   }

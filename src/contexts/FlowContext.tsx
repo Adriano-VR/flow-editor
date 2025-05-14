@@ -30,6 +30,7 @@ interface FlowContextType {
   handleActionSelect: (action: Action) => void;
   handleActionConfigSubmit: () => Promise<void>;
   handleJsonUpdate: (json: string) => Promise<void>;
+  setFlows: React.Dispatch<React.SetStateAction<Flow[]>>;
 }
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
@@ -283,6 +284,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     handleActionSelect,
     handleActionConfigSubmit,
     handleJsonUpdate,
+    setFlows,
   };
 
   return (
