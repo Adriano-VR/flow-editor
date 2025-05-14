@@ -30,90 +30,427 @@ interface InternalNodeTypes {
   [key: string]: NodeTypeDefinition;
 }
 
+// Defina arrays de actions para cada subcategoria
+const whatsappActions: NodeTypeDefinition[] = [
+  {
+    id: 'whatsapp_send_message_text',
+    name: 'Enviar Mensagem (Texto)',
+    type: 'action',
+    category: 'app',
+    subcategory: 'whatsapp',
+    icon: 'FaRegCommentDots',
+    color: '#25D366',
+    config: {
+      message: '',
+      to: '',
+      type: 'text'
+    }
+  },
+  {
+    id: 'whatsapp_send_message_image',
+    name: 'Enviar Mensagem (Imagem)',
+    type: 'action',
+    category: 'app',
+    subcategory: 'whatsapp',
+    icon: 'FaRegImage',
+    color: '#25D366',
+    config: {
+      message: '',
+      to: '',
+      type: 'image'
+    }
+  },
+  {
+    id: 'whatsapp_send_message_video',
+    name: 'Enviar Mensagem (Vídeo)',
+    type: 'action',
+    category: 'app',
+    subcategory: 'whatsapp',
+    icon: 'FaRegPlayCircle',
+    color: '#25D366',
+    config: {
+      message: '',
+      to: '',
+      type: 'video'
+    }
+  },
+  {
+    id: 'whatsapp_quick_reply',
+    name: 'Quick Reply',
+    type: 'action',
+    category: 'app',
+    subcategory: 'whatsapp',
+    icon: 'FaReply',
+    color: '#25D366',
+    config: {}
+  },
+  {
+    id: 'whatsapp_list',
+    name: 'List',
+    type: 'action',
+    category: 'app',
+    subcategory: 'whatsapp',
+    icon: 'FaListUl',
+    color: '#25D366',
+    config: {}
+  },
+  {
+    id: 'whatsapp_receive_message',
+    name: 'Receber Mensagem',
+    type: 'action',
+    category: 'app',
+    subcategory: 'whatsapp',
+    icon: 'FaWhatsapp',
+    color: '#25D366',
+    config: {
+      message: ''
+    }
+  }
+];
+
+const assistantActions: NodeTypeDefinition[] = [
+  {
+    id: 'assistant_model',
+    name: 'Modelo',
+    type: 'action',
+    category: 'app',
+    subcategory: 'assistant',
+    icon: 'AiOutlineOpenAI',
+    color: '#3B82F6',
+    config: {
+      model: '',
+      temperature: 0.7
+    }
+  },
+  {
+    id: 'assistant_memory',
+    name: 'Memória',
+    type: 'action',
+    category: 'app',
+    subcategory: 'assistant',
+    icon: 'MdMemory',
+    color: '#3B82F6',
+    config: {}
+  },
+  {
+    id: 'assistant_tool',
+    name: 'Ferramenta',
+    type: 'action',
+    category: 'app',
+    subcategory: 'assistant',
+    icon: 'FaTools',
+    color: '#3B82F6',
+    config: {
+      tool: '',
+      parameters: {}
+    }
+  },
+  {
+    id: 'assistant_create_agent',
+    name: 'Criar Agente',
+    type: 'action',
+    category: 'app',
+    subcategory: 'assistant',
+    icon: 'FaRobot',
+    color: '#3B82F6',
+    config: {
+      name: '',
+      description: '',
+      capabilities: []
+    }
+  }
+];
+
+const openaiActions: NodeTypeDefinition[] = [
+  {
+    id: 'openai_assistant',
+    name: 'Assistente',
+    type: 'action',
+    category: 'app',
+    subcategory: 'openai',
+    icon: 'AiOutlineRobot',
+    color: '#10A37F',
+    config: {}
+  },
+  {
+    id: 'openai_tts',
+    name: 'TTS',
+    type: 'action',
+    category: 'app',
+    subcategory: 'openai',
+    icon: 'MdRecordVoiceOver',
+    color: '#10A37F',
+    config: {}
+  },
+  {
+    id: 'openai_gpt_image_1',
+    name: 'gpt-image-1',
+    type: 'action',
+    category: 'app',
+    subcategory: 'openai',
+    icon: 'MdImage',
+    color: '#10A37F',
+    config: {}
+  },
+  {
+    id: 'openai_gpt_4o',
+    name: 'gpt-4o',
+    type: 'action',
+    category: 'app',
+    subcategory: 'openai',
+    icon: 'SiOpenai',
+    color: '#10A37F',
+    config: {}
+  }
+];
+
+const instagramActions: NodeTypeDefinition[] = [
+  {
+    id: 'instagram_post',
+    name: 'Postar',
+    type: 'action',
+    category: 'app',
+    subcategory: 'instagram',
+    icon: 'FaInstagram',
+    color: '#E1306C',
+    config: {}
+  },
+  {
+    id: 'instagram_dm',
+    name: 'DM',
+    type: 'action',
+    category: 'app',
+    subcategory: 'instagram',
+    icon: 'FaInstagram',
+    color: '#E1306C',
+    config: {}
+  },
+  {
+    id: 'instagram_form',
+    name: 'Formulário',
+    type: 'action',
+    category: 'app',
+    subcategory: 'instagram',
+    icon: 'FaWpforms',
+    color: '#E1306C',
+    config: {}
+  },
+  {
+    id: 'instagram_question',
+    name: 'Pergunta',
+    type: 'action',
+    category: 'app',
+    subcategory: 'instagram',
+    icon: 'FaQuestionCircle',
+    color: '#E1306C',
+    config: {}
+  },
+  {
+    id: 'instagram_quick_reply',
+    name: 'Quick Reply',
+    type: 'action',
+    category: 'app',
+    subcategory: 'instagram',
+    icon: 'FaReply',
+    color: '#E1306C',
+    config: {}
+  }
+];
+
+const conversionActions: NodeTypeDefinition[] = [
+  {
+    id: 'ai_text_to_text',
+    name: 'AI Text-to-Text',
+    type: 'action',
+    category: 'app',
+    subcategory: 'conversion',
+    icon: 'FaRegCommentDots',
+    color: '#6366F1',
+    config: {}
+  },
+  {
+    id: 'ai_text_to_video',
+    name: 'Text-to-Video',
+    type: 'action',
+    category: 'app',
+    subcategory: 'conversion',
+    icon: 'FaRegPlayCircle',
+    color: '#6366F1',
+    config: {}
+  },
+  {
+    id: 'ai_text_to_image',
+    name: 'Text-to-Image',
+    type: 'action',
+    category: 'app',
+    subcategory: 'conversion',
+    icon: 'FaRegImage',
+    color: '#6366F1',
+    config: {}
+  },
+  {
+    id: 'ai_image_to_video',
+    name: 'Image-to-Video',
+    type: 'action',
+    category: 'app',
+    subcategory: 'conversion',
+    icon: 'FaRegPlayCircle',
+    color: '#6366F1',
+    config: {}
+  },
+  {
+    id: 'ai_text_to_audio',
+    name: 'Text-to-Audio',
+    type: 'action',
+    category: 'app',
+    subcategory: 'conversion',
+    icon: 'FaRegFileAudio',
+    color: '#6366F1',
+    config: {}
+  },
+  {
+    id: 'ai_video_to_text',
+    name: 'Video-to-Text',
+    type: 'action',
+    category: 'app',
+    subcategory: 'conversion',
+    icon: 'FaRegFileAlt',
+    color: '#6366F1',
+    config: {}
+  },
+  {
+    id: 'ai_video_to_audio',
+    name: 'Video-to-Audio',
+    type: 'action',
+    category: 'app',
+    subcategory: 'conversion',
+    icon: 'FaRegFileAudio',
+    color: '#6366F1',
+    config: {}
+  },
+  {
+    id: 'ai_audio_to_text',
+    name: 'Audio-to-Text',
+    type: 'action',
+    category: 'app',
+    subcategory: 'conversion',
+    icon: 'FaRegFileAlt',
+    color: '#6366F1',
+    config: {}
+  }
+];
+
+const veo2Actions: NodeTypeDefinition[] = [
+  {
+    id: 'veo2_generate_video',
+    name: 'Gerar Vídeo',
+    type: 'action',
+    category: 'app',
+    subcategory: 'veo2',
+    icon: 'FaVideo',
+    color: '#0EA5E9',
+    config: {}
+  }
+];
+
+const klingaiActions: NodeTypeDefinition[] = [
+  {
+    id: 'klingai_generate_voice',
+    name: 'Gerar Voz',
+    type: 'action',
+    category: 'app',
+    subcategory: 'klingai',
+    icon: 'FaMicrophone',
+    color: '#A21CAF',
+    config: {}
+  }
+];
+
+const elevenlabsActions: NodeTypeDefinition[] = [
+  {
+    id: 'elevenlabs_tts',
+    name: 'Text-to-Speech',
+    type: 'action',
+    category: 'app',
+    subcategory: 'elevenlabs',
+    icon: 'FaVolumeUp',
+    color: '#F59E42',
+    config: {}
+  }
+];
+
 export const nodeTypes: {
-  app: AppNodeTypes;
+  app: {
+    subcategories: {
+      whatsapp: {
+        name: string;
+        actions: NodeTypeDefinition[];
+      };
+      assistant: {
+        name: string;
+        actions: NodeTypeDefinition[];
+      };
+      openai: {
+        name: string;
+        actions: NodeTypeDefinition[];
+      };
+      instagram: {
+        name: string;
+        actions: NodeTypeDefinition[];
+      };
+      conversion: {
+        name: string;
+        actions: NodeTypeDefinition[];
+      };
+      veo2: {
+        name: string;
+        actions: NodeTypeDefinition[];
+      };
+      klingai: {
+        name: string;
+        actions: NodeTypeDefinition[];
+      };
+      elevenlabs: {
+        name: string;
+        actions: NodeTypeDefinition[];
+      };
+    };
+  };
   internal: InternalNodeTypes;
 } = {
   app: {
-    whatsapp: {
-      send_message: {
-        id: 'whatsapp_send_message',
-        name: 'Enviar Mensagem',
-        type: 'action',
-        category: 'app',
-        subcategory: 'whatsapp',
-        icon: 'FaWhatsapp',
-        color: '#25D366',
-        config: {
-          message: '',
-          to: ''
-        }
+    subcategories: {
+      whatsapp: {
+        name: 'WhatsApp',
+        actions: whatsappActions
       },
-      receive_message: {
-        id: 'whatsapp_receive_message',
-        name: 'Receber Mensagem',
-        type: 'action',
-        category: 'app',
-        subcategory: 'whatsapp',
-        icon: 'FaWhatsapp',
-        color: '#25D366',
-        config: {
-          message: ''
-        }
-      }
-    },
-    assistant: {
-      model: {
-        id: 'assistant_model',
-        name: 'Modelo',
-        type: 'action',
-        category: 'app',
-        subcategory: 'assistant',
-        icon: 'AiOutlineOpenAI',
-        color: '#3B82F6',
-        config: {
-          model: '',
-          temperature: 0.7
-        }
+      assistant: {
+        name: 'Assistente Virtual',
+        actions: assistantActions
       },
-      memory: {
-        id: 'assistant_memory',
-        name: 'Memória',
-        type: 'action',
-        category: 'app',
-        subcategory: 'assistant',
-        icon: 'MdMemory',
-        color: '#3B82F6',
-        config: {
-        
-        }
+      openai: {
+        name: 'OpenAI',
+        actions: openaiActions
       },
-      tool: {
-        id: 'assistant_tool',
-        name: 'Ferramenta',
-        type: 'action',
-        category: 'app',
-        subcategory: 'assistant',
-        icon: 'FaTools',
-        color: '#3B82F6',
-        config: {
-          tool: '',
-          parameters: {}
-        }
+      instagram: {
+        name: 'Instagram',
+        actions: instagramActions
       },
-      create_agent: {
-        id: 'assistant_create_agent',
-        name: 'Criar Agente',
-        type: 'action',
-        category: 'app',
-        subcategory: 'assistant',
-        icon: 'FaRobot',
-        color: '#3B82F6',
-        config: {
-          name: '',
-          description: '',
-          capabilities: []
-        }
+      conversion: {
+        name: 'Conversão AI',
+        actions: conversionActions
+      },
+      veo2: {
+        name: 'Veo2',
+        actions: veo2Actions
+      },
+      klingai: {
+        name: 'Kling AI',
+        actions: klingaiActions
+      },
+      elevenlabs: {
+        name: 'Eleven Labs',
+        actions: elevenlabsActions
       }
     }
   },
@@ -237,16 +574,7 @@ export const getNodeCategories = (): Categories => {
   return {
     app: {
       name: 'Aplicativos',
-      subcategories: {
-        whatsapp: {
-          name: 'WhatsApp',
-          actions: Object.values(nodeTypes.app.whatsapp)
-        },
-        assistant: {
-          name: 'Assistente Virtual',
-          actions: Object.values(nodeTypes.app.assistant)
-        }
-      },
+      subcategories: nodeTypes.app.subcategories,
       actions: []
     },
     internal: {
