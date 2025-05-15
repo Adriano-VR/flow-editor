@@ -19,7 +19,6 @@ import {
 import { FiArrowLeft, FiTrash2, FiSave, FiEdit2, FiSettings, FiCheckCircle } from 'react-icons/fi';
 import { Switch } from './ui/switch';
 import { cn } from '@/lib/utils';
-import { DialogTitle } from './ui/dialog';
 
 interface FlowEditDrawerProps {
   open: boolean;
@@ -33,15 +32,7 @@ interface FlowEditDrawerProps {
       edges: any[];
     };
   };
-  onSave: (data: { 
-    name: string; 
-    description: string; 
-    status: string;
-    data?: {
-      nodes: any[];
-      edges: any[];
-    };
-  }) => Promise<void>;
+  onSave: (data: { name: string; description: string; status: string }) => Promise<void>;
   onDelete: () => Promise<void>;
 }
 
@@ -71,12 +62,7 @@ export function FlowEditDrawer({
   const handleSave = async () => {
     try {
       setIsSaving(true);
-      await onSave({ 
-        name, 
-        description, 
-        status,
-        data: flowData.data // Mantém os dados existentes do flow
-      });
+      await onSave({ name, description, status });
       onOpenChange(false);
     } catch (error) {
       console.error('Error saving flow:', error);
@@ -102,10 +88,12 @@ export function FlowEditDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className=" fixed inset-y-0 right-0 h-[100vh] w-6/12 rounded-r-xl rounded-l-none border-l bg-white flex flex-col p-0">
+    <DrawerContent
+  className="fixed  bottom-0 top-auto w-4/12 rounded-t-2xl border-t bg-white flex flex-col p-0 shadow-2xl animate-slideInUp"
+  style={{ maxHeight: '80vh' }}
+>
         {/* Header fixo */}
-        <DialogTitle></DialogTitle>
-        <div className="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white z-10">
+        <div className="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white z-10 rounded-t-2xl">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
               <FiArrowLeft className="h-5 w-5" />
@@ -173,7 +161,9 @@ export function FlowEditDrawer({
             </div>
           </div>
 
-         
+          {/* Switches/Opções extras (exemplo) */}
+        
+    
         </div>
 
         {/* Rodapé com botões grandes */}

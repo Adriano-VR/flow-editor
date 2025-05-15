@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Plus, Loader2, X, Save, Pencil } from "lucide-react";
+import { Plus, Loader2, X, Save, Pencil, Sparkles, FilePlus2, LayoutGrid, Upload } from "lucide-react";
 import { useSearch } from "@/contexts/SearchContext";
 import { SidebarProps } from "@/types/sidebar";
 import { useFlow } from "@/contexts/FlowContext";
@@ -16,6 +16,7 @@ import {
   DialogTitle,
 } from "./ui/dialog";
 import { FlowEditDrawer } from "./FlowEditDrawer";
+import { NewFlowDialog } from "./NewFlowDialog";
 
 export default function Sidebar({ onSelectFlow }: SidebarProps) {
   const [showNewFlowInput, setShowNewFlowInput] = useState(false);
@@ -34,6 +35,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
     handleSaveFlow,
     handleDeleteFlow
   } = useFlow();
+  const [showNewFlowDialog, setShowNewFlowDialog] = useState(false);
 
   useEffect(() => {
     setLocalSelectedId(selectedFlowId);
@@ -140,62 +142,22 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
               variant="outline" 
               className="w-full"
               onClick={() => {
-                console.log('New Flow button clicked');
-                setShowNewFlowInput(!showNewFlowInput);
+                setShowNewFlowDialog(true);
               }}
             >
               <Plus className="h-4 w-4 mr-2" />
               Novo Flow
             </Button>
-
-            {showNewFlowInput && (
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2 items-center">
-                  <Input
-                    placeholder="Nome do flow"
-                    value={newFlowName}
-                    onChange={(e) => {
-                      console.log('Input changed:', e.target.value);
-                      setNewFlowName(e.target.value);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        console.log('Enter pressed');
-                        handleCreateFlowClick();
-                      }
-                    }}
-                    disabled={isCreating}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      console.log('Cancel button clicked');
-                      setShowNewFlowInput(false);
-                    }}
-                    disabled={isCreating}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                <Button
-                  variant="default"
-                  className="w-full"
-                  onClick={() => {
-                    console.log('Save button clicked');
-                    handleCreateFlowClick();
-                  }}
-                  disabled={isCreating || !newFlowName.trim()}
-                >
-                  {isCreating ? (
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" />
-                  )}
-                  Salvar
-                </Button>
-              </div>
-            )}
+            <NewFlowDialog
+              open={showNewFlowDialog}
+              onOpenChange={setShowNewFlowDialog}
+              onOptionSelect={(option) => {
+                // Aqui você pode definir o que acontece para cada opção
+                setShowNewFlowDialog(false);
+                if (option === 'blank') setShowNewFlowInput(true);
+                // Adicione lógica para 'ai', 'template', 'import' conforme necessário
+              }}
+            />
           </div>
 
           <ul className="space-y-2 mt-4">
