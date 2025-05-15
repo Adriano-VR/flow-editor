@@ -17,11 +17,11 @@ export const createNode = (
     type: nodeType.type,
     position,
     data: {
-      label: nodeType.name,
+      label: String(nodeType.label ?? nodeType.name ?? ''),
       config: nodeType.config || {},
-      icon: nodeType.icon,
-      name: nodeType.name,
-      color: nodeType.color
+      icon: nodeType.icon ?? '',
+      name: nodeType.name ?? '',
+      color: nodeType.color ?? ''
     }
   };
 

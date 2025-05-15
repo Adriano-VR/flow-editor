@@ -35,16 +35,24 @@ export function DatabaseNode({ data }: NodeProps) {
           {data.label || 'Database'}
         </div>
         {/* Handles para conexão */}
-        <Handle
-          type="target"
-          position={Position.Left}
-          className="absolute left-0 top-1/2 -translate-y-1/2 opacity-0"
-        />
-        <Handle
-          type="source"
-          position={Position.Right}
-          className="absolute right-0 top-1/2 -translate-y-1/2 opacity-0"
-        />
+        <div className="absolute left-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+          <div
+            className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+            style={{ borderColor: data.color || '#38BDF8' }}
+          />
+          <Handle type="target" position={Position.Left} className="absolute inset-0" />
+        </div>
+        
+        <div className="absolute right-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+          <div
+            className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+            style={{ borderColor: data.color || '#3B82F6' }}
+          />
+          <Handle type="source" position={Position.Right} className="absolute inset-0 " />
+        </div>
+       
+       
+       
       </div>
     </div>
   );

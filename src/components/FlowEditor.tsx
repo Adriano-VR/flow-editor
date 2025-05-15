@@ -53,6 +53,9 @@ import { CommentNode } from './nodes/CommentNode';
 import { DatabaseNode } from './nodes/DatabaseNode';
 import { ApiNode } from './nodes/ApiNode';
 import { WebhookNode } from './nodes/WebhookNode';
+import { FlowEditDrawer } from './FlowEditDrawer';
+import { useFlow } from '@/contexts/FlowContext';
+import { Pencil } from 'lucide-react';
 
 // Add styles for edge hover effect
 const edgeStyles = `
@@ -102,6 +105,7 @@ interface FlowData {
     id: number;
     attributes: {
       name: string;
+      description?: string;
       status: string;
       data: {
         nodes: Node[];
@@ -167,6 +171,8 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   const drawerRef = useRef<NodeSelectionDrawerRef>(null);
   const [isExecuting, setIsExecuting] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const { handleSaveFlow, handleDeleteFlow } = useFlow();
 
   // Debounced save function
   const debouncedSave = useCallback(() => {
@@ -869,6 +875,44 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     debouncedSave();
   };
 
+  const handleFlowEdit = async (data: { name: string; description: string; status: string }) => {
+    if (!flowData?.data?.attributes) return;
+    
+    try {
+      await handleSaveFlow({
+        nodes,
+        edges,
+        name: data.name,
+        status: data.status,
+        description: data.description
+      });
+      
+      // Update local state
+      setFlowData(prev => {
+        if (!prev?.data?.attributes) return null;
+        return {
+          ...prev,
+          data: {
+            ...prev.data,
+            attributes: {
+              ...prev.data.attributes,
+              name: data.name,
+              status: data.status,
+              description: data.description,
+              data: {
+                ...prev.data.attributes.data,
+                nodes,
+                edges
+              }
+            }
+          }
+        };
+      });
+    } catch (error) {
+      console.error('Error updating flow:', error);
+    }
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-[80vh]">Loading...</div>;
   }
@@ -883,6 +927,15 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
       <div className="flex justify-between items-center mb-4 font-semibold">
         <div className="flex items-center gap-4">
           <h2 className="text-xl font-bold">{flowData?.data?.attributes?.name || 'Novo Flow'}</h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditDrawerOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Pencil className="h-4 w-4" />
+            Editar
+          </Button>
           <NodeSelectionDrawer ref={drawerRef} onNodeSelect={handleNodeTypeSelect} />
         </div>
         <div className="flex items-center gap-2">
@@ -1029,6 +1082,18 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
         }}
         onSave={handleConfigSubmit}
         isInternal={tempNode?.data.name === 'internal'}
+      />
+
+      <FlowEditDrawer
+        open={isEditDrawerOpen}
+        onOpenChange={setIsEditDrawerOpen}
+        flowData={{
+          name: flowData?.data?.attributes?.name || '',
+          description: flowData?.data?.attributes?.description || '',
+          status: flowData?.data?.attributes?.status || 'draft'
+        }}
+        onSave={handleFlowEdit}
+        onDelete={() => handleDeleteFlow(flowId)}
       />
     </div>
   );

@@ -455,7 +455,7 @@ const internalActions: NodeTypeDefinition[] = [
     category: 'internal',
     icon: 'TbApi',
     color: '#38BDF8',
-    label: 'API',
+    label: 'Conectar API',
     config: {
       endpoint: '',
       method: 'GET'
@@ -518,7 +518,7 @@ export const nodeTypes = {
     subcategories: {},
     actions: internalActions
   }
-};
+} as const;
 
 interface Subcategory {
   name: string;

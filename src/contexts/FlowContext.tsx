@@ -5,6 +5,7 @@ import { createFlow, getFlow, updateFlow, deleteFlow, getFlows } from "@/lib/api
 import { nodeTypes as nodeTypeDefinitions } from "@/lib/nodeTypes";
 import { Flow, Node, Edge, Action, actionConfig } from "@/types/flow";
 import { Flow as FlowType } from "@/types/sidebar";
+import { NodeTypeDefinition } from '@/lib/nodeTypes';
 
 interface FlowContextType {
   flows: Flow[];
@@ -26,7 +27,7 @@ interface FlowContextType {
   setActionConfig: (config: actionConfig) => void;
   handleCreateFlow: (name: string) => Promise<string | null>;
   handleDeleteFlow: (flowId: string) => Promise<void>;
-  handleSaveFlow: (data: { nodes: Node[]; edges: Edge[] }) => Promise<void>;
+  handleSaveFlow: (data: { nodes: Node[]; edges: Edge[]; name?: string; status?: string; description?: string }) => Promise<void>;
   handleActionSelect: (action: Action) => void;
   handleActionConfigSubmit: () => Promise<void>;
   handleJsonUpdate: (json: string) => Promise<void>;
@@ -127,18 +128,41 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     loadFlowData();
   }, [selectedFlowId]);
 
-  const handleSaveFlow = async (data: { nodes: Node[]; edges: Edge[] }) => {
+  const handleSaveFlow = async (data: { nodes: Node[]; edges: Edge[]; name?: string; status?: string; description?: string }) => {
     if (!selectedFlowId) return;
 
     try {
       await updateFlow(selectedFlowId, {
         data: {
-          name: flowData?.attributes?.name || "Novo Flow",
-          status: "draft",
+          name: data.name || flowData?.attributes?.name || "Novo Flow",
+          status: data.status || flowData?.attributes?.status || "draft",
+          description: data.description || flowData?.attributes?.description || "",
           billing: "free",
           published: true,
-          data
+          data: {
+            nodes: data.nodes,
+            edges: data.edges
+          }
         }
+      });
+
+      // Atualiza o estado local
+      setFlowData(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          attributes: {
+            ...prev.attributes,
+            name: data.name || prev.attributes.name,
+            status: data.status || prev.attributes.status,
+            description: data.description || prev.attributes.description,
+            data: {
+              ...prev.attributes.data,
+              nodes: data.nodes,
+              edges: data.edges
+            }
+          }
+        };
       });
     } catch (error) {
       console.error('Error saving flow:', error);
@@ -160,9 +184,9 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     const actionName = actionParts.join('_');
 
     if (category === 'app' && subcategory) {
-      actionDefinition = nodeTypeDefinitions.app[subcategory]?.[actionName];
+      actionDefinition = (nodeTypeDefinitions.app.subcategories as Record<string, { actions: NodeTypeDefinition[] }>)[subcategory]?.actions.find(a => a.id === actionName);
     } else if (category === 'internal') {
-      actionDefinition = nodeTypeDefinitions.internal[actionName];
+      actionDefinition = nodeTypeDefinitions.internal.actions.find(a => a.id === actionName);
     }
 
     if (!actionDefinition) {

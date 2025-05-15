@@ -17,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistMono.variable} antialiased`}>
+      <body className={`${geistMono.variable} antialiased font-mono`}>
         <ChatProvider>
           <Providers>
             {children}

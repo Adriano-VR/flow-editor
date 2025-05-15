@@ -6,6 +6,7 @@ export interface Flow {
   attributes: {
     name: string;
     status: string;
+    description?: string;
     data: {
       nodes: Node[];
       edges: Edge[];

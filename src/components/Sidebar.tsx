@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { Plus, Loader2, X, Save, Trash2, Pencil } from "lucide-react";
+import { Plus, Loader2, X, Save, Pencil } from "lucide-react";
 import { useSearch } from "@/contexts/SearchContext";
 import { SidebarProps } from "@/types/sidebar";
 import { useFlow } from "@/contexts/FlowContext";
@@ -15,23 +15,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
+import { FlowEditDrawer } from "./FlowEditDrawer";
 
 export default function Sidebar({ onSelectFlow }: SidebarProps) {
   const [showNewFlowInput, setShowNewFlowInput] = useState(false);
   const [newFlowName, setNewFlowName] = useState("");
   const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [flowToDelete, setFlowToDelete] = useState<string | null>(null);
+  const [editDrawerOpen, setEditDrawerOpen] = useState(false);
+  const [flowToEdit, setFlowToEdit] = useState<string | null>(null);
   const { searchInput } = useSearch();
   const { 
     flows, 
     selectedFlowId, 
     setSelectedFlowId, 
     isCreating, 
-    isDeleting, 
-    handleCreateFlow, 
-    handleDeleteFlow,
-    setFlows
+    handleCreateFlow,
+    setFlows,
+    handleSaveFlow,
+    handleDeleteFlow
   } = useFlow();
 
   useEffect(() => {
@@ -60,22 +61,75 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
     }
   };
 
-  const handleDeleteFlowClick = async (flowId: string, e: React.MouseEvent) => {
+  const handleEditFlowClick = (flowId: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setFlowToDelete(flowId);
-    setDeleteDialogOpen(true);
+    setFlowToEdit(flowId);
+    setEditDrawerOpen(true);
   };
 
-  const confirmDelete = async () => {
-    if (!flowToDelete) return;
+  const handleSaveFlowClick = async (data: { 
+    name: string; 
+    description: string; 
+    status: string;
+    data?: {
+      nodes: any[];
+      edges: any[];
+    };
+  }) => {
+    if (!flowToEdit) return;
     try {
-      await handleDeleteFlow(flowToDelete);
-      setDeleteDialogOpen(false);
-      setFlowToDelete(null);
+      const selectedFlow = flows.find(flow => flow.id === flowToEdit);
+      if (!selectedFlow) return;
+
+      await handleSaveFlow({
+        name: data.name,
+        status: data.status,
+        description: data.description,
+        nodes: selectedFlow.attributes.data?.nodes || [],
+        edges: selectedFlow.attributes.data?.edges || []
+      });
+
+      // Atualiza a lista de flows
+      const updatedFlows = flows.map(flow => {
+        if (flow.id === flowToEdit) {
+          return {
+            ...flow,
+            attributes: {
+              ...flow.attributes,
+              name: data.name,
+              description: data.description,
+              status: data.status
+            }
+          };
+        }
+        return flow;
+      });
+      
+      setFlows(updatedFlows);
+      setEditDrawerOpen(false);
+      setFlowToEdit(null);
+    } catch (error) {
+      console.error('Error updating flow:', error);
+    }
+  };
+
+  const handleDeleteFlowClick = async () => {
+    if (!flowToEdit) return;
+    try {
+      await handleDeleteFlow(flowToEdit);
+      setEditDrawerOpen(false);
+      setFlowToEdit(null);
+      // Se o flow deletado era o selecionado, limpa a seleção
+      if (selectedFlowId === flowToEdit) {
+        setSelectedFlowId(null);
+        onSelectFlow('');
+      }
     } catch (error) {
       console.error('Error deleting flow:', error);
     }
   };
+
+  const selectedFlow = flows.find(flow => flow.id === flowToEdit);
 
   return (
     <>
@@ -175,14 +229,9 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                     variant="ghost"
                     size="icon"
                     className="cursor-pointer absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => handleDeleteFlowClick(flow.id, e)}
-                    disabled={isDeleting === flow.id}
+                    onClick={(e) => handleEditFlowClick(flow.id, e)}
                   >
-                    {isDeleting === flow.id ? (
-                      <Loader2 className="h-8 w-8 text-red-500 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-8 w-8 text-red-500" />
-                    )}
+                    <Pencil className="h-4 w-4 text-primary" />
                   </Button>
                 </li>
               ))}
@@ -190,42 +239,25 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
         </div>
       </aside>
 
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmar exclusão</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir este flow? Esta ação não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={isDeleting === flowToDelete}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={confirmDelete}
-              disabled={isDeleting === flowToDelete}
-            >
-              {isDeleting === flowToDelete ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Excluindo...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Excluir
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {selectedFlow && (
+        <FlowEditDrawer
+          open={editDrawerOpen}
+          onOpenChange={(open) => {
+            setEditDrawerOpen(open);
+            if (!open) {
+              setFlowToEdit(null);
+            }
+          }}
+          flowData={{
+            name: selectedFlow.attributes.name,
+            description: selectedFlow.attributes.description || '',
+            status: selectedFlow.attributes.status,
+            data: selectedFlow.attributes.data || { nodes: [], edges: [] }
+          }}
+          onSave={handleSaveFlowClick}
+          onDelete={handleDeleteFlowClick}
+        />
+      )}
     </>
   );
 }

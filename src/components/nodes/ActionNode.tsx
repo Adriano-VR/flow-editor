@@ -200,7 +200,7 @@ export function ActionNode({ data }: NodeProps) {
           animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
         }}
       >
-        <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+        <div className="absolute left-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
           <div className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white" style={{ borderColor: data.color || '#25D366' }} />
           <Handle type="target" position={Position.Left} className="absolute inset-0 opacity-0" />
         </div>
@@ -214,7 +214,7 @@ export function ActionNode({ data }: NodeProps) {
           </div>
         </div>
         {!isEndNode && (
-          <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+          <div className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
             <div className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white" style={{ borderColor: data.color || '#25D366' }} />
             <Handle type="source" position={Position.Right} className="absolute inset-0 opacity-0" />
           </div>

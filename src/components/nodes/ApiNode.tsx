@@ -12,14 +12,13 @@ export function ApiNode({ data }: NodeProps) {
           rounded-xl
           shadow
           px-4 py-3
-          min-w-[180px] min-h-[60px]
-          max-w-[320px]
+          min-w-[150px] min-h-[50px]
           relative
         `}
         style={{ borderColor: data.color || '#38BDF8' }}
       >
         {/* Handle esquerdo */}
-        <div className="absolute left-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+        <div className="absolute left-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
           <div
             className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
             style={{ borderColor: data.color || '#38BDF8' }}
@@ -41,7 +40,7 @@ export function ApiNode({ data }: NodeProps) {
           </div>
         )}
         {/* Handle direito */}
-        <div className="absolute right-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+        <div className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
           <div
             className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
             style={{ borderColor: data.color || '#38BDF8' }}

@@ -19,7 +19,7 @@ export function WebhookNode({ data }: NodeProps) {
         style={{ borderColor: data.color || '#A21CAF' }}
       >
         {/* Handle esquerdo */}
-        <div className="absolute left-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+        <div className="absolute left-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
           <div
             className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
             style={{ borderColor: data.color || '#A21CAF' }}
@@ -41,7 +41,7 @@ export function WebhookNode({ data }: NodeProps) {
           </div>
         )}
         {/* Handle direito */}
-        <div className="absolute right-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+        <div className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
           <div
             className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
             style={{ borderColor: data.color || '#A21CAF' }}
