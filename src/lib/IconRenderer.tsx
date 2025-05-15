@@ -14,6 +14,9 @@ import { RiSparkling2Line } from "react-icons/ri";
 import { SiElevenlabs } from "react-icons/si";
 import { RiApps2AddFill } from "react-icons/ri";
 import { CgInternal } from "react-icons/cg";
+import { FaDatabase } from "react-icons/fa";
+import { TbApi } from "react-icons/tb";
+import { MdOutlineWebhook } from "react-icons/md";
 
 
 
@@ -35,7 +38,10 @@ const iconMap = {
   RiSparkling2Line,
   SiElevenlabs,
   RiApps2AddFill,
-  CgInternal
+  CgInternal,
+  FaDatabase,
+  TbApi,
+  MdOutlineWebhook
 };
 
 interface IconRendererProps {

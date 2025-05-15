@@ -379,45 +379,104 @@ const elevenlabsActions: NodeTypeDefinition[] = [
   }
 ];
 
-export const nodeTypes: {
-  app: {
-    subcategories: {
-      whatsapp: {
-        name: string;
-        actions: NodeTypeDefinition[];
-      };
-      assistant: {
-        name: string;
-        actions: NodeTypeDefinition[];
-      };
-      openai: {
-        name: string;
-        actions: NodeTypeDefinition[];
-      };
-      instagram: {
-        name: string;
-        actions: NodeTypeDefinition[];
-      };
-      conversion: {
-        name: string;
-        actions: NodeTypeDefinition[];
-      };
-      veo2: {
-        name: string;
-        actions: NodeTypeDefinition[];
-      };
-      klingai: {
-        name: string;
-        actions: NodeTypeDefinition[];
-      };
-      elevenlabs: {
-        name: string;
-        actions: NodeTypeDefinition[];
-      };
-    };
-  };
-  internal: InternalNodeTypes;
-} = {
+const internalActions: NodeTypeDefinition[] = [
+  {
+    id: 'internal_start',
+    name: 'Início',
+    type: 'trigger',
+    category: 'internal',
+    icon: 'VscDebugStart',
+    color: '#EAB308',
+    config: {}
+  },
+  {
+    id: 'internal_delay',
+    name: 'Atraso',
+    type: 'action',
+    category: 'internal',
+    icon: 'IoTime',
+    color: '#EAB308',
+    label: 'Atraso',
+    config: {
+      duration: 0,
+      unit: 'seconds'
+    }
+  },
+  {
+    id: 'internal_condition',
+    name: 'Condição',
+    type: 'condition',
+    category: 'internal',
+    icon: 'TbAirConditioning',
+    color: '#EAB308',
+    config: {
+      condition: '',
+    }
+  },
+  {
+    id: 'internal_finish',
+    name: 'Fim',
+    type: 'action',
+    category: 'internal',
+    icon: 'GiFinishLine',
+    color: '#EAB308',
+    config: {
+      condition: '',
+    }
+  },
+  {
+    id: 'internal_comment',
+    name: 'Comentário',
+    type: 'comment',
+    category: 'internal',
+    icon: 'FaCommentAlt',
+    color: '#FACC15',
+    label: 'Comentário',
+    config: {
+      comment: ''
+    }
+  },
+  {
+    id: 'internal_database',
+    name: 'Banco de Dados',
+    type: 'database',
+    category: 'internal',
+    icon: 'FaDatabase',
+    color: '#2563EB',
+    label: 'Banco de Dados',
+    config: {
+      query: ''
+    }
+  },
+  {
+    id: 'internal_api',
+    name: 'API',
+    type: 'api',
+    category: 'internal',
+    icon: 'TbApi',
+    color: '#38BDF8',
+    label: 'API',
+    config: {
+      endpoint: '',
+      method: 'GET'
+    }
+  },
+  {
+    id: 'internal_webhook',
+    name: 'Webhook',
+    type: 'webhook',
+    category: 'internal',
+    icon: 'MdOutlineWebhook',
+    color: '#A21CAF',
+    label: 'Webhook',
+    config: {
+      url: '',
+      method: 'POST'
+    }
+  }
+];
+
+export const nodeTypes = {
   app: {
     subcategories: {
       whatsapp: {
@@ -455,100 +514,9 @@ export const nodeTypes: {
     }
   },
   internal: {
-    start: {
-      id: 'internal_start',
-      name: 'Início',
-      type: 'trigger',
-      category: 'internal',
-      icon: 'VscDebugStart',
-      color: '#EAB308',
-      config: {}
-    },
-    delay: {
-      id: 'internal_delay',
-      name: 'Atraso',
-      type: 'action',
-      category: 'internal',
-      icon: 'IoTime',
-      color: '#EAB308',
-      label: 'Atraso',
-      config: {
-        duration: 0,
-        unit: 'seconds'
-      }
-    },
-    condition: {
-      id: 'internal_condition',
-      name: 'Condição',
-      type: 'condition',
-      category: 'internal',
-      icon: 'TbAirConditioning',
-      color: '#EAB308',
-      config: {
-        condition: '',
-      }
-    },
-    finish: {
-      id: 'internal_finish',
-      name: 'Fim',
-      type: 'action',
-      category: 'internal',
-      icon: 'GiFinishLine',
-      color: '#EAB308',
-      config: {
-        condition: '',
-      }
-    },
-    comment: {
-      id: 'internal_comment',
-      name: 'Comentário',
-      type: 'comment',
-      category: 'internal',
-      icon: 'FaCommentAlt',
-      color: '#FACC15',
-      label: 'Comentário',
-      config: {
-        comment: ''
-      }
-    },
-    database: {
-      id: 'internal_database',
-      name: 'Banco de Dados',
-      type: 'database',
-      category: 'internal',
-      icon: 'FaDatabase',
-      color: '#2563EB',
-      label: 'Banco de Dados',
-      config: {
-        query: ''
-      }
-    },
-    api: {
-      id: 'internal_api',
-      name: 'API',
-      type: 'api',
-      category: 'internal',
-      icon: 'FaGlobe',
-      color: '#38BDF8',
-      label: 'API',
-      config: {
-        endpoint: '',
-        method: 'GET'
-      }
-    },
-    webhook: {
-      id: 'internal_webhook',
-      name: 'Webhook',
-      type: 'webhook',
-      category: 'internal',
-      icon: 'FaLink',
-      color: '#A21CAF',
-      label: 'Webhook',
-      config: {
-        url: '',
-        method: 'POST'
-      }
-    }
+    name: 'Interno',
+    subcategories: {},
+    actions: internalActions
   }
 };
 
@@ -580,7 +548,7 @@ export const getNodeCategories = (): Categories => {
     internal: {
       name: 'Interno',
       subcategories: {},
-      actions: Object.values(nodeTypes.internal)
+      actions: nodeTypes.internal.actions
     }
   };
 }; 
