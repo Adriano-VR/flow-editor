@@ -11,6 +11,7 @@ import { IntegrationDialog } from './IntegrationDialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { ArrowBigLeft } from 'lucide-react';
 
 interface NodeSelectionDrawerProps {
   onNodeSelect: (nodeType: NodeTypeDefinition) => void;
@@ -40,38 +41,30 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
     }));
 
     // Descrições e vídeos por app (adicione conforme desejar)
-    const appDescriptions: Record<string, { description: string; videoUrl?: string }> = {
+    const appDescriptions: Record<string, { description: string }> = {
       whatsapp: {
-        description: 'Integre seu chatbot com o WhatsApp para engajar usuários, enviar mensagens automáticas e criar experiências conversacionais personalizadas.',
-        videoUrl: 'https://www.youtube.com/embed/1Q8fG0TtVAY',
+        description: 'Integre seu chatbot com o WhatsApp para engajar usuários, enviar mensagens automáticas e criar experiências conversacionais personalizadas.'
       },
       assistant: {
         description: 'Crie agentes virtuais inteligentes e personalize suas capacidades.',
-        videoUrl: '',
       },
       openai: {
         description: 'Utilize modelos avançados da OpenAI para processamento de linguagem e geração de conteúdo.',
-        videoUrl: '',
       },
       instagram: {
         description: 'Automatize interações e postagens no Instagram.',
-        videoUrl: '',
       },
       conversion: {
         description: 'Ferramentas de conversão de texto, imagem, áudio e vídeo com IA.',
-        videoUrl: '',
       },
       veo2: {
         description: 'Gere vídeos automaticamente com o Veo2.',
-        videoUrl: '',
       },
       klingai: {
         description: 'Gere vozes realistas com Kling AI.',
-        videoUrl: '',
       },
       elevenlabs: {
         description: 'Text-to-Speech avançado com Eleven Labs.',
-        videoUrl: '',
       },
     };
 
@@ -80,11 +73,12 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
       key,
       name: subcat.name,
       icon: subcat.actions[0]?.icon || 'FaPuzzlePiece',
-      color: subcat.actions[0]?.color || '#888',
+      color: subcat.color || '#888',
       description: appDescriptions[key]?.description || '',
-      videoUrl: appDescriptions[key]?.videoUrl || '',
       actions: subcat.actions,
     }));
+
+   
 
     // Função utilitária para destacar o termo buscado
     function highlight(text: string, term: string) {
@@ -102,7 +96,8 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
     return (
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild></DrawerTrigger>
-        <DrawerContent className="h-full flex flex-col  bg-gradient-to-br from-gray-50 to-white max-w-lg w-full sm:w-[480px]" data-vaul-drawer-direction="right">
+        <DrawerContent className="h-full min-w-4/12 flex flex-col  bg-gradient-to-br from-gray-50 to-white max-w-lg w-full sm:w-[480px]" data-vaul-drawer-direction="right">
+          <DialogTitle></DialogTitle>
           <div className="flex justify-between items-center px-8 pt-6 pb-2">
             <h2 className="text-2xl font-bold text-gray-800">Escolha um App</h2>
             <button
@@ -133,14 +128,14 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
                       key: 'internal',
                       name: 'Interno',
                       icon: 'CgInternal',
-                      color: '#A3E635',
+                      color: categories.internal.color,
                       description: 'Componentes Internos',
                       actions: categories.internal.actions.map(action => ({
                         ...action,
                         parent: 'internal',
                         parentName: 'Interno',
                         parentIcon: 'CgInternal',
-                        parentColor: '#A3E635',
+                        parentColor: categories.internal.color,
                       })),
                     },
                     ...appList.map(app => ({
@@ -148,14 +143,14 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
                       key: app.key,
                       name: app.name,
                       icon: app.icon,
-                      color: '#22D34A',
+                      color: app.color,
                       description: app.description,
                       actions: app.actions.map(action => ({
                         ...action,
                         parent: app.key,
                         parentName: app.name,
                         parentIcon: app.icon,
-                        parentColor: '#22D34A',
+                        parentColor: app.color,
                       })),
                     }))
                   ];
@@ -184,12 +179,12 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
                   // - Se busca preenchida: mostra apps/interno que batem E/OU ações/nodes que batem
                   return <>
                     {filteredItems.map((item, idx) => (
-                      <div key={item.key}>
+                      <div key={item.key} className='flex flex-col gap-2'>
                         <button
-                          className="w-full flex items-center py-4 hover:bg-gray-100 transition rounded-lg"
+                          className="w-full flex items-center  hover:bg-[#e5e0ff] transition bg-[#f2f4fa] py-5 px-3 rounded-lg"
                           onClick={() => setSelectedAppKey(item.key)}
                         >
-                          <div className="rounded-full" style={{ background: item.color, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                          <div className="rounded-full h-10 w-10 flex items-center justify-center mr-4" style={{ background: item.color }}>
                             <IconRenderer iconName={item.icon || ''} className="text-white text-xl" />
                           </div>
                           <div className="flex-1 text-left">
@@ -205,12 +200,12 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
                     {filteredActions.map((action, idx) => (
                       <div key={action.id + '-' + action.parent}>
                         <button
-                          className="w-full flex items-center py-4 hover:bg-gray-100 transition rounded-lg"
+                          className="w-full flex items-center py-5 px-3 hover:[#e5e0ff] transition rounded-lg bg-[#f2f4fa]"
                           onClick={() => {
                             setSelectedAction(action);
                           }}
                         >
-                          <div className="rounded-full" style={{ background: action.parentColor, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: 16 }}>
+                          <div className="rounded-full w-8 h-8 flex items-center justify-center mr-4" style={{ background: action.color || appList.find(a => a.key === action.parent)?.color }}>
                             <IconRenderer iconName={action.icon || action.parentIcon || ''} className="text-white text-xl" />
                           </div>
                           <div className="flex-1 text-left">
@@ -236,17 +231,22 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
             const app = appList.find(a => a.key === selectedAppKey);
             if (!app) return null;
             return (
-              <div className="flex-1 overflow-y-auto px-8 pb-8 flex flex-col justify-center items-center">
+              <div className="flex-1 overflow-y-auto px-8 pb-8 flex flex-col justify-start items-center ">
                 <div className="w-full max-w-xl mt-4">
-                  <button className="mb-4 text-sm text-blue-600 underline" onClick={() => setSelectedAppKey(null)}>← Voltar</button>
-                  <h3 className="text-lg font-bold mb-4 text-gray-700">Ações de {app.name}</h3>
+                  {/* <button className="mb-4 text-sm text-blue-600 underline" onClick={() => setSelectedAppKey(null)}>← Voltar</button> */}
+                  <div className='flex items-center gap-2 mb-4'>
+                <ArrowBigLeft size={40} strokeWidth={2}  onClick={() => setSelectedAppKey(null)} />
+                <h3 className="text-lg font-bold text-gray-700">Ações de {app.name}</h3>
+
+
+                </div>
                   {app.actions.map((action, idx) => (
-                    <div key={action.id}>
+                    <div key={action.id} className='flex flex-col gap-2'>
                       <button
-                        className="w-full flex items-center py-4 hover:bg-gray-100 transition rounded-lg"
+                        className="w-full flex items-center py-5 px-3 hover:bg-[#e5e0ff]  rounded-lg  transition bg-[#f2f4fa]"
                         onClick={() => setSelectedAction(action)}
                       >
-                        <div className="rounded-full bg-green-400 w-8 h-8 flex items-center justify-center mr-4">
+                        <div className="rounded-full w-8 h-8 flex items-center justify-center mr-4" style={{ background: action.color || app.color }}>
                           <IconRenderer iconName={action.icon || app.icon} className="text-white text-xl" />
                         </div>
                         <div className="flex-1 text-left">
@@ -263,17 +263,24 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
           })()}
           {/* Se for interno, mostra os nodes internos */}
           {selectedAppKey === 'internal' && !selectedAction && (
-            <div className="flex-1 overflow-y-auto px-8 pb-8 flex flex-col justify-center items-center">
+            <div className="flex-1 overflow-y-auto px-8 pb-8 flex flex-col justify-start items-center">
               <div className="w-full max-w-xl mt-4">
-                <button className="mb-4 text-sm text-blue-600 underline" onClick={() => setSelectedAppKey(null)}>← Voltar</button>
-                <h3 className="text-lg font-bold mb-4 text-gray-700">Ações Internas</h3>
+                {/* <button className="mb-4 text-sm text-blue-600 underline" onClick={() => setSelectedAppKey(null)}>← Voltar</button> */}
+             
+
+                <div className='flex items-center gap-2 mb-4  '>
+                <ArrowBigLeft size={40} strokeWidth={2} onClick={() => setSelectedAppKey(null)} />
+                <h3 className="text-lg font-bold text-gray-700">Ações Internas</h3>
+
+                </div>
+             
                 {categories.internal.actions.map((internal, idx) => (
-                  <div key={internal.id}>
+                  <div key={internal.id} className='flex flex-col gap-2'>
                     <button
-                      className="w-full flex items-center py-4 hover:bg-gray-100 transition rounded-lg"
+                      className="w-full flex items-center py-5 px-3 hover:bg-[#e5e0ff] transition rounded-lg bg-[#f2f4fa]"
                       onClick={() => setSelectedAction(internal)}
                     >
-                      <div className="rounded-full bg-yellow-400 w-8 h-8 flex items-center justify-center mr-4">
+                      <div className="rounded-full w-8 h-8 flex items-center justify-center mr-4" style={{ background: internal.color || categories.internal.color }}>
                         <IconRenderer iconName={internal.icon || ''} className="text-white text-xl" />
                       </div>
                       <div className="flex-1 text-left">

@@ -15,7 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "./ui/dialog";
-import { FlowEditDrawer } from "./FlowEditDrawer";
+import  FlowEditDrawer  from './FlowEditDrawer';
 import { NewFlowDialog } from "./NewFlowDialog";
 
 export default function Sidebar({ onSelectFlow }: SidebarProps) {
@@ -43,6 +43,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
 
   const handleCreateFlowClick = async () => {
     try {
+      // Criar um novo flow sempre com nodes e edges vazios
       const newFlowId = await handleCreateFlow(newFlowName);
       if (newFlowId) {
         setLocalSelectedId(newFlowId);
@@ -52,11 +53,21 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
         setNewFlowName("");
         setShowNewFlowInput(false);
         
-        const updatedFlows = flows.filter(flow => flow.id !== newFlowId);
-        const newFlow = flows.find(flow => flow.id === newFlowId);
-        if (newFlow) {
-          setFlows([newFlow, ...updatedFlows]);
-        }
+        // Adiciona o novo flow no início da lista com nodes e edges vazios
+        const newFlow = {
+          id: newFlowId,
+          attributes: {
+            name: newFlowName,
+            status: "draft",
+            description: "",
+            data: {
+              nodes: [],
+              edges: []
+            }
+          }
+        };
+        
+        setFlows([newFlow, ...flows]);
       }
     } catch (error) {
       console.error('Error creating flow:', error);
@@ -83,6 +94,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
       const selectedFlow = flows.find(flow => flow.id === flowToEdit);
       if (!selectedFlow) return;
 
+      // Sempre usar os nodes e edges existentes do flow que está sendo editado
       await handleSaveFlow({
         name: data.name,
         status: data.status,
@@ -91,7 +103,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
         edges: selectedFlow.attributes.data?.edges || []
       });
 
-      // Atualiza a lista de flows
+      // Atualiza a lista de flows mantendo os nodes e edges existentes
       const updatedFlows = flows.map(flow => {
         if (flow.id === flowToEdit) {
           return {
@@ -100,7 +112,8 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
               ...flow.attributes,
               name: data.name,
               description: data.description,
-              status: data.status
+              status: data.status,
+              data: flow.attributes.data // Mantém os dados existentes
             }
           };
         }
@@ -204,7 +217,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
       {selectedFlow && (
         <FlowEditDrawer
           open={editDrawerOpen}
-          onOpenChange={(open) => {
+          onOpenChange={(open: boolean) => {
             setEditDrawerOpen(open);
             if (!open) {
               setFlowToEdit(null);

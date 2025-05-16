@@ -41,7 +41,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [flowData, setFlowData] = useState<Flow | null>(null);
-  const [flowName, setFlowName] = useState("Novo Flow");
+  const [flowName, setFlowName] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
@@ -117,11 +117,20 @@ export function FlowProvider({ children }: { children: ReactNode }) {
       if (selectedFlowId) {
         try {
           const response = await getFlow(selectedFlowId);
-          setFlowData(response.data);
-          setFlowName(response.data.name || "Novo Flow");
+          const newFlowData = response.data;
+          setFlowData(newFlowData);
+          
+          // Atualiza o nome do flow apenas se ele existir nos dados
+          if (newFlowData?.attributes?.name) {
+            setFlowName(newFlowData.attributes.name);
+          }
         } catch (error) {
           console.error('Error loading flow:', error);
         }
+      } else {
+        // Limpa os dados quando não há flow selecionado
+        setFlowData(null);
+        setFlowName("");
       }
     };
 
@@ -132,9 +141,14 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     if (!selectedFlowId) return;
 
     try {
+      const updatedName = data.name || flowData?.attributes?.name;
+      if (updatedName) {
+        setFlowName(updatedName);
+      }
+
       await updateFlow(selectedFlowId, {
         data: {
-          name: data.name || flowData?.attributes?.name || "Novo Flow",
+          name: updatedName,
           status: data.status || flowData?.attributes?.status || "draft",
           description: data.description || flowData?.attributes?.description || "",
           billing: "free",
@@ -153,7 +167,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
           ...prev,
           attributes: {
             ...prev.attributes,
-            name: data.name || prev.attributes.name,
+            name: updatedName || prev.attributes.name,
             status: data.status || prev.attributes.status,
             description: data.description || prev.attributes.description,
             data: {

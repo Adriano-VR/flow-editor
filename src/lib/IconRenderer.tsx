@@ -17,8 +17,11 @@ import { CgInternal } from "react-icons/cg";
 import { FaDatabase } from "react-icons/fa";
 import { TbApi } from "react-icons/tb";
 import { MdOutlineWebhook } from "react-icons/md";
-
-
+import { FaWpforms } from "react-icons/fa6";
+import { MdInput } from "react-icons/md";
+import { GrCheckboxSelected } from "react-icons/gr";
+import { BsCalendar2Date } from "react-icons/bs";
+import { FiX, FiTrash2, FiSave } from 'react-icons/fi';
 
 const iconMap = {
   FaTools,
@@ -41,7 +44,14 @@ const iconMap = {
   CgInternal,
   FaDatabase,
   TbApi,
-  MdOutlineWebhook
+  MdOutlineWebhook,
+  FaWpforms,
+  MdInput,
+  GrCheckboxSelected,
+  BsCalendar2Date,
+  FiX,
+  FiTrash2,
+  FiSave
 };
 
 interface IconRendererProps {

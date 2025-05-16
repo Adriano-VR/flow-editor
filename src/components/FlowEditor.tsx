@@ -53,7 +53,7 @@ import { CommentNode } from './nodes/CommentNode';
 import { DatabaseNode } from './nodes/DatabaseNode';
 import { ApiNode } from './nodes/ApiNode';
 import { WebhookNode } from './nodes/WebhookNode';
-import { FlowEditDrawer } from './FlowEditDrawer';
+import  FlowEditDrawer  from './FlowEditDrawer';
 import { useFlow } from '@/contexts/FlowContext';
 import { Pencil } from 'lucide-react';
 import {
@@ -72,6 +72,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Progress } from "@/components/ui/progress"
 
 // Add styles for edge hover effect
 const edgeStyles = `
@@ -171,8 +172,8 @@ const nodeTypes = {
 };
 
 export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialData?.nodes || []);
-  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>(initialData?.edges || []);
+  const [nodes, setNodes, onNodesChange] = useNodesState([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [editingNode, setEditingNode] = useState<Node | null>(null);
   const [loading, setLoading] = useState(true);
@@ -190,6 +191,9 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const { handleSaveFlow, handleDeleteFlow } = useFlow();
   const [showCommandMenu, setShowCommandMenu] = useState(false);
+  const [showCanvasTooltip, setShowCanvasTooltip] = useState(false);
+  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [progress, setProgress] = useState(0);
 
   // Debounced save function
   const debouncedSave = useCallback(() => {
@@ -358,17 +362,15 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
         if (!flowData.data.attributes.data) {
           setNodes([]);
           setEdges([]);
+          setFlowData(flowData);
           return;
         }
 
         const { nodes: flowNodes, edges: flowEdges } = flowData.data.attributes.data;
         
-        // Only load data if we don't have any nodes yet
-        if (nodes.length === 0) {
-          setNodes(flowNodes || []);
-          setEdges(flowEdges || []);
-        }
-        
+        // Always set nodes and edges from the loaded flow data
+        setNodes(flowNodes || []);
+        setEdges(flowEdges || []);
         setFlowData(flowData);
       } catch (err) {
         console.error('Error loading flow:', err);
@@ -381,13 +383,6 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     loadFlow();
   }, [flowId]);
 
-  useEffect(() => {
-    if (initialData) {
-      setNodes(initialData.nodes || []);
-      setEdges(initialData.edges || []);
-    }
-  }, [initialData]);
-
   const handleNodeClick = useCallback((event: React.MouseEvent | null, node: Node) => {
     setSelectedNode(node);
     setEditingNode(node);
@@ -399,7 +394,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     setEditingNode(node);
   }, []);
 
-  const handleNodeTypeSelect = (actionDefinition: NodeTypeDefinition) => {
+  const handleNodeTypeSelect = useCallback((actionDefinition: NodeTypeDefinition) => {
     // Se já estiver com um diálogo aberto, não abre outro
     if (isConfigDialogOpen) return;
 
@@ -436,9 +431,9 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
 
     // Para outros nós internos simples, adiciona direto
     setNodes((nds) => [...nds, newNode]);
-  };
+  }, [isConfigDialogOpen, setNodes]);
 
-  const handleConfigSubmit = () => {
+  const handleConfigSubmit = (updatedConfig: Record<string, any>) => {
     if (!tempNode) return;
 
     // Evita duplo submit/dupla abertura
@@ -448,7 +443,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
       ...tempNode,
       data: {
         ...tempNode.data,
-        config: newNodeConfig,
+        config: updatedConfig,
       },
     };
 
@@ -936,8 +931,67 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     setShowCommandMenu(true);
   };
 
+  // Add mouse move handler
+  const handleMouseMove = useCallback((event: React.MouseEvent) => {
+    // Check if we're over a node or edge
+    const target = event.target as HTMLElement;
+    const isOverNode = target.closest('.react-flow__node');
+    const isOverEdge = target.closest('.react-flow__edge');
+    
+    if (!isOverNode && !isOverEdge) {
+      if (tooltipTimeoutRef.current) {
+        clearTimeout(tooltipTimeoutRef.current);
+      }
+      tooltipTimeoutRef.current = setTimeout(() => {
+        setShowCanvasTooltip(true);
+      }, 1000);
+    } else {
+      setShowCanvasTooltip(false);
+      if (tooltipTimeoutRef.current) {
+        clearTimeout(tooltipTimeoutRef.current);
+      }
+    }
+  }, []);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (tooltipTimeoutRef.current) {
+        clearTimeout(tooltipTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Adiciona efeito para animar o progresso
+  useEffect(() => {
+    if (loading) {
+      const timer = setInterval(() => {
+        setProgress((prevProgress) => {
+          if (prevProgress >= 100) {
+            return 0;
+          }
+          return prevProgress + 10;
+        });
+      }, 500);
+
+      return () => {
+        clearInterval(timer);
+        setProgress(0);
+      };
+    } else {
+      setProgress(100);
+      const timer = setTimeout(() => setProgress(0), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
+
   if (loading) {
-    return <div className="flex items-center justify-center h-[80vh]">Loading...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh] gap-4 text-muted-foreground">
+        <Progress value={progress} className="w-[200px] transition-all duration-500" />
+        <span>Carregando...</span>
+      </div>
+    );
   }
 
   if (error) {
@@ -960,7 +1014,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
             Editar
           </Button>
           <TooltipProvider>
-            <Tooltip>
+            <Tooltip delayDuration={1000}>
               <TooltipTrigger asChild>
                 <Button
                   variant="outline"
@@ -973,13 +1027,11 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Clique para adicionar um nó ou use o botão direito do mouse no canvas</p>
+                <p>Clique para adicionar um nó, use o botão direito do mouse no canvas ou pressione <kbd className="px-1 py-0.5 text-xs bg-gray-100 rounded border">/</kbd></p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-          <div className="text-sm text-muted-foreground ml-2">
-            (ou clique com botão direito no canvas)
-          </div>
+         
           <NodeSelectionDrawer ref={drawerRef} onNodeSelect={handleNodeTypeSelect} />
         </div>
         <div className="flex items-center gap-2">
@@ -1025,6 +1077,11 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
           onDelete={handleNodeDelete}
         >
           <div className="h-full w-full" onContextMenu={handleContextMenu}>
+            {showCanvasTooltip && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg text-sm">
+                Pressione <kbd className="px-1 py-0.5 text-xs bg-gray-100 rounded border">/</kbd> ou clique com botão direito para adicionar um nó
+              </div>
+            )}
             <ReactFlow
               nodes={nodesWithAnimation}
               edges={edges}
@@ -1035,6 +1092,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
               onEdgeClick={handleDeleteEdge}
               onEdgeMouseEnter={onEdgeMouseEnter}
               onEdgeMouseLeave={onEdgeMouseLeave}
+              onMouseMove={handleMouseMove}
               nodeTypes={nodeTypes}
               fitView
               className="cursor-crosshair bg-gray-50 rounded-2xl"
@@ -1078,33 +1136,9 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
         name={tempNode?.data.label ?? ''}
         description={`Configure the ${tempNode?.data.label ?? ''} node`}
         config={newNodeConfig}
-        renderConfigFields={(config, setConfig) => {
-          // Atualiza o newNodeConfig quando o config mudar
-          const handleConfigChange = (newConfig: any) => {
-            setNewNodeConfig(newConfig);
-            setConfig(newConfig);
-          };
-
-          return (
-            <div className="[&_input]:bg-[#2d3748] [&_input]:text-white [&_input]:border-gray-600 [&_select]:bg-[#2d3748] [&_select]:text-white [&_select]:border-gray-600 [&_select]:focus:border-green-500 [&_select]:focus:ring-green-500 [&_textarea]:bg-[#2d3748] [&_textarea]:text-white [&_textarea]:border-gray-600 [&_textarea]:focus:border-green-500 [&_textarea]:focus:ring-green-500 [&_label]:text-white">
-              {tempNode?.data.label === 'Início' ? (
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="condition" className="text-white">Condição de Início</Label>
-                    <Textarea
-                      id="condition"
-                      placeholder="Digite a condição de início (opcional)"
-                      value={config.condition || ''}
-                      onChange={(e) => handleConfigChange({ ...config, condition: e.target.value })}
-                      className="bg-[#2d3748] text-white border-gray-600 focus:border-green-500 focus:ring-green-500 placeholder-gray-400"
-                    />
-                  </div>
-                </div>
-              ) : (
-                renderConfigFields()
-              )}
-            </div>
-          );
+        actionDefinition={{
+          id: tempNode?.id?.split('-')[0] ?? '',  // Extract the original action id
+          ...tempNode?.data
         }}
         onSave={handleConfigSubmit}
         isInternal={tempNode?.data.name === 'internal'}

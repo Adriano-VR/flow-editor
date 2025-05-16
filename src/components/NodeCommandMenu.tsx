@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react";
+import React, { useCallback, useMemo, useEffect } from "react";
 import {
   Command,
   CommandEmpty,
@@ -19,63 +19,42 @@ interface NodeCommandMenuProps {
   onNodeSelect: (nodeType: NodeTypeDefinition) => void;
 }
 
-export function NodeCommandMenu({ 
-  open, 
-  onOpenChange, 
-  onNodeSelect 
-}: NodeCommandMenuProps) {
-  const [search, setSearch] = React.useState("");
+export function NodeCommandMenu({ open, onOpenChange, onNodeSelect }: NodeCommandMenuProps) {
+  // Add keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only trigger if '/' is pressed and no input/textarea is focused
+      if (e.key === '/' && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault(); // Prevent the '/' from being typed
+        onOpenChange(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onOpenChange]);
+
+  const handleSelect = useCallback((nodeType: NodeTypeDefinition) => {
+    onNodeSelect(nodeType);
+    onOpenChange(false);
+  }, [onNodeSelect, onOpenChange]);
 
   // Flatten all node types into a single array for search
-  const allNodes = React.useMemo(() => {
+  const allNodes = useMemo(() => {
     const nodes: NodeTypeDefinition[] = [];
     
-    // Add app nodes
+    // Add app nodes from subcategories
     Object.entries(allNodeTypes.app.subcategories).forEach(([subcat, actions]) => {
-      actions.actions.forEach((action: any) => {
-        nodes.push({
-          ...action,
-          category: 'app',
-          subcategory: subcat,
-        });
+      actions.actions.forEach((action) => {
+        nodes.push(action);
       });
     });
 
     // Add internal nodes
-    Object.entries(allNodeTypes.internal.actions).forEach(([name, action]) => {
-      if (
-        typeof action === 'object' &&
-        action !== null &&
-        'id' in action &&
-        'type' in action
-      ) {
-        const node = action as any;
-        nodes.push({
-          id: node.id,
-          type: node.type,
-          name,
-          category: 'internal',
-          config: node.config ?? {},
-          color: node.color ?? '',
-          severity: node.severity ?? undefined,
-          icon: node.icon ?? undefined,
-          ...node,
-        });
-      }
-    });
+    nodes.push(...allNodeTypes.internal.actions);
 
     return nodes;
   }, []);
-
-  const filteredNodes = React.useMemo(() => {
-    if (!search) return allNodes;
-    const searchLower = search.toLowerCase();
-    return allNodes.filter(node => 
-      node.name.toLowerCase().includes(searchLower) ||
-      node.category.toLowerCase().includes(searchLower) ||
-      (node.subcategory && node.subcategory.toLowerCase().includes(searchLower))
-    );
-  }, [search, allNodes]);
 
   if (!open) return null;
 
@@ -86,27 +65,19 @@ export function NodeCommandMenu({
         onClick={e => e.stopPropagation()}
       >
         <Command className="rounded-lg border shadow-md">
-          <CommandInput 
-            placeholder="Pesquisar nós..." 
-            value={search}
-            onValueChange={setSearch}
-            className="h-9"
-          />
+          <CommandInput placeholder="Buscar tipo de nó..." />
           <CommandList className="max-h-[300px] overflow-y-auto">
             <CommandEmpty>Nenhum nó encontrado.</CommandEmpty>
             <CommandGroup heading="Aplicativos">
-              {filteredNodes
+              {allNodes
                 .filter(node => node.category === 'app')
-                .map((node, idx) => (
+                .map((node) => (
                   <CommandItem
-                    key={node.id || `${node.name}-${node.type}-${idx}`}
-                    onSelect={() => {
-                      onNodeSelect(node);
-                      onOpenChange(false);
-                    }}
+                    key={node.id}
+                    onSelect={() => handleSelect(node)}
                     className="flex items-center gap-2"
                   >
-                    {node.icon && <IconRenderer iconName={node.icon} className="h-4 w-4" />}
+                    <IconRenderer iconName={node.icon ?? ''} className="h-4 w-4" />
                     <span>{node.name}</span>
                     {node.subcategory && (
                       <span className="text-xs text-muted-foreground ml-auto">
@@ -117,18 +88,15 @@ export function NodeCommandMenu({
                 ))}
             </CommandGroup>
             <CommandGroup heading="Internos">
-              {filteredNodes
+              {allNodes
                 .filter(node => node.category === 'internal')
-                .map((node, idx) => (
+                .map((node) => (
                   <CommandItem
-                    key={node.id || `${node.name}-${node.type}-${idx}`}
-                    onSelect={() => {
-                      onNodeSelect(node);
-                      onOpenChange(false);
-                    }}
+                    key={node.id}
+                    onSelect={() => handleSelect(node)}
                     className="flex items-center gap-2"
                   >
-                    {node.icon && <IconRenderer iconName={node.icon} className="h-4 w-4" />}
+                    <IconRenderer iconName={node.icon ?? ''} className="h-4 w-4" />
                     <span>{node.name}</span>
                   </CommandItem>
                 ))}

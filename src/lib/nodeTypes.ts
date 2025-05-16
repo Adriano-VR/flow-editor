@@ -433,7 +433,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'database',
     category: 'internal',
     icon: 'FaDatabase',
-    color: '#2563EB',
+    color: '#FACC15',
     label: 'Banco de Dados',
     config: {
       query: ''
@@ -445,7 +445,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'api',
     category: 'internal',
     icon: 'TbApi',
-    color: '#38BDF8',
+    color: '#FACC15',
     label: 'Conectar API',
     config: {
       endpoint: '',
@@ -458,7 +458,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'webhook',
     category: 'internal',
     icon: 'MdOutlineWebhook',
-    color: '#A21CAF',
+    color: '#FACC15',
     label: 'Webhook',
     config: {
       url: '',
@@ -467,53 +467,211 @@ const internalActions: NodeTypeDefinition[] = [
   }
 ];
 
+const formActions: NodeTypeDefinition[] = [
+  {
+    id: 'start_form',
+    name: 'Criar Formulario',
+    type: 'trigger',
+    category: 'app',
+    icon: 'FaWpforms',
+    color: '#EAB308',
+    config: {}
+  },
+  {
+    id: 'form_text_input',
+    name: 'Entrada de Texto',
+    type: 'action',
+    category: 'app',
+    icon: 'MdInput',
+    color: '#EAB308',
+    config: {
+      fields: [
+        {
+          id: 'label',
+          name: 'Rótulo',
+          type: 'string',
+          required: true
+        },
+        {
+          id: 'placeholder',
+          name: 'Placeholder',
+          type: 'string',
+          required: false
+        },
+        {
+          id: 'required',
+          name: 'Obrigatório',
+          type: 'boolean',
+          required: false,
+          default: false
+        }
+      ]
+    }
+  },
+  {
+    id: 'form_number_input',
+    name: 'Entrada de Número',
+    type: 'action',
+    category: 'app',
+    icon: 'MdInput',
+    color: '#EAB308',
+    config: {
+      fields: [
+        {
+          id: 'label',
+          name: 'Rótulo',
+          type: 'string',
+          required: true
+        },
+        {
+          id: 'min',
+          name: 'Valor Mínimo',
+          type: 'number',
+          required: false
+        },
+        {
+          id: 'max',
+          name: 'Valor Máximo',
+          type: 'number',
+          required: false
+        },
+        {
+          id: 'required',
+          name: 'Obrigatório',
+          type: 'boolean',
+          required: false,
+          default: false
+        }
+      ]
+    }
+  },
+  {
+    id: 'form_checkbox',
+    name: 'Checkbox',
+    type: 'action',
+    category: 'app',
+    icon: 'GrCheckboxSelected',
+    color: '#EAB308',
+    config: {
+      fields: [
+        {
+          id: 'label',
+          name: 'Rótulo',
+          type: 'string',
+          required: true
+        },
+        {
+          id: 'default',
+          name: 'Marcado por Padrão',
+          type: 'boolean',
+          required: false,
+          default: false
+        }
+      ]
+    }
+  },
+  {
+    id: 'form_date_input',
+    name: 'Entrada de Data',
+    type: 'action',
+    category: 'app',
+    icon: 'BsCalendar2Date',
+    color: '#EAB308',
+    config: {
+      fields: [
+        {
+          id: 'label',
+          name: 'Rótulo',
+          type: 'string',
+          required: true
+        },
+        {
+          id: 'min_date',
+          name: 'Data Mínima',
+          type: 'string',
+          required: false
+        },
+        {
+          id: 'max_date',
+          name: 'Data Máxima',
+          type: 'string',
+          required: false
+        },
+        {
+          id: 'required',
+          name: 'Obrigatório',
+          type: 'boolean',
+          required: false,
+          default: false
+        }
+      ]
+    }
+  }
+];
+
+
 export const nodeTypes = {
   app: {
     subcategories: {
       whatsapp: {
         name: 'WhatsApp',
-        actions: whatsappActions
+        actions: whatsappActions,
+        color: '#25D366'
       },
       assistant: {
         name: 'Assistente Virtual',
-        actions: assistantActions
+        actions: assistantActions,
+        color: '#3B82F6'
       },
       openai: {
         name: 'OpenAI',
-        actions: openaiActions
+        actions: openaiActions,
+        color: '#10A37F'
       },
       instagram: {
         name: 'Instagram',
-        actions: instagramActions
+        actions: instagramActions,
+        color: '#E1306C'
       },
       conversion: {
         name: 'Conversão AI',
-        actions: conversionActions
+        actions: conversionActions,
+        color: '#6366F1'
       },
       veo2: {
         name: 'Veo2',
-        actions: veo2Actions
+        actions: veo2Actions,
+        color: '#0EA5E9'
       },
       klingai: {
         name: 'Kling AI',
-        actions: klingaiActions
+        actions: klingaiActions,
+        color: '#A21CAF'
       },
       elevenlabs: {
         name: 'Eleven Labs',
-        actions: elevenlabsActions
+        actions: elevenlabsActions,
+        color: '#F59E42'
+      },
+      form: {
+        name: 'Formulário',
+        actions: formActions,
+        color: '#EAB308'
       }
     }
   },
   internal: {
     name: 'Interno',
     subcategories: {},
-    actions: internalActions
+    actions: internalActions,
+    color: '#EAB308'
   }
 } as const;
 
 interface Subcategory {
   name: string;
   actions: NodeTypeDefinition[];
+  color: string;
 }
 
 interface Category {
@@ -522,6 +680,7 @@ interface Category {
     [key: string]: Subcategory;
   };
   actions: NodeTypeDefinition[];
+  color: string;
 }
 
 interface Categories {
@@ -534,12 +693,14 @@ export const getNodeCategories = (): Categories => {
     app: {
       name: 'Aplicativos',
       subcategories: nodeTypes.app.subcategories,
-      actions: []
+      actions: [],
+      color: '#25D366'
     },
     internal: {
       name: 'Interno',
       subcategories: {},
-      actions: nodeTypes.internal.actions
+      actions: nodeTypes.internal.actions,
+      color: '#EAB308'
     }
   };
 }; 

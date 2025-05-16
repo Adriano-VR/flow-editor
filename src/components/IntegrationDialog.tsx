@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { IconRenderer } from '@/lib/IconRenderer';
+import { renderActionConfigFields } from '@/components/actionConfigFields';
+import { Ban, Save } from 'lucide-react';
 
 interface IntegrationDialogProps {
   open: boolean;
@@ -11,8 +13,8 @@ interface IntegrationDialogProps {
   description: string;
   videoUrl?: string;
   config: Record<string, any>;
-  renderConfigFields: (config: any, setConfig: (cfg: any) => void) => React.ReactNode;
-  onSave: () => void;
+  actionDefinition: any;
+  onSave: (config: Record<string, any>) => void;
   isInternal?: boolean;
 }
 
@@ -23,66 +25,55 @@ export const IntegrationDialog: React.FC<IntegrationDialogProps> = ({
   name,
   description,
   config,
-  renderConfigFields,
+  actionDefinition,
   onSave,
   isInternal = false,
 }) => {
   const [currentConfig, setCurrentConfig] = useState(config);
+  const [activeTab, setActiveTab] = useState<'parameters' | 'settings' | 'docs'>('parameters');
+  const [webhookOpen, setWebhookOpen] = useState(true);
 
   useEffect(() => {
     setCurrentConfig(config);
   }, [config]);
 
   const handleSave = () => {
-    onSave();
+    onSave(currentConfig);
     onOpenChange(false);
-  };
-
-  const renderStyledConfigFields = (config: any, setConfig: (cfg: any) => void) => {
-    return (
-      <div className="[&_input]:bg-[#2d3748] [&_input]:text-white [&_input]:border-gray-600 [&_input]:focus:border-green-500 [&_input]:focus:ring-green-500 [&_input]:placeholder-gray-400 [&_select]:bg-[#2d3748] [&_select]:text-white [&_select]:border-gray-600 [&_select]:focus:border-green-500 [&_select]:focus:ring-green-500 [&_textarea]:bg-[#2d3748] [&_textarea]:text-white [&_textarea]:border-gray-600 [&_textarea]:focus:border-green-500 [&_textarea]:focus:ring-green-500">
-        {renderConfigFields(config, setConfig)}
-      </div>
-    );
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#191919] text-white max-w-4xl w-full">
-        <DialogTitle className="text-white">{name}</DialogTitle>
-        <DialogDescription>{description}</DialogDescription>
-        <div className="flex flex-col md:flex-row gap-8">
-          {/* Lado esquerdo: Card */}
-          <div className="bg-[#23272f] rounded-xl p-6 flex flex-col items-center w-full md:w-80 shadow-lg border border-gray-700">
-            <div className="bg-white rounded-full p-4 mb-4">
-              <IconRenderer iconName={icon ?? ''} className="text-5xl text-green-500" />
-            </div>
-            <div className="text-2xl font-bold mb-1">{name}</div>
-            <div className="text-xs text-gray-400 mb-2">by Xbase</div>
-            <div className="text-xs text-gray-400 mb-4">v3.1.0</div>
-            {!isInternal && (
-              <Button className="w-full bg-green-500 hover:bg-green-600 text-white font-bold mb-4">
-                Install Integration
-              </Button>
-            )}
-            <div className="bg-[#1a2332] rounded-lg p-3 w-full mb-2">
-              <div className="text-xs text-blue-200 mb-2">Something is missing or not working as expected with {name}?</div>
-              <Button variant="outline" className="w-full text-blue-400 border-blue-400">
-                Request changes
-              </Button>
-            </div>
+      <DialogContent className=" text-white max-w-md w-full p-0 rounded-xl overflow-hidden shadow-2xl border border-gray-700 bg-[#23272f]">
+        {/* Título acessível para screen readers */}
+        <DialogTitle className="sr-only">{name}</DialogTitle>
+        {/* Header com nome, ícone e botão Test Step */}
+        <div className="flex items-center justify-between px-6 pt-6 pb-2 border-b border-gray-700 bg-[#23272f]">
+          <div className="flex items-center gap-3">
+            <IconRenderer iconName={icon ?? ''} className="text-2xl text-green-500" />
+            <span className="text-lg font-semibold">{name}</span>
           </div>
-          {/* Lado direito: Configurações */}
-          <div className="flex-1 flex flex-col gap-4">
-            <div className="text-2xl font-bold mb-2">Configuration</div>
-            <div className="bg-[#23272f] rounded-xl p-6 border border-gray-700">
-              {renderStyledConfigFields(currentConfig, setCurrentConfig)}
-            </div>
-            <div className="flex justify-end gap-2 mt-4">
-              <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button className="bg-green-500 hover:bg-green-600" onClick={handleSave}>Save Configuration</Button>
-            </div>
-          </div>
+          
+        </div>
+     
+        {/* Conteúdo das Abas */}
+        <div className="px-4 bg-[#23272f] min-h-[250px]">
+       
+              <div className="mt-6">
+                <div className="[&_input]:bg-[#2d3748] [&_input]:text-white [&_input]:border-gray-600 [&_input]:focus:border-green-500 [&_input]:focus:ring-green-500 [&_input]:placeholder-gray-400 [&_select]:bg-[#2d3748] [&_select]:text-white [&_select]:border-gray-600 [&_select]:focus:border-green-500 [&_select]:focus:ring-green-500 [&_textarea]:bg-[#2d3748] [&_textarea]:text-white [&_textarea]:border-gray-600 [&_textarea]:focus:border-green-500 [&_textarea]:focus:ring-green-500">
+                  {renderActionConfigFields(actionDefinition, currentConfig, setCurrentConfig)}
+                </div>
+              </div>
+         
+     
+        </div>
+        {/* Footer com botões */}
+        <div className="cursor-pointer flex justify-end gap-2 p-3 bg-[#23272f] border-t border-gray-700">
+          {/* <Button variant="outline" onClick={() => onOpenChange(false)} className="border-gray-600 text-gray-300">Cancel</Button> */}
+        
+            <Ban onClick={() => onOpenChange(false)} className='text-red-400' />
+            <Save onClick={handleSave} className='text-green-500' />
+          {/* <Button className="bg-green-500 hover:bg-green-600 text-white font-bold" onClick={handleSave}>Save Configuration</Button> */}
         </div>
       </DialogContent>
     </Dialog>
