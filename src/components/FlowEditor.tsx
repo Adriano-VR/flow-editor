@@ -56,6 +56,22 @@ import { WebhookNode } from './nodes/WebhookNode';
 import { FlowEditDrawer } from './FlowEditDrawer';
 import { useFlow } from '@/contexts/FlowContext';
 import { Pencil } from 'lucide-react';
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { NodeCommandMenu } from './NodeCommandMenu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // Add styles for edge hover effect
 const edgeStyles = `
@@ -173,6 +189,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
   const { handleSaveFlow, handleDeleteFlow } = useFlow();
+  const [showCommandMenu, setShowCommandMenu] = useState(false);
 
   // Debounced save function
   const debouncedSave = useCallback(() => {
@@ -913,6 +930,12 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     }
   };
 
+  // Right-click handler for canvas
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setShowCommandMenu(true);
+  };
+
   if (loading) {
     return <div className="flex items-center justify-center h-[80vh]">Loading...</div>;
   }
@@ -936,6 +959,27 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
             <Pencil className="h-4 w-4" />
             Editar
           </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => drawerRef.current?.open()}
+                  className="flex items-center gap-2"
+                >
+                  <FiTool className="h-4 w-4" />
+                  Adicionar Nó
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Clique para adicionar um nó ou use o botão direito do mouse no canvas</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <div className="text-sm text-muted-foreground ml-2">
+            (ou clique com botão direito no canvas)
+          </div>
           <NodeSelectionDrawer ref={drawerRef} onNodeSelect={handleNodeTypeSelect} />
         </div>
         <div className="flex items-center gap-2">
@@ -976,34 +1020,11 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
       </div>
 
       <div className="flex-1 border rounded-lg relative">
-        <NodeContextMenu onAddNode={() => drawerRef.current?.open()}>
-          <NodeProvider 
-            onEdit={handleNodeEdit} 
-            onDelete={handleNodeDelete}
-          >
-            <div className="absolute top-4 right-4 z-10">
-              <Button
-                onClick={() => drawerRef.current?.open()}
-                size="icon"
-                className="rounded-full shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="h-4 w-4"
-                >
-                  <path d="M5 12h14" />
-                  <path d="M12 5v14" />
-                </svg>
-              </Button>
-            </div>
+        <NodeProvider 
+          onEdit={handleNodeEdit} 
+          onDelete={handleNodeDelete}
+        >
+          <div className="h-full w-full" onContextMenu={handleContextMenu}>
             <ReactFlow
               nodes={nodesWithAnimation}
               edges={edges}
@@ -1022,8 +1043,13 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
               <Background color="#94a3b8" gap={16} size={1} />
               <Controls />
             </ReactFlow>
-          </NodeProvider>
-        </NodeContextMenu>
+          </div>
+          <NodeCommandMenu
+            open={showCommandMenu}
+            onOpenChange={setShowCommandMenu}
+            onNodeSelect={handleNodeTypeSelect}
+          />
+        </NodeProvider>
       </div>
 
       <EditNodeDialog

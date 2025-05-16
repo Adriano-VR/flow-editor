@@ -156,15 +156,18 @@ export function ActionNode({ data }: NodeProps) {
           `}
           style={{ minWidth: 80, minHeight: 48, borderColor: data.color || '#3B82F6' }}
         >
-          <div className="text-base font-bold text-gray-800 text-center w-full">
-            {data.label}
+          
+          <div className="flex flex-col items-center  text-base font-bold text-gray-800 text-center w-full">
+           <IconRenderer iconName={data.icon ?? ''} className="text-4xl text-gray-800" />
+
+            <h2>{data.label}</h2>
           </div>
           {/* Handles para conexão */}
-          <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-3 h-3 z-10">
+          <div className="absolute left-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
             <div className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white" style={{ borderColor: data.color || '#3B82F6' }} />
             <Handle type="target" position={Position.Left} className="absolute inset-0 opacity-0" />
           </div>
-          <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-3 h-3 z-10">
+          <div className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
             <div className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white" style={{ borderColor: data.color || '#3B82F6' }} />
             <Handle type="source" position={Position.Right} className="absolute inset-0 opacity-0" />
           </div>

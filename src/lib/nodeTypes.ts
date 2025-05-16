@@ -20,15 +20,6 @@ export interface NodeTypeDefinition {
   label?:string;
 }
 
-interface AppNodeTypes {
-  [key: string]: {
-    [key: string]: NodeTypeDefinition;
-  };
-}
-
-interface InternalNodeTypes {
-  [key: string]: NodeTypeDefinition;
-}
 
 // Defina arrays de actions para cada subcategoria
 const whatsappActions: NodeTypeDefinition[] = [
@@ -178,7 +169,7 @@ const openaiActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'openai',
-    icon: 'MdRecordVoiceOver',
+    icon: 'AiOutlineOpenAI',
     color: '#10A37F',
     config: {}
   },
@@ -188,7 +179,7 @@ const openaiActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'openai',
-    icon: 'MdImage',
+    icon: 'AiOutlineOpenAI',
     color: '#10A37F',
     config: {}
   },
@@ -198,7 +189,7 @@ const openaiActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'openai',
-    icon: 'SiOpenai',
+    icon: 'AiOutlineOpenAI',
     color: '#10A37F',
     config: {}
   }
@@ -231,7 +222,7 @@ const instagramActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'instagram',
-    icon: 'FaWpforms',
+    icon: 'FaInstagram',
     color: '#E1306C',
     config: {}
   },
@@ -241,7 +232,7 @@ const instagramActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'instagram',
-    icon: 'FaQuestionCircle',
+    icon: 'FaInstagram',
     color: '#E1306C',
     config: {}
   },
@@ -251,7 +242,7 @@ const instagramActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'instagram',
-    icon: 'FaReply',
+    icon: 'FaInstagram',
     color: '#E1306C',
     config: {}
   }
@@ -274,7 +265,7 @@ const conversionActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'conversion',
-    icon: 'FaRegPlayCircle',
+    icon: 'SiConvertio',
     color: '#6366F1',
     config: {}
   },
@@ -284,7 +275,7 @@ const conversionActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'conversion',
-    icon: 'FaWhatsapp',
+    icon: 'SiConvertio',
     color: '#6366F1',
     config: {}
   },
@@ -294,7 +285,7 @@ const conversionActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'conversion',
-    icon: 'FaRegPlayCircle',
+    icon: 'SiConvertio',
     color: '#6366F1',
     config: {}
   },
@@ -304,7 +295,7 @@ const conversionActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'conversion',
-    icon: 'FaRegFileAudio',
+    icon: 'SiConvertio',
     color: '#6366F1',
     config: {}
   },
@@ -314,7 +305,7 @@ const conversionActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'conversion',
-    icon: 'FaRegFileAlt',
+    icon: 'SiConvertio',
     color: '#6366F1',
     config: {}
   },
@@ -324,7 +315,7 @@ const conversionActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'conversion',
-    icon: 'FaRegFileAudio',
+    icon: 'SiConvertio',
     color: '#6366F1',
     config: {}
   },
@@ -334,7 +325,7 @@ const conversionActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'app',
     subcategory: 'conversion',
-    icon: 'FaRegFileAlt',
+    icon: 'SiConvertio',
     color: '#6366F1',
     config: {}
   }

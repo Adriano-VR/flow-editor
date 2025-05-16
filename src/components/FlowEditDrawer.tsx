@@ -15,6 +15,8 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
 } from './ui/drawer';
 import { FiArrowLeft, FiTrash2, FiSave, FiEdit2, FiSettings, FiCheckCircle } from 'react-icons/fi';
 import { Switch } from './ui/switch';
@@ -88,17 +90,16 @@ export function FlowEditDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-    <DrawerContent
-  className="fixed  bottom-0 top-auto w-4/12 rounded-t-2xl border-t bg-white flex flex-col p-0 shadow-2xl animate-slideInUp"
-  style={{ maxHeight: '80vh' }}
->
-        {/* Header fixo */}
-        <div className="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white z-10 rounded-t-2xl">
+      <DrawerContent
+        className="fixed bottom-0 top-auto w-4/12 rounded-t-2xl border-t bg-white flex flex-col p-0 shadow-2xl animate-slideInUp"
+        style={{ maxHeight: '80vh' }}
+      >
+        <DrawerHeader className="flex items-center justify-between px-4 py-3 border-b sticky top-0 bg-white z-10 rounded-t-2xl">
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" onClick={() => onOpenChange(false)}>
               <FiArrowLeft className="h-5 w-5" />
             </Button>
-            <span className="font-semibold text-lg">Editar Flow</span>
+            <DrawerTitle className="font-semibold text-lg">Editar Flow</DrawerTitle>
           </div>
           <div className="flex gap-2">
             <Button variant="ghost" size="icon" onClick={handleSave} disabled={isSaving} title="Salvar">
@@ -108,7 +109,7 @@ export function FlowEditDrawer({
               <FiTrash2 className="h-5 w-5 text-destructive" />
             </Button>
           </div>
-        </div>
+        </DrawerHeader>
 
         {/* Seções/cards */}
         <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 bg-gray-50">

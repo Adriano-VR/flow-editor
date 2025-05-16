@@ -1,29 +1,44 @@
 import React from 'react';
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from "@/components/ui/context-menu";
-import { Plus } from "lucide-react";
+import { NodeTypeDefinition } from "@/lib/nodeTypes";
+import { NodeCommandMenu } from './NodeCommandMenu';
 
 interface NodeContextMenuProps {
   children: React.ReactNode;
-  onAddNode: () => void;
+  onNodeSelect?: (nodeType: NodeTypeDefinition) => void;
 }
 
-export function NodeContextMenu({ children, onAddNode }: NodeContextMenuProps) {
+export function NodeContextMenu({ children, onNodeSelect }: NodeContextMenuProps) {
+  const [showCommandMenu, setShowCommandMenu] = React.useState(false);
+
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+    if (onNodeSelect) {
+      setShowCommandMenu(true);
+    }
+  };
+
   return (
-    <ContextMenu>
-      <ContextMenuTrigger>
-        {children}
-      </ContextMenuTrigger>
-      <ContextMenuContent>
-        <ContextMenuItem onClick={onAddNode} className="gap-2 font-semibold cursor-pointer">
-          <Plus className="h-4 w-4 " strokeWidth={4} />
-          Adicionar Nó
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+    <>
+      <div 
+        onContextMenu={handleContextMenu}
+        className="h-full w-full relative"
+        style={{ pointerEvents: 'none' }}
+      >
+        <div style={{ pointerEvents: 'auto' }}>
+          {children}
+        </div>
+      </div>
+
+      {onNodeSelect && (
+        <NodeCommandMenu
+          open={showCommandMenu}
+          onOpenChange={setShowCommandMenu}
+          onNodeSelect={(nodeType) => {
+            onNodeSelect(nodeType);
+            setShowCommandMenu(false);
+          }}
+        />
+      )}
+    </>
   );
 } 
