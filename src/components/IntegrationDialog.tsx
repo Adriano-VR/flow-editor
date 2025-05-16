@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { IconRenderer } from '@/lib/IconRenderer';
 import { renderActionConfigFields } from '@/components/actionConfigFields';
-import { Ban, Save, SplinePointer } from 'lucide-react';
+import { Ban, SplinePointer } from 'lucide-react';
 
 interface IntegrationDialogProps {
   open: boolean;
@@ -23,15 +22,11 @@ export const IntegrationDialog: React.FC<IntegrationDialogProps> = ({
   onOpenChange,
   icon,
   name,
-  description,
   config,
   actionDefinition,
   onSave,
-  isInternal = false,
 }) => {
   const [currentConfig, setCurrentConfig] = useState(config);
-  const [activeTab, setActiveTab] = useState<'parameters' | 'settings' | 'docs'>('parameters');
-  const [webhookOpen, setWebhookOpen] = useState(true);
 
   useEffect(() => {
     setCurrentConfig(config);

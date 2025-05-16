@@ -1,6 +1,5 @@
-import { Pencil, Trash, MessageSquare, Brain, Timer, Play, List, Wrench, Code, FileText, User, Thermometer, Database, Hash, Clock, SaveAll, Info } from 'lucide-react';
+import {  Trash, MessageSquare, Brain, Timer, Play, List, Wrench, Code, FileText, User, Thermometer, Database, Hash, Clock, SaveAll, Info } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
-import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
@@ -9,7 +8,6 @@ import { Node } from '@/types/flow';
 import { useState, useEffect } from 'react';
 import { IconRenderer } from '@/lib/IconRenderer';
 import { renderActionConfigFields } from '@/components/actionConfigFields';
-import { nodeTypes as allNodeTypes } from "@/lib/nodeTypes";
 
 interface EditNodeDialogProps {
   open: boolean;

@@ -2,26 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Plus, Loader2, X, Save, Pencil, Sparkles, FilePlus2, LayoutGrid, Upload } from "lucide-react";
+import { Plus, Loader2, Pencil } from "lucide-react";
 import { useSearch } from "@/contexts/SearchContext";
 import { SidebarProps } from "@/types/sidebar";
 import { useFlow } from "@/contexts/FlowContext";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "./ui/dialog";
 import  FlowEditDrawer  from './FlowEditDrawer';
 import { NewFlowDialog } from "./NewFlowDialog";
 
 export default function Sidebar({ onSelectFlow }: SidebarProps) {
-  const [showNewFlowInput, setShowNewFlowInput] = useState(false);
-  const [newFlowName, setNewFlowName] = useState("");
-  const [localSelectedId, setLocalSelectedId] = useState<string | null>(null);
+  const [, setShowNewFlowInput] = useState(false);
   const [editDrawerOpen, setEditDrawerOpen] = useState(false);
   const [flowToEdit, setFlowToEdit] = useState<string | null>(null);
   const { searchInput } = useSearch();
@@ -31,54 +20,27 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
     setSelectedFlowId, 
     isCreating, 
     isLoading,
-    handleCreateFlow,
     setFlows,
     handleSaveFlow,
-    handleDeleteFlow
+    handleDeleteFlow,
+    getFlows
   } = useFlow();
   const [showNewFlowDialog, setShowNewFlowDialog] = useState(false);
-
-  useEffect(() => {
-    setLocalSelectedId(selectedFlowId);
-  }, [selectedFlowId]);
-
-  const handleCreateFlowClick = async () => {
-    try {
-      // Criar um novo flow sempre com nodes e edges vazios
-      const newFlowId = await handleCreateFlow(newFlowName);
-      if (newFlowId) {
-        setLocalSelectedId(newFlowId);
-        setSelectedFlowId(newFlowId);
-        onSelectFlow(newFlowId);
-
-        setNewFlowName("");
-        setShowNewFlowInput(false);
-        
-        // Adiciona o novo flow no início da lista com nodes e edges vazios
-        const newFlow = {
-          id: newFlowId,
-          attributes: {
-            name: newFlowName,
-            status: "draft",
-            description: "",
-            data: {
-              nodes: [],
-              edges: []
-            }
-          }
-        };
-        
-        setFlows([newFlow, ...flows]);
-      }
-    } catch (error) {
-      console.error('Error creating flow:', error);
-    }
-  };
 
   const handleEditFlowClick = (flowId: string, e: React.MouseEvent) => {
     e.stopPropagation();
     setFlowToEdit(flowId);
     setEditDrawerOpen(true);
+  };
+
+  const handleFlowSelect = async (flowId: string) => {
+    // Limpa o estado de edição antes de selecionar um novo flow
+    setEditDrawerOpen(false);
+    setFlowToEdit(null);
+    
+    // Atualiza o ID do flow selecionado
+    setSelectedFlowId(flowId);
+    onSelectFlow(flowId);
   };
 
   const handleSaveFlowClick = async (data: { 
@@ -95,7 +57,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
       const selectedFlow = flows.find(flow => flow.id === flowToEdit);
       if (!selectedFlow) return;
 
-      // Sempre usar os nodes e edges existentes do flow que está sendo editado
+      // Primeiro atualiza no backend
       await handleSaveFlow({
         name: data.name,
         status: data.status,
@@ -104,24 +66,11 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
         edges: selectedFlow.attributes.data?.edges || []
       });
 
-      // Atualiza a lista de flows mantendo os nodes e edges existentes
-      const updatedFlows = flows.map(flow => {
-        if (flow.id === flowToEdit) {
-          return {
-            ...flow,
-            attributes: {
-              ...flow.attributes,
-              name: data.name,
-              description: data.description,
-              status: data.status,
-              data: flow.attributes.data // Mantém os dados existentes
-            }
-          };
-        }
-        return flow;
-      });
-      
-      setFlows(updatedFlows);
+      // Busca a lista atualizada de flows do backend
+      const updatedResponse = await getFlows();
+      setFlows(updatedResponse.data);
+
+      // Fecha o drawer e limpa o estado
       setEditDrawerOpen(false);
       setFlowToEdit(null);
     } catch (error) {
@@ -176,10 +125,8 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
               open={showNewFlowDialog}
               onOpenChange={setShowNewFlowDialog}
               onOptionSelect={(option) => {
-                // Aqui você pode definir o que acontece para cada opção
                 setShowNewFlowDialog(false);
                 if (option === 'blank') setShowNewFlowInput(true);
-                // Adicione lógica para 'ai', 'template', 'import' conforme necessário
               }}
             />
           </div>
@@ -204,15 +151,11 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                 <li key={flow.id} className="group relative">
                   <Button 
                     variant="ghost"
-                    className={`h-11 w-full justify-start truncate ${localSelectedId === flow.id ? 'bg-primary text-white hover:bg-primary/90 hover:text-white' : ''}`}
-                    onClick={() => {
-                      setLocalSelectedId(flow.id);
-                      setSelectedFlowId(flow.id);
-                      onSelectFlow(flow.id);
-                    }}
+                    className={`h-11 w-full justify-start truncate ${selectedFlowId === flow.id ? 'bg-primary text-white hover:bg-primary/90 hover:text-white' : ''}`}
+                    onClick={() => handleFlowSelect(flow.id)}
                   >
                     <div className="flex items-center gap-2">
-                      {localSelectedId === flow.id && <Pencil className="h-4 w-4" />}
+                      {selectedFlowId === flow.id && <Pencil className="h-4 w-4" />}
                       <div className="flex gap-1 flex-col items-start cursor-pointer">
                         <span className="font-medium capitalize">{flow.attributes.name}</span>
                         <span className="text-xs text-muted-foreground">

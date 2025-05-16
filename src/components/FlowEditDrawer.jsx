@@ -3,6 +3,8 @@ import {
   Drawer,
   DrawerContent,
   DrawerTrigger,
+  DrawerHeader,
+  DrawerTitle,
 } from "@/components/ui/drawer";
 import { IconRenderer } from '../lib/IconRenderer';
 import { Label } from '@/components/ui/label';
@@ -27,16 +29,9 @@ const FlowEditDrawer = ({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerTrigger asChild></DrawerTrigger>
       <DrawerContent className="h-full min-w-4/12 flex flex-col bg-gradient-to-br from-gray-50 to-white max-w-lg w-full sm:w-[480px]" data-vaul-drawer-direction="right">
-        <div className="flex justify-between items-center px-8 pt-6 pb-2">
-          <h2 className="text-2xl font-bold text-gray-800">Editar Flow</h2>
-          <button
-            className="text-gray-400 hover:text-gray-700 text-2xl"
-            onClick={onOpenChange}
-            aria-label="Fechar"
-          >
-            ×
-          </button>
-        </div>
+        <DrawerHeader className="px-8 pt-6 pb-2">
+          <DrawerTitle className="text-2xl font-bold text-gray-800">Editar Flow</DrawerTitle>
+        </DrawerHeader>
 
         <div className="flex-1 overflow-y-auto px-8 pb-8 flex flex-col justify-start items-center">
           <div className="w-full max-w-xl mt-4">

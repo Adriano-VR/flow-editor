@@ -10,40 +10,20 @@ import ReactFlow, {
     EdgeChange,
     useNodesState,
     useEdgesState,
-    Handle,
-    Position,
     MarkerType,
-    NodeProps,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { getFlow } from "../lib/api";
 import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { NodeTypeDefinition } from '@/lib/nodeTypes';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { IconRenderer } from "@/lib/IconRenderer";
-import { LiaBrainSolid } from "react-icons/lia";
-import { FaMemory } from "react-icons/fa";
 import { FiTool } from "react-icons/fi";
 import { JsonEditor } from './JsonEditor';
-import { NodeActionButtons } from './NodeActionButtons';
 import { NodeProvider } from '../contexts/NodeContext';
 import { EditNodeDialog } from './EditNodeDialog';
 import { NodeSelectionDrawer, NodeSelectionDrawerRef } from './NodeSelectionDrawer';
 import { Node, Edge } from "@/types/flow";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { NodeContextMenu } from './NodeContextMenu';
 import { PlayButton } from './PlayButton';
 import {updateNode, deleteNode } from '@/lib/nodeOperations';
-import { nodeTypes as allNodeTypes } from "@/lib/nodeTypes";
 import { IntegrationDialog } from './IntegrationDialog';
 import { ChatAssistant } from './ChatAssistant';
 import { TriggerNode } from './nodes/TriggerNode';
@@ -56,15 +36,6 @@ import { WebhookNode } from './nodes/WebhookNode';
 import  FlowEditDrawer  from './FlowEditDrawer';
 import { useFlow } from '@/contexts/FlowContext';
 import { Pencil } from 'lucide-react';
-import {
-  Command,
-  CommandDialog,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
 import { NodeCommandMenu } from './NodeCommandMenu';
 import {
   Tooltip,
@@ -142,24 +113,6 @@ interface FlowEditorProps {
   onSave?: (data: { nodes: Node[]; edges: Edge[] }) => Promise<void>;
 }
 
-// Gere actionTypes automaticamente a partir do allNodeTypes
-const appActionTypes = Object.values(allNodeTypes.app.subcategories)
-  .flatMap((subcat: any) => subcat.actions)
-  .reduce((acc: Record<string, string>, action: any) => {
-    acc[action.name] = action.subcategory || action.category || "app";
-    return acc;
-  }, {} as Record<string, string>);
-
-const internalActionTypes = Object.values(allNodeTypes.internal)
-  .reduce((acc: Record<string, string>, action: any) => {
-    acc[action.name] = "internal";
-    return acc;
-  }, {} as Record<string, string>);
-
-const actionTypes: Record<string, string> = {
-  ...appActionTypes,
-  ...internalActionTypes,
-};
 
 const nodeTypes = {
   trigger: TriggerNode,
@@ -171,7 +124,7 @@ const nodeTypes = {
   webhook: WebhookNode,
 };
 
-export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorProps) {
+export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
@@ -194,6 +147,71 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   const [showCanvasTooltip, setShowCanvasTooltip] = useState(false);
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [progress, setProgress] = useState(0);
+
+  // Efeito para limpar o estado quando o flowId muda
+  useEffect(() => {
+    // Limpa imediatamente todos os estados
+    setNodes([]);
+    setEdges([]);
+    setFlowData(null);
+    setSelectedNode(null);
+    setEditingNode(null);
+    setError(null);
+    setLastSaved(null);
+    setIsConfigDialogOpen(false);
+    setNewNodeConfig({});
+    setTempNode(null);
+    setIsEditDialogOpen(false);
+    setActiveNodeId(null);
+    setIsEditDrawerOpen(false);
+    setShowCommandMenu(false);
+    setShowCanvasTooltip(false);
+    setProgress(0);
+
+    // Limpa qualquer timeout pendente
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+    if (tooltipTimeoutRef.current) {
+      clearTimeout(tooltipTimeoutRef.current);
+    }
+  }, [flowId, setNodes, setEdges]);
+
+  // Efeito para carregar os dados do novo flow
+  useEffect(() => {
+    const loadFlow = async () => {
+      try {
+        setLoading(true);
+        const response = await getFlow(flowId);
+        const flowData: FlowData = response;
+        console.log('Flow data:', flowData);
+
+        if (!flowData.data?.attributes) {
+          throw new Error('No flow attributes found in response');
+        }
+
+        // Initialize with empty arrays if no data exists
+        if (!flowData.data.attributes.data) {
+          setFlowData(flowData);
+          return;
+        }
+
+        const { nodes: flowNodes, edges: flowEdges } = flowData.data.attributes.data;
+        
+        // Always set nodes and edges from the loaded flow data
+        setNodes(flowNodes || []);
+        setEdges(flowEdges || []);
+        setFlowData(flowData);
+      } catch (err) {
+        console.error('Error loading flow:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load flow');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadFlow();
+  }, [flowId, setNodes, setEdges]);
 
   // Debounced save function
   const debouncedSave = useCallback(() => {
@@ -345,44 +363,6 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     };
   }, []);
 
-  useEffect(() => {
-    const loadFlow = async () => {
-      try {
-        setLoading(true);
-        const response = await getFlow(flowId);
-        
-        const flowData: FlowData = response;
-        console.log('Flow data:', flowData);
-
-        if (!flowData.data?.attributes) {
-          throw new Error('No flow attributes found in response');
-        }
-
-        // Initialize with empty arrays if no data exists
-        if (!flowData.data.attributes.data) {
-          setNodes([]);
-          setEdges([]);
-          setFlowData(flowData);
-          return;
-        }
-
-        const { nodes: flowNodes, edges: flowEdges } = flowData.data.attributes.data;
-        
-        // Always set nodes and edges from the loaded flow data
-        setNodes(flowNodes || []);
-        setEdges(flowEdges || []);
-        setFlowData(flowData);
-      } catch (err) {
-        console.error('Error loading flow:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load flow');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadFlow();
-  }, [flowId]);
-
   const handleNodeClick = useCallback((event: React.MouseEvent | null, node: Node) => {
     setSelectedNode(node);
     setEditingNode(node);
@@ -453,354 +433,7 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
     setNewNodeConfig({});
   };
 
-  const renderConfigFields = () => {
-    if (!tempNode) return null;
 
-    // Primeiro verifica o tipo base (whatsapp, openAi ou internal)
-    switch (tempNode.data.name) {
-      case 'whatsapp':
-        return (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="to">Número do WhatsApp</Label>
-              <Input
-                id="to"
-                placeholder="+55 (00) 00000-0000"
-                value={newNodeConfig.to || ''}
-                onChange={(e) => setNewNodeConfig({ ...newNodeConfig, to: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="message">Mensagem</Label>
-              <Textarea
-                id="message"
-                placeholder="Digite sua mensagem"
-                value={newNodeConfig.message || ''}
-                onChange={(e) => setNewNodeConfig({ ...newNodeConfig, message: e.target.value })}
-              />
-            </div>
-          </div>
-        );
-      case 'openAi':
-        // Depois verifica o nome específico da ação para mostrar campos diferentes
-        switch (tempNode.data.label) {
-          case 'Modelo':
-            return (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="model">Modelo</Label>
-                  <Select
-                    value={newNodeConfig.model || 'gpt-3.5-turbo'}
-                    onValueChange={(value) => setNewNodeConfig({ ...newNodeConfig, model: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o modelo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo</SelectItem>
-                      <SelectItem value="gpt-4">GPT-4</SelectItem>
-                      <SelectItem value="gpt-4-turbo">GPT-4 Turbo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="prompt">Prompt</Label>
-                  <Textarea
-                    id="prompt"
-                    placeholder="Digite o prompt"
-                    value={newNodeConfig.prompt || ''}
-                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, prompt: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="temperature">Temperatura</Label>
-                  <Input
-                    id="temperature"
-                    type="number"
-                    min="0"
-                    max="2"
-                    step="0.1"
-                    value={newNodeConfig.temperature || 0.7}
-                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, temperature: parseFloat(e.target.value) })}
-                  />
-                </div>
-              </div>
-            );
-          case 'Memória':
-            return (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="memoryType">Tipo de Memória</Label>
-                  <Select
-                    value={newNodeConfig.memoryType || 'conversation'}
-                    onValueChange={(value) => setNewNodeConfig({ ...newNodeConfig, memoryType: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="conversation">Conversa</SelectItem>
-                      <SelectItem value="summary">Resumo</SelectItem>
-                      <SelectItem value="vector">Vetorial</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="maxTokens">Máximo de Tokens</Label>
-                  <Input
-                    id="maxTokens"
-                    type="number"
-                    min="1"
-                    value={newNodeConfig.maxTokens || 1000}
-                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, maxTokens: parseInt(e.target.value) })}
-                  />
-                </div>
-              </div>
-            );
-          case 'Criar Agente':
-            return (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="agentName">Nome do Agente</Label>
-                  <Input
-                    id="agentName"
-                    placeholder="Digite o nome do agente"
-                    value={newNodeConfig.agentName || ''}
-                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, agentName: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="agentDescription">Descrição</Label>
-                  <Textarea
-                    id="agentDescription"
-                    placeholder="Descreva o propósito do agente"
-                    value={newNodeConfig.agentDescription || ''}
-                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, agentDescription: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="capabilities">Capacidades</Label>
-                  <Textarea
-                    id="capabilities"
-                    placeholder="Liste as capacidades do agente (uma por linha)"
-                    value={newNodeConfig.capabilities?.join('\n') || ''}
-                    onChange={(e) => setNewNodeConfig({ 
-                      ...newNodeConfig, 
-                      capabilities: e.target.value.split('\n').filter(v => v.trim()) 
-                    })}
-                  />
-                </div>
-              </div>
-            );
-          case 'Ferramenta':
-            return (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="toolName">Nome da Ferramenta</Label>
-                  <Input
-                    id="toolName"
-                    placeholder="Digite o nome da ferramenta"
-                    value={newNodeConfig.toolName || ''}
-                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, toolName: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="toolDescription">Descrição</Label>
-                  <Textarea
-                    id="toolDescription"
-                    placeholder="Descreva a funcionalidade da ferramenta"
-                    value={newNodeConfig.toolDescription || ''}
-                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, toolDescription: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="parameters">Parâmetros (JSON)</Label>
-                  <Textarea
-                    id="parameters"
-                    placeholder='{"param1": "valor1", "param2": "valor2"}'
-                    value={typeof newNodeConfig.parameters === 'string' ? newNodeConfig.parameters : JSON.stringify(newNodeConfig.parameters || {}, null, 2)}
-                    onChange={(e) => {
-                      try {
-                        const parsed = JSON.parse(e.target.value);
-                        setNewNodeConfig({ ...newNodeConfig, parameters: parsed as Record<string, unknown> });
-                      } catch {
-                        // If parsing fails, store as empty object
-                        setNewNodeConfig({ ...newNodeConfig, parameters: {} });
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-            );
-          case 'API':
-            return (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="endpoint">Endpoint</Label>
-                  <Input
-                    id="endpoint"
-                    placeholder="https://api.exemplo.com/endpoint"
-                    value={newNodeConfig.endpoint || ''}
-                    onChange={(e) => setNewNodeConfig({ ...newNodeConfig, endpoint: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="method">Método</Label>
-                  <Select
-                    value={newNodeConfig.method || 'GET'}
-                    onValueChange={(value) => setNewNodeConfig({ ...newNodeConfig, method: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o método" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="GET">GET</SelectItem>
-                      <SelectItem value="POST">POST</SelectItem>
-                      <SelectItem value="PUT">PUT</SelectItem>
-                      <SelectItem value="DELETE">DELETE</SelectItem>
-                      <SelectItem value="PATCH">PATCH</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            );
-          default:
-            return (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Configuração</Label>
-                  <div className="text-sm text-muted-foreground">
-                    Tipo de ação OpenAI não reconhecido: {tempNode.data.label}
-                  </div>
-                </div>
-              </div>
-            );
-        }
-      case 'internal':
-        // Verifica o nome específico da ação interna
-        if (tempNode.data.label === 'Atraso') {
-          return (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="duration">Duração</Label>
-                <Input
-                  id="duration"
-                  type="number"
-                  min="0"
-                  placeholder="Digite a duração"
-                  value={newNodeConfig.duration || 0}
-                  onChange={(e) => setNewNodeConfig({ 
-                    ...newNodeConfig, 
-                    duration: parseInt(e.target.value) || 0 
-                  })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="unit">Unidade</Label>
-                <Select
-                  value={newNodeConfig.unit || 'seconds'}
-                  onValueChange={(value: 'seconds' | 'minutes' | 'hours') => setNewNodeConfig({ ...newNodeConfig, unit: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a unidade" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="seconds">Segundos</SelectItem>
-                    <SelectItem value="minutes">Minutos</SelectItem>
-                    <SelectItem value="hours">Horas</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          );
-        } else if (tempNode.data.label === 'Início') {
-          return (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="condition" className="text-white">Condição de Início</Label>
-                <Textarea
-                  id="condition"
-                  placeholder="Digite a condição de início (opcional)"
-                  value={newNodeConfig.condition || ''}
-                  onChange={(e) => setNewNodeConfig({ 
-                    ...newNodeConfig, 
-                    condition: e.target.value 
-                  })}
-                  className="bg-[#2d3748] text-white border-gray-600 focus:border-green-500 focus:ring-green-500 placeholder-gray-400"
-                />
-              </div>
-            </div>
-          );
-        }
-        // Adicionar suporte ao node de comentário
-        if (tempNode.data.label === 'Comentário') {
-          return (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="comment">Comentário</Label>
-                <Textarea
-                  id="comment"
-                  placeholder="Digite seu comentário"
-                  value={newNodeConfig.comment || ''}
-                  onChange={(e) => setNewNodeConfig({ ...newNodeConfig, comment: e.target.value })}
-                />
-              </div>
-            </div>
-          );
-        }
-        if (tempNode.data.label === 'Banco de Dados') {
-          return (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="query">Query SQL</Label>
-                <Textarea
-                  id="query"
-                  placeholder="Digite a query SQL"
-                  value={newNodeConfig.query || ''}
-                  onChange={(e) => setNewNodeConfig({ ...newNodeConfig, query: e.target.value })}
-                />
-              </div>
-            </div>
-          );
-        }
-        if (tempNode.data.label === 'Webhook') {
-          return (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="url">URL</Label>
-                <Input
-                  id="url"
-                  placeholder="https://webhook.site/unique-url"
-                  value={newNodeConfig.url || ''}
-                  onChange={(e) => setNewNodeConfig({ ...newNodeConfig, url: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="method">Método</Label>
-                <Select
-                  value={newNodeConfig.method || 'POST'}
-                  onValueChange={(value) => setNewNodeConfig({ ...newNodeConfig, method: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o método" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="POST">POST</SelectItem>
-                    <SelectItem value="GET">GET</SelectItem>
-                    <SelectItem value="PUT">PUT</SelectItem>
-                    <SelectItem value="DELETE">DELETE</SelectItem>
-                    <SelectItem value="PATCH">PATCH</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          );
-        }
-        return null;
-      default:
-        return null;
-    }
-  };
 
   const handleCreateFlowFromJson = useCallback((nodes: Node[], edges: Edge[]) => {
     setNodes(nodes);

@@ -44,7 +44,7 @@ export function NodeCommandMenu({ open, onOpenChange, onNodeSelect }: NodeComman
     const nodes: NodeTypeDefinition[] = [];
     
     // Add app nodes from subcategories
-    Object.entries(allNodeTypes.app.subcategories).forEach(([subcat, actions]) => {
+    Object.entries(allNodeTypes.app.subcategories).forEach(([_, actions]) => {
       actions.actions.forEach((action) => {
         nodes.push(action);
       });

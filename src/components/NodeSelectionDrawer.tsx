@@ -7,10 +7,7 @@ import {
 import { IconRenderer } from "@/lib/IconRenderer";
 import { getNodeCategories, NodeTypeDefinition } from "@/lib/nodeTypes";
 import { Input } from "@/components/ui/input";
-import { IntegrationDialog } from './IntegrationDialog';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { DialogTitle } from '@/components/ui/dialog';
 import { ArrowBigLeft } from 'lucide-react';
 
 interface NodeSelectionDrawerProps {
@@ -27,7 +24,7 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
     const appSubcategories = categories.app.subcategories;
     const [open, setOpen] = useState(false);
     const [selectedAppKey, setSelectedAppKey] = useState<string | null>(null);
-    const [actionConfig, setActionConfig] = useState<Record<string, any>>({});
+    const [, setActionConfig] = useState<Record<string, any>>({});
     const [selectedAction, setSelectedAction] = useState<any>(null);
     const [search, setSearch] = useState("");
 

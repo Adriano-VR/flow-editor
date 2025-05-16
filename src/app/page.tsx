@@ -4,7 +4,6 @@ import FlowEditor from "@/components/FlowEditor";
 import Sidebar from "@/components/Sidebar";
 import DefaultLayout from "@/layout/DefaultLayout";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 import {
   Dialog,
@@ -13,7 +12,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { useFlow } from "@/contexts/FlowContext";
 
 export default function Home() {
@@ -24,8 +22,6 @@ export default function Home() {
     isActionModalOpen,
     setIsActionModalOpen,
     selectedAction,
-    actionConfig,
-    setActionConfig,
     handleSaveFlow,
     handleActionConfigSubmit,
   } = useFlow();

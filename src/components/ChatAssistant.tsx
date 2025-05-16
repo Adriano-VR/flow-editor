@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from './ui/button';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerClose } from './ui/drawer';
+import { Drawer, DrawerContent, DrawerTitle, DrawerClose } from './ui/drawer';
 import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import { useChat } from '@/contexts/ChatContext';
