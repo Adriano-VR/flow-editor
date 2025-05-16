@@ -97,7 +97,7 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
       <Drawer open={open} onOpenChange={setOpen}>
         <DrawerTrigger asChild></DrawerTrigger>
         <DrawerContent className="h-full min-w-4/12 flex flex-col  bg-gradient-to-br from-gray-50 to-white max-w-lg w-full sm:w-[480px]" data-vaul-drawer-direction="right">
-          <DialogTitle></DialogTitle>
+          <DialogTitle className="sr-only">Node Selection</DialogTitle>
           <div className="flex justify-between items-center px-8 pt-6 pb-2">
             <h2 className="text-2xl font-bold text-gray-800">Escolha um App</h2>
             <button

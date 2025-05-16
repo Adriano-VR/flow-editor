@@ -1001,9 +1001,8 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
   return (
     <div className="h-full flex flex-col">
       <style>{edgeStyles}</style>
-      <div className="flex justify-between items-center mb-4 font-semibold">
+      <div className="flex items-center justify-between mb-4 px-4">
         <div className="flex items-center gap-4">
-          <h2 className="text-xl font-bold">{flowData?.data?.attributes?.name || 'Novo Flow'}</h2>
           <Button
             variant="outline"
             size="sm"
@@ -1031,9 +1030,18 @@ export default function FlowEditor({ flowId, initialData, onSave }: FlowEditorPr
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-         
           <NodeSelectionDrawer ref={drawerRef} onNodeSelect={handleNodeTypeSelect} />
         </div>
+
+        <div className="flex flex-col items-center">
+          <h2 className="text-2xl font-extrabold">
+            {flowData?.data?.attributes?.name }
+          </h2>
+          <span className="text-sm text-muted-foreground">
+            Editando {flowData?.data?.attributes?.name}
+          </span>
+        </div>
+
         <div className="flex items-center gap-2">
           {lastSaved && (
             <div className="text-sm text-muted-foreground">

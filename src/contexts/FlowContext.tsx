@@ -13,6 +13,7 @@ interface FlowContextType {
   setSelectedFlowId: (id: string | null) => void;
   isCreating: boolean;
   isDeleting: string | null;
+  isLoading: boolean;
   flowData: Flow | null;
   flowName: string;
   isDrawerOpen: boolean;
@@ -40,6 +41,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   const [selectedFlowId, setSelectedFlowId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [flowData, setFlowData] = useState<Flow | null>(null);
   const [flowName, setFlowName] = useState("");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -102,10 +104,13 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const fetchFlows = async () => {
       try {
+        setIsLoading(true);
         const response = await getFlows();
         setFlows(response.data);
       } catch (err) {
         console.error('Error fetching flows:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -304,6 +309,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     setSelectedFlowId,
     isCreating,
     isDeleting,
+    isLoading,
     flowData,
     flowName,
     isDrawerOpen,

@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { IconRenderer } from '@/lib/IconRenderer';
 import { renderActionConfigFields } from '@/components/actionConfigFields';
-import { Ban, Save } from 'lucide-react';
+import { Ban, Save, SplinePointer } from 'lucide-react';
 
 interface IntegrationDialogProps {
   open: boolean;
@@ -72,7 +72,7 @@ export const IntegrationDialog: React.FC<IntegrationDialogProps> = ({
           {/* <Button variant="outline" onClick={() => onOpenChange(false)} className="border-gray-600 text-gray-300">Cancel</Button> */}
         
             <Ban onClick={() => onOpenChange(false)} className='text-red-400' />
-            <Save onClick={handleSave} className='text-green-500' />
+            <SplinePointer onClick={handleSave} className='text-green-500' />
           {/* <Button className="bg-green-500 hover:bg-green-600 text-white font-bold" onClick={handleSave}>Save Configuration</Button> */}
         </div>
       </DialogContent>

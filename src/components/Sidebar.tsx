@@ -30,6 +30,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
     selectedFlowId, 
     setSelectedFlowId, 
     isCreating, 
+    isLoading,
     handleCreateFlow,
     setFlows,
     handleSaveFlow,
@@ -157,9 +158,19 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
               onClick={() => {
                 setShowNewFlowDialog(true);
               }}
+              disabled={isCreating}
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Novo Flow
+              {isCreating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Criando...
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Novo Flow
+                </>
+              )}
             </Button>
             <NewFlowDialog
               open={showNewFlowDialog}
@@ -174,12 +185,22 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
           </div>
 
           <ul className="space-y-2 mt-4">
-            {flows
-              .filter((flow) => 
-                flow.attributes?.name?.toLowerCase().includes(searchInput.toLowerCase()) ?? false
-              )
-              .sort((a, b) => Number(b.id) - Number(a.id))
-              .map((flow) => (
+            {isLoading ? (
+              <li className="flex items-center justify-center py-4">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                <span className="ml-2 text-sm text-muted-foreground">Carregando flows...</span>
+              </li>
+            ) : flows.length === 0 ? (
+              <li className="text-center py-4 text-sm text-muted-foreground">
+                Nenhum flow encontrado
+              </li>
+            ) : (
+              flows
+                .filter((flow) => 
+                  flow.attributes?.name?.toLowerCase().includes(searchInput.toLowerCase()) ?? false
+                )
+                .sort((a, b) => Number(b.id) - Number(a.id))
+                .map((flow) => (
                 <li key={flow.id} className="group relative">
                   <Button 
                     variant="ghost"
@@ -209,7 +230,8 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                     <Pencil className="h-4 w-4 text-primary" />
                   </Button>
                 </li>
-              ))}
+              ))
+            )}
           </ul>
         </div>
       </aside>
