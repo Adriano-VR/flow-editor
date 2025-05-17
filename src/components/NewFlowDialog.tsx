@@ -4,6 +4,7 @@ import { Sparkles, FilePlus2, LayoutGrid, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { Input } from "./ui/input";
 import { useFlow } from "@/contexts/FlowContext";
+import { AlertDialog, AlertDialogDescription, AlertDialogTitle, AlertDialogHeader, AlertDialogContent, AlertDialogAction, AlertDialogFooter, AlertDialogCancel } from "./ui/alert-dialog";
 
 interface NewFlowDialogProps {
   open: boolean;
@@ -100,8 +101,40 @@ export function NewFlowDialog({ open, onOpenChange, onOptionSelect }: NewFlowDia
           </div>
         </DialogContent>
       </Dialog>
+      <AlertDialog open={showNameDialog} onOpenChange={setShowNameDialog}>
+        <AlertDialogContent className="sm:max-w-[425px] bg-[#f2f4fa] border-2">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Nome do fluxo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Digite um nome para o seu novo fluxo
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="grid gap-4 py-4">
+            <Input
+              placeholder="Digite o nome do fluxo"
+              value={flowName}
+              onChange={(e) => setFlowName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && flowName.trim() && !isCreating) {
+                  handleCreateBlankFlow();
+                }
+              }}
+              autoFocus
+              disabled={isCreating}
+            />
+          </div>
+          <AlertDialogFooter className="gap-3">
+            <AlertDialogCancel onClick={() => setShowNameDialog(false)} disabled={isCreating}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleCreateBlankFlow} disabled={!flowName.trim() || isCreating}>
+              {isCreating ? "Criando..." : "Criar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
+      {/* <Dialog open={showNameDialog} onOpenChange={setShowNameDialog}>
         <DialogContent className="sm:max-w-[425px] bg-[#f2f4fa] border-2">
           <DialogHeader>
             <DialogTitle>Nome do fluxo</DialogTitle>
@@ -132,7 +165,7 @@ export function NewFlowDialog({ open, onOpenChange, onOptionSelect }: NewFlowDia
             </Button>
           </div>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
     </>
   );
 } 

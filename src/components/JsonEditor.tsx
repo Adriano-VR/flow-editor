@@ -122,7 +122,7 @@ export function JsonEditor({ flowData, onSave, onCreateFlow, completeFlow }: Jso
         </Button>
       </DrawerTrigger>
       <DrawerContent className="h-full w-[400px] right-0 top-0 bottom-0 rounded-r-lg rounded-l-none">
-        <div className="mx-auto w-full max-w-2xl">
+        <div className="mx-auto w-full max-w-3xl min-h-screen overflow-y-auto">
           <DrawerHeader>
             <DrawerTitle>Editor JSON</DrawerTitle>
             <DrawerDescription>
