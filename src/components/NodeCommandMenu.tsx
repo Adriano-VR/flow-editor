@@ -35,8 +35,11 @@ export function NodeCommandMenu({ open, onOpenChange, onNodeSelect }: NodeComman
   }, [onOpenChange]);
 
   const handleSelect = useCallback((nodeType: NodeTypeDefinition) => {
-    onNodeSelect(nodeType);
-    onOpenChange(false);
+    // Use setTimeout to ensure state updates happen after render
+    setTimeout(() => {
+      onNodeSelect(nodeType);
+      onOpenChange(false);
+    }, 0);
   }, [onNodeSelect, onOpenChange]);
 
   // Flatten all node types into a single array for search
@@ -77,7 +80,15 @@ export function NodeCommandMenu({ open, onOpenChange, onNodeSelect }: NodeComman
                     onSelect={() => handleSelect(node)}
                     className="flex items-center gap-2"
                   >
-                    <IconRenderer iconName={node.icon ?? ''} className="h-4 w-4" />
+                     
+                      <IconRenderer 
+                      iconName={node.icon ?? ''} 
+                      className="w-4 h-4"
+                      style={{ color:node.color}} 
+                    />
+                    
+                  
+                  
                     <span>{node.name}</span>
                     {node.subcategory && (
                       <span className="text-xs text-muted-foreground ml-auto">
@@ -96,7 +107,11 @@ export function NodeCommandMenu({ open, onOpenChange, onNodeSelect }: NodeComman
                     onSelect={() => handleSelect(node)}
                     className="flex items-center gap-2"
                   >
-                    <IconRenderer iconName={node.icon ?? ''} className="h-4 w-4" />
+                    <IconRenderer 
+                      iconName={node.icon ?? ''} 
+                      className="w-4 h-4"
+                      style={{ color:node.color}} 
+                    />
                     <span>{node.name}</span>
                   </CommandItem>
                 ))}

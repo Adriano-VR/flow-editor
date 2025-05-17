@@ -30,7 +30,7 @@ export function JsonTextarea({ value, onChange, onError }: JsonTextareaProps) {
       value={value}
       onChange={handleChange}
       onPaste={handlePaste}
-      className="font-mono h-[500px] resize-none bg-background border rounded-md"
+      className="h-[500px] resize-none bg-background border rounded-md"
       placeholder="Cole ou edite o JSON do fluxo aqui..."
       style={{
         tabSize: 2,

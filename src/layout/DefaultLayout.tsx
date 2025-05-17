@@ -5,7 +5,7 @@ export default function DefaultLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative flex flex-col min-h-screen font-mono ">
+    <div className="relative flex flex-col min-h-screen">
        {/* <NavBar />  */}
       <main className="  px-6 flex-grow pt-2  ">
       

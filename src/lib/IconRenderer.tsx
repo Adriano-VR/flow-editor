@@ -56,11 +56,12 @@ const iconMap = {
 
 interface IconRendererProps {
   iconName: string;
-  className?: string; // nova prop para estilos
+  className?: string;
+  style?: React.CSSProperties;
 }
 
-export const IconRenderer = ({ iconName, className = 'text-white size-25' }: IconRendererProps) => {
+export const IconRenderer = ({ iconName, className = 'size-25', style }: IconRendererProps) => {
   const IconComponent = iconMap[iconName as keyof typeof iconMap];
   if (!IconComponent) return <span>X</span>;
-  return <IconComponent className={className} />;
+  return <IconComponent className={className} style={style} />;
 };

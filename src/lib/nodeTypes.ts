@@ -377,7 +377,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'trigger',
     category: 'internal',
     icon: 'VscDebugStart',
-    color: '#EAB308',
+    color: '#FF0000', 
     config: {}
   },
   {
@@ -386,7 +386,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'internal',
     icon: 'IoTime',
-    color: '#EAB308',
+    color: '#FF0000', 
     label: 'Atraso',
     config: {
       duration: 0,
@@ -399,7 +399,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'condition',
     category: 'internal',
     icon: 'TbAirConditioning',
-    color: '#EAB308',
+    color: '#FF0000', 
     config: {
       condition: '',
     }
@@ -410,7 +410,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'internal',
     icon: 'GiFinishLine',
-    color: '#EAB308',
+    color: '#FF0000',  
     config: {
       condition: '',
     }
@@ -421,7 +421,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'comment',
     category: 'internal',
     icon: 'FaCommentAlt',
-    color: '#FACC15',
+    color: '#FF0000', 
     label: 'Comentário',
     config: {
       comment: ''
@@ -433,7 +433,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'database',
     category: 'internal',
     icon: 'FaDatabase',
-    color: '#FACC15',
+    color: '#FF0000', 
     label: 'Banco de Dados',
     config: {
       query: ''
@@ -445,7 +445,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'api',
     category: 'internal',
     icon: 'TbApi',
-    color: '#FACC15',
+    color: '#FF0000', 
     label: 'Conectar API',
     config: {
       endpoint: '',
@@ -458,7 +458,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'webhook',
     category: 'internal',
     icon: 'MdOutlineWebhook',
-    color: '#FACC15',
+    color: '#FF0000', 
     label: 'Webhook',
     config: {
       url: '',
