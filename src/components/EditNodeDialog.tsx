@@ -1,22 +1,9 @@
 "use client"
 
-import { useState, useEffect, ReactNode, ReactElement } from "react"
+import { useState, useEffect } from "react"
 import { useToast } from "@/components/ui/use-toast"
-import { ToastTitle } from "@/components/ui/toast"
 import {
   Trash,
-  MessageSquare,
-  Brain,
-  Timer,
-  Play,
-  List,
-  Wrench,
-  Code,
-  FileText,
-  User,
-  Thermometer,
-  Database,
-  Hash,
   Save,
   Info,
   X,
@@ -25,10 +12,6 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import type { Node } from "@/types/flow"
 import { IconRenderer } from "@/lib/IconRenderer"

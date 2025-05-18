@@ -378,7 +378,9 @@ const internalActions: NodeTypeDefinition[] = [
     category: 'internal',
     icon: 'VscDebugStart',
     color: '#FF0000', 
-    config: {}
+    config: {
+      condition: ''
+    }
   },
   {
     id: 'internal_delay',

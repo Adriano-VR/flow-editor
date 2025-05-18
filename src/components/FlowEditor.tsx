@@ -23,7 +23,6 @@ import { EditNodeDialog } from './EditNodeDialog';
 import { NodeSelectionDrawer, NodeSelectionDrawerRef } from './NodeSelectionDrawer';
 import { Node, Edge } from "@/types/flow";
 import { PlayButton } from './PlayButton';
-import { useNode } from '@/contexts/NodeContext';
 import { IntegrationDialog } from './IntegrationDialog';
 import { ChatAssistant } from './ChatAssistant';
 import { TriggerNode } from './nodes/TriggerNode';
@@ -147,7 +146,6 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   const [showCanvasTooltip, setShowCanvasTooltip] = useState(false);
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [progress, setProgress] = useState(0);
-  const { updateNode, deleteNode } = useNode();
 
   // Efeito para limpar o estado quando o flowId muda
   useEffect(() => {

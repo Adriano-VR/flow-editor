@@ -1,5 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
-import { Button } from "./ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Sparkles, FilePlus2, LayoutGrid, Upload, X } from "lucide-react";
 import { useState } from "react";
 import { Input } from "./ui/input";

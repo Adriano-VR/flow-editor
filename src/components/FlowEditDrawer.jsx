@@ -46,7 +46,7 @@ const FlowEditDrawer = ({ open, onOpenChange, flowData, onSave, onDelete }) => {
   const handleSave = async () => {
     try {
       setIsSaving(true)
-      await onSave({ name, description, status })
+      await onSave({ name, description, status } )
       toast({
         title: "Flow atualizado!",
         description: "As alterações foram salvas com sucesso",
@@ -90,10 +90,8 @@ const FlowEditDrawer = ({ open, onOpenChange, flowData, onSave, onDelete }) => {
     switch (status) {
       case "draft":
         return <Clock className="h-4 w-4 text-amber-500" />
-      case "active":
+      case "published":
         return <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-      case "archived":
-        return <Archive className="h-4 w-4 text-slate-500" />
       default:
         return null
     }
@@ -103,10 +101,8 @@ const FlowEditDrawer = ({ open, onOpenChange, flowData, onSave, onDelete }) => {
     switch (status) {
       case "draft":
         return "bg-amber-100 text-amber-800 border-amber-200"
-      case "active":
+      case "published":
         return "bg-emerald-100 text-emerald-800 border-emerald-200"
-      case "archived":
-        return "bg-slate-100 text-slate-800 border-slate-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
     }
@@ -186,7 +182,10 @@ const FlowEditDrawer = ({ open, onOpenChange, flowData, onSave, onDelete }) => {
                   {getStatusIcon()}
                   Status
                 </Label>
-                <Select value={status} onValueChange={setStatus}>
+                <Select value={status} onValueChange={(value) => {
+                  console.log('Status changed to:', value);
+                  setStatus(value);
+                }}>
                   <SelectTrigger className="w-full border-slate-200 focus:ring-blue-500">
                     <SelectValue placeholder="Selecione o status" />
                   </SelectTrigger>
@@ -197,16 +196,10 @@ const FlowEditDrawer = ({ open, onOpenChange, flowData, onSave, onDelete }) => {
                         <span>Rascunho</span>
                       </div>
                     </SelectItem>
-                    <SelectItem value="active">
+                    <SelectItem value="published">
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                        <span>Ativo</span>
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="archived">
-                      <div className="flex items-center gap-2">
-                        <Archive className="h-4 w-4 text-slate-500" />
-                        <span>Arquivado</span>
+                        <span>Publicado</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
@@ -218,15 +211,13 @@ const FlowEditDrawer = ({ open, onOpenChange, flowData, onSave, onDelete }) => {
                       {getStatusIcon()}
                       <span>
                         {status === "draft" && "Rascunho"}
-                        {status === "active" && "Ativo"}
-                        {status === "archived" && "Arquivado"}
+                        {status === "published" && "Publicado"}
                       </span>
                     </div>
                   </Badge>
                   <span className="text-xs text-slate-500">
                     {status === "draft" && "O flow está em desenvolvimento"}
-                    {status === "active" && "O flow está em execução"}
-                    {status === "archived" && "O flow está arquivado"}
+                    {status === "published" && "O flow está publicado"}
                   </span>
                 </div>
               </div>

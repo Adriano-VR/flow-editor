@@ -102,7 +102,7 @@ export const IntegrationDialog = ({
 
         <ScrollArea className="max-h-[60vh]">
           <div className="px-6 py-4">
-            {Object.keys(currentConfig).length === 0 && (
+            {actionDefinition?.config && Object.keys(actionDefinition.config).length > 0 && (
               <Alert className="mb-6 bg-blue-50 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>

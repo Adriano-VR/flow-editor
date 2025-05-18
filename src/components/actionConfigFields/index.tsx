@@ -1,7 +1,8 @@
 import React from 'react';
 import { Label } from '../ui/label';
 import { Input } from '../ui/input';
-import { MessageSquareWarning } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 // Utilitário para sobrescrever campos especiais
 const fieldOverrides: Record<string, (value: any, onChange: (v: any) => void) => React.ReactNode> = {
@@ -65,97 +66,6 @@ export function renderDynamicConfigFields(
 export function renderActionConfigFields(selectedAction: any, actionConfig: any, setActionConfig: (cfg: any) => void) {
   if (!selectedAction) return null;
 
-  // Função auxiliar para renderizar campos dinâmicos baseados no config template
-  const renderDynamicFields = (configTemplate: Record<string, any>) => {
-    if (!configTemplate) return null;
-    return (
-      <div className="space-y-4">
-        {Object.entries(configTemplate).map(([key, defaultValue]) => {
-          // Determina o tipo de campo baseado no valor padrão
-          const fieldType = typeof defaultValue;
-          
-          // Renderiza campos especiais
-          if (Array.isArray(defaultValue)) {
-            return (
-              <div className="space-y-2" key={key}>
-                <Label htmlFor={key}>{key.charAt(0).toUpperCase() + key.slice(1)}</Label>
-                <textarea
-                  id={key}
-                  className="w-full bg-[#2d3748] text-white border border-gray-600 rounded-md px-3 py-2"
-                  placeholder={`Digite ${key} (um por linha)`}
-                  value={Array.isArray(actionConfig[key]) ? actionConfig[key].join('\n') : ''}
-                  onChange={e => setActionConfig({ ...actionConfig, [key]: e.target.value.split('\n').filter(v => v.trim()) })}
-                />
-              </div>
-            );
-          }
-
-          // Renderiza campos baseados no tipo
-          switch (fieldType) {
-            case 'number':
-              return (
-                <div className="space-y-2" key={key}>
-                  <Label htmlFor={key}>{key.charAt(0).toUpperCase() + key.slice(1)}</Label>
-                  <Input
-                    id={key}
-                    type="number"
-                    value={actionConfig[key] ?? defaultValue}
-                    onChange={e => setActionConfig({ ...actionConfig, [key]: Number(e.target.value) })}
-                  />
-                </div>
-              );
-            case 'boolean':
-              return (
-                <div className="space-y-2" key={key}>
-                  <Label htmlFor={key} className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id={key}
-                      checked={actionConfig[key] ?? defaultValue}
-                      onChange={e => setActionConfig({ ...actionConfig, [key]: e.target.checked })}
-                      className="rounded border-gray-600 bg-[#2d3748] text-green-500 focus:ring-green-500"
-                    />
-                    {key.charAt(0).toUpperCase() + key.slice(1)}
-                  </Label>
-                </div>
-              );
-            case 'object':
-              return (
-                <div className="space-y-2" key={key}>
-                  <Label htmlFor={key}>{key.charAt(0).toUpperCase() + key.slice(1)}</Label>
-                  <textarea
-                    id={key}
-                    className="w-full bg-[#2d3748] text-white border border-gray-600 rounded-md px-3 py-2"
-                    placeholder="{}"
-                    value={typeof actionConfig[key] === 'string' ? actionConfig[key] : JSON.stringify(actionConfig[key] || defaultValue, null, 2)}
-                    onChange={e => {
-                      try {
-                        const parsed = JSON.parse(e.target.value);
-                        setActionConfig({ ...actionConfig, [key]: parsed });
-                      } catch {
-                        setActionConfig({ ...actionConfig, [key]: e.target.value });
-                      }
-                    }}
-                  />
-                </div>
-              );
-            default:
-              return (
-                <div className="space-y-2" key={key}>
-                  <Label htmlFor={key}>{key.charAt(0).toUpperCase() + key.slice(1)}</Label>
-                  <Input
-                    id={key}
-                    type="text"
-                    value={actionConfig[key] ?? defaultValue}
-                    onChange={e => setActionConfig({ ...actionConfig, [key]: e.target.value })}
-                  />
-                </div>
-              );
-          }
-        })}
-      </div>
-    );
-  };
 
   // Renderiza campos específicos para cada tipo de ação
   switch (selectedAction.id) {
@@ -462,12 +372,12 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
     default:
       // return renderDynamicFields(selectedAction.config || {});
       return (
-        <div className="space-y-4 flex flex-col items-center gap-2">
-         
-          <span>
-            Nao E possivel configurar este tipo de ação
-          </span>
-          </div>
+        <Alert className="mb-6 bg-red-50 text-red-500 border-red-200 dark:bg-blue-900/20 dark:text-red-300 dark:border-red-800">
+        <AlertCircle className="h-4 w-4" />
+        <AlertDescription>
+         Não é possível configurar este tipo de ação
+        </AlertDescription>
+      </Alert>
       )
   }
 } 
