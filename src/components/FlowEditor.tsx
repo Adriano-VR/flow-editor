@@ -23,7 +23,7 @@ import { EditNodeDialog } from './EditNodeDialog';
 import { NodeSelectionDrawer, NodeSelectionDrawerRef } from './NodeSelectionDrawer';
 import { Node, Edge } from "@/types/flow";
 import { PlayButton } from './PlayButton';
-import {updateNode, deleteNode } from '@/lib/nodeOperations';
+import { useNode } from '@/contexts/NodeContext';
 import { IntegrationDialog } from './IntegrationDialog';
 import { ChatAssistant } from './ChatAssistant';
 import { TriggerNode } from './nodes/TriggerNode';
@@ -147,6 +147,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   const [showCanvasTooltip, setShowCanvasTooltip] = useState(false);
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [progress, setProgress] = useState(0);
+  const { updateNode, deleteNode } = useNode();
 
   // Efeito para limpar o estado quando o flowId muda
   useEffect(() => {
@@ -324,22 +325,33 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   // Single node deletion handler
   const handleNodeDelete = async (nodeId: string) => {
     try {
-      // Primeiro atualiza o estado local
-      const result = deleteNode(nodes, edges, nodeId);
+      // Remove the node and its connected edges
+      const updatedNodes = nodes.filter(node => node.id !== nodeId);
+      const updatedEdges = edges.filter(
+        edge => edge.source !== nodeId && edge.target !== nodeId
+      );
+      
+      // Atualiza o estado local imediatamente (otimisticamente)
+      setNodes(updatedNodes);
+      setEdges(updatedEdges);
       
       // Limpa o nó selecionado e fecha o diálogo
       setSelectedNode(null);
       setEditingNode(null);
       setIsEditDialogOpen(false);
       
-      // Salva as mudanças na API
+      // Salva as mudanças na API em background
       if (onSave) {
-        await onSave({ nodes: result.nodes, edges: result.edges });
-        setLastSaved(new Date());
-        
-        // Atualiza o estado local após a confirmação da API
-        setNodes(result.nodes);
-        setEdges(result.edges);
+        onSave({ nodes: updatedNodes, edges: updatedEdges })
+          .then(() => {
+            setLastSaved(new Date());
+          })
+          .catch((error) => {
+            console.error('Error saving after node deletion:', error);
+            // Em caso de erro, reverte as mudanças
+            setNodes(nodes);
+            setEdges(edges);
+          });
       }
     } catch (error) {
       console.error('Error deleting node:', error);
