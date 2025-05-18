@@ -88,15 +88,29 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   };
 
   const handleDeleteFlow = async (flowId: string): Promise<void> => {
+    if (!flowId) {
+      throw new Error("Flow ID is required");
+    }
    
     try {
       setIsDeleting(flowId);
-      await deleteFlow(flowId);
+      const response = await deleteFlow(flowId);
+      
+      if (!response) {
+        throw new Error("Failed to delete flow");
+      }
+
       const updatedResponse = await getFlows();
       setFlows(updatedResponse.data);
+      
+      // Se o flow deletado era o selecionado, limpa a seleção
+      if (selectedFlowId === flowId) {
+        setSelectedFlowId(null);
+        setFlowData(null);
+      }
     } catch (err) {
       console.error('Error deleting flow:', err);
-      throw err;
+      throw err; // Re-throw the error to be handled by the component
     } finally {
       setIsDeleting(null);
     }

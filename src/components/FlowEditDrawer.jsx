@@ -32,8 +32,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { useToast } from "@/components/ui/use-toast"
 
 const FlowEditDrawer = ({ open, onOpenChange, flowData, onSave, onDelete }) => {
+  const { toast } = useToast()
   const [name, setName] = useState(flowData?.name || "")
   const [description, setDescription] = useState(flowData?.description || "")
   const [status, setStatus] = useState(flowData?.status || "active")
@@ -45,8 +47,18 @@ const FlowEditDrawer = ({ open, onOpenChange, flowData, onSave, onDelete }) => {
     try {
       setIsSaving(true)
       await onSave({ name, description, status })
+      toast({
+        title: "Flow atualizado!",
+        description: "As alterações foram salvas com sucesso",
+      })
+      onOpenChange(false)
     } catch (error) {
       console.error("Error saving flow:", error)
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar as alterações",
+        variant: "destructive",
+      })
     } finally {
       setIsSaving(false)
     }
@@ -57,9 +69,18 @@ const FlowEditDrawer = ({ open, onOpenChange, flowData, onSave, onDelete }) => {
       setIsDeleting(true)
       await onDelete()
       setShowDeleteConfirm(false)
+      toast({
+        title: "Flow deletado!",
+        description: "O flow foi excluído com sucesso",
+      })
       window.location.reload()
     } catch (error) {
       console.error("Error deleting flow:", error)
+      toast({
+        title: "Erro ao deletar",
+        description: "Não foi possível excluir o flow",
+        variant: "destructive",
+      })
     } finally {
       setIsDeleting(false)
     }

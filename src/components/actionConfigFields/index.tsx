@@ -252,13 +252,13 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
           </div>
           <div className="space-y-2">
             <Label htmlFor="parameters">Parâmetros</Label>
-            <textarea
+            <Input
               id="parameters"
-              className="w-full bg-[#2d3748] text-white border border-gray-600 rounded-md px-3 py-2"
               placeholder="Digite os parâmetros"
               value={typeof actionConfig.parameters === 'object' ? JSON.stringify(actionConfig.parameters) : (actionConfig.parameters || '')}
               onChange={e => setActionConfig({ ...actionConfig, parameters: e.target.value })}
             />
+         
           </div>
         </div>
       );
@@ -303,13 +303,13 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="condition">Condição de Início</Label>
-            <textarea
+            <Input
               id="condition"
-              className="w-full bg-[#2d3748] text-white border border-gray-600 rounded-md px-3 py-2"
               placeholder="Digite a condição de início"
               value={actionConfig.condition || ''}
               onChange={e => setActionConfig({ ...actionConfig, condition: e.target.value })}
             />
+           
           </div>
         </div>
       );
@@ -456,14 +456,14 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
     case 'form_number_input':
     case 'form_checkbox':
     case 'form_date_input':
-      return renderDynamicFields(selectedAction.config?.fields || {});
+      // return renderDynamicFields(selectedAction.config?.fields || {});
 
     // Para todos os outros tipos de ação, usa o renderDynamicFields
     default:
       // return renderDynamicFields(selectedAction.config || {});
       return (
         <div className="space-y-4 flex flex-col items-center gap-2">
-          <MessageSquareWarning size={50} />
+         
           <span>
             Nao E possivel configurar este tipo de ação
           </span>

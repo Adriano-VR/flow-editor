@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useImperativeHandle, forwardRef } from "react"
+import { useState, useImperativeHandle, forwardRef, useEffect } from "react"
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer"
 import { IconRenderer } from "@/lib/IconRenderer"
 import { getNodeCategories, type NodeTypeDefinition } from "@/lib/nodeTypes"
@@ -29,6 +29,17 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
     const [, setActionConfig] = useState<Record<string, any>>({})
     const [selectedAction, setSelectedAction] = useState<any>(null)
     const [search, setSearch] = useState("")
+
+    // Add useEffect to handle node selection
+    useEffect(() => {
+      if (selectedAction) {
+        onNodeSelect(selectedAction)
+        setOpen(false)
+        setSelectedAction(null)
+        setSelectedAppKey(null)
+        setActionConfig({})
+      }
+    }, [selectedAction, onNodeSelect])
 
     useImperativeHandle(ref, () => ({
       open: () => {
@@ -414,15 +425,7 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
               )}
 
               {/* Se selecionou ação, dispara seleção */}
-              {selectedAction &&
-                (() => {
-                  onNodeSelect(selectedAction)
-                  setOpen(false)
-                  setSelectedAction(null)
-                  setSelectedAppKey(null)
-                  setActionConfig({})
-                  return null
-                })()}
+              {selectedAction && null}
             </ScrollArea>
           </div>
         </DrawerContent>

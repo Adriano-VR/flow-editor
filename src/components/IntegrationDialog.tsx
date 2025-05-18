@@ -38,8 +38,14 @@ export const IntegrationDialog = ({
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    setCurrentConfig(config)
-  }, [config])
+    // Merge the initial config with default values from actionDefinition
+    const defaultConfig = actionDefinition?.config || {}
+    const mergedConfig = {
+      ...defaultConfig,
+      ...config
+    }
+    setCurrentConfig(mergedConfig)
+  }, [config, actionDefinition])
 
   const handleSave = async () => {
     try {

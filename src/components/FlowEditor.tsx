@@ -525,11 +525,45 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
     }
   }));
 
-  const handleNodeUpdate = (nodeId: string, updates: Partial<Node>) => {
-    const result = updateNode(nodes, edges, nodeId, updates);
-    setNodes(result.nodes);
-    setEdges(result.edges);
-    debouncedSave();
+  const handleNodeUpdate = async (nodeId: string, updates: Partial<Node>) => {
+    // Find the existing node to preserve its properties
+    const existingNode = nodes.find(node => node.id === nodeId);
+    if (!existingNode) return;
+
+    // Create a new array of nodes with the updated node
+    const updatedNodes = nodes.map(node => {
+      if (node.id === nodeId) {
+        return {
+          ...node, // Keep all original node properties
+          ...updates, // Apply updates
+          position: node.position, // Explicitly preserve position
+          data: {
+            ...node.data, // Keep all original data
+            ...(updates.data || {}) // Apply data updates
+          }
+        };
+      }
+      return node;
+    });
+
+    // Update the nodes state directly
+    setNodes(updatedNodes);
+
+    // Save immediately instead of using debounce
+    try {
+      await handleSaveFlow({
+        nodes: updatedNodes,
+        edges,
+        name: flowData?.data?.attributes?.name,
+        status: flowData?.data?.attributes?.status,
+        description: flowData?.data?.attributes?.description
+      });
+      setLastSaved(new Date());
+    } catch (error) {
+      console.error('Error saving node update:', error);
+      // Revert changes if save fails
+      setNodes(nodes);
+    }
   };
 
   const handleFlowEdit = async (data: { name: string; description: string; status: string }) => {
