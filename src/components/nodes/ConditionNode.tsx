@@ -8,16 +8,20 @@ export function ConditionNode({ data }: NodeProps) {
     <div className="relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
       {/* Handles fora do losango rotacionado */}
       {/* Handle de entrada (esquerda) */}
-      <Handle type="target" position={Position.Left} className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border-2 rounded-full z-20" style={{ borderColor: color }} />
+      <div className="absolute left-[-15px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white" style={{ borderColor: color }}>
+        <Handle type="target" position={Position.Left} className="absolute inset-0 w-full h-full opacity-0" />
+      </div>
       {/* Handle de saída true (baixo) */}
-      <Handle type="source" position={Position.Bottom} id="true" className="absolute bottom-0 left-1/2 -translate-x-1/2 w-9 h-9 bg-white border-2 rounded-full flex items-center justify-center z-20" style={{ borderColor: '#25D366' }} />
-      <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: -18 }}>
-        <div className="text-green-500 text-base pointer-events-none select-none">✓</div>
+      <div className="absolute bottom-[-15px] left-1/2 -translate-x-1/2 w-6 h-6 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white" style={{ borderColor: '#25D366' }}>
+        <Handle type="source" position={Position.Bottom} id="true" className="absolute inset-0 w-full h-full opacity-0" />
+      </div>
+      <div className="absolute left-1/2" style={{ bottom: -18 }}>
       </div>
       {/* Handle de saída false (direita) */}
-      <Handle type="source" position={Position.Right} id="false" className="absolute right-0 top-1/2 -translate-y-1/2 w-9 h-9 bg-white border-2 rounded-full flex items-center justify-center z-20" style={{ borderColor: '#F87171' }} />
+      <div className="absolute right-[-15px] top-1/2 -translate-y-1/2 w-6 h-6 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white" style={{ borderColor: '#F87171' }}>
+        <Handle type="source" position={Position.Right} id="false" className="absolute inset-0 w-full h-full opacity-0" />
+      </div>
       <div className="absolute top-1/2 -translate-y-1/2" style={{ right: -18 }}>
-        <div className="text-red-500 text-base pointer-events-none select-none">✕</div>
       </div>
       {/* Losango rotacionado */}
       <div
@@ -54,7 +58,7 @@ export function ConditionNode({ data }: NodeProps) {
           </div>
           <div className="text-center">
             <div className="text-sm font-bold" style={{ color }}>{data.label}</div>
-            <div className="text-xs text-gray-500">Condição</div>
+            <div className="text-xs text-gray-500">{data.config.condition}</div>
           </div>
         </div>
         <NodeActionButtons data={data} type="condition" />

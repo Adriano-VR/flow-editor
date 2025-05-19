@@ -10,7 +10,7 @@ export function TriggerNode({ data }: NodeProps) {
           flex flex-col items-center justify-center
           rounded-full
           border-2
-          w-18 h-18
+          w-19 h-19
           relative
           transition-all duration-300
           hover:shadow-2xl
@@ -35,7 +35,7 @@ export function TriggerNode({ data }: NodeProps) {
           <Handle type="source" position={Position.Right} className="absolute inset-0 opacity-0" />
         </div>
         <div className="flex items-center justify-center w-10/12 h-10/12 rounded-full mb-2">
-          <IconRenderer iconName={data.icon ?? ''} className='text-5xl text-white' />
+        <IconRenderer iconName={data.icon ?? ""} className="text-5xl text-white drop-shadow-md" />
         </div>
         <NodeActionButtons data={data} type="trigger" />
       </div>
