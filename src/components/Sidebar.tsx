@@ -56,6 +56,10 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
                 <span className="ml-2 text-sm text-muted-foreground">Carregando flows...</span>
               </li>
+            ) : !flows ? (
+              <li className="text-center py-4 text-sm text-muted-foreground">
+                Erro ao carregar flows
+              </li>
             ) : flows.length === 0 ? (
               <li className="text-center py-4 text-sm text-muted-foreground">
                 Nenhum flow encontrado

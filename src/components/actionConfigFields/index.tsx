@@ -198,7 +198,7 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
             <Label htmlFor="capabilities">Capacidades (uma por linha)</Label>
             <textarea
               id="capabilities"
-              className="w-full bg-[#2d3748] text-white border border-gray-600 rounded-md px-3 py-2"
+              className="w-full  text border border-gray-600 rounded-md px-3 py-2"
               placeholder="cap1\ncap2"
               value={Array.isArray(actionConfig.capabilities) ? actionConfig.capabilities.join('\n') : ''}
               onChange={e => setActionConfig({ ...actionConfig, capabilities: e.target.value.split('\n').filter(v => v.trim()) })}
@@ -241,7 +241,7 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
             <Label htmlFor="unit">Unidade</Label>
             <select
               id="unit"
-              className="w-full bg-[#2d3748] text-white border border-gray-600 rounded-md px-3 py-2"
+              className="w-full  text border border-gray-600 rounded-md px-3 py-2"
               value={actionConfig.unit || 'seconds'}
               onChange={e => setActionConfig({ ...actionConfig, unit: e.target.value })}
             >
@@ -260,7 +260,7 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
             <Label htmlFor="condition">Condição</Label>
             <textarea
               id="condition"
-              className="w-full bg-[#2d3748] text-white border border-gray-600 rounded-md px-3 py-2"
+              className="w-full  text-black border border-gray-600 rounded-md px-3 py-2"
               placeholder="Digite a condição"
               value={actionConfig.condition || ''}
               onChange={e => setActionConfig({ ...actionConfig, condition: e.target.value })}
@@ -276,7 +276,7 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
             <Label htmlFor="comment">Comentário</Label>
             <textarea
               id="comment"
-              className="w-full bg-[#2d3748] text-white border border-gray-600 rounded-md px-3 py-2"
+              className="w-full  text border border-gray-600 rounded-md px-3 py-2"
               placeholder="Digite seu comentário"
               value={actionConfig.comment || ''}
               onChange={e => setActionConfig({ ...actionConfig, comment: e.target.value })}
@@ -292,7 +292,7 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
             <Label htmlFor="query">Query SQL</Label>
             <textarea
               id="query"
-              className="w-full bg-[#2d3748] text-white border border-gray-600 rounded-md px-3 py-2"
+              className="w-full  text border border-gray-600 rounded-md px-3 py-2"
               placeholder="Digite a query SQL"
               value={actionConfig.query || ''}
               onChange={e => setActionConfig({ ...actionConfig, query: e.target.value })}
@@ -317,7 +317,7 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
             <Label htmlFor="method">Método</Label>
             <select
               id="method"
-              className="w-full bg-[#2d3748] text-white border border-gray-600 rounded-md px-3 py-2"
+              className="w-full  text border border-gray-600 rounded-md px-3 py-2"
               value={actionConfig.method || 'GET'}
               onChange={e => setActionConfig({ ...actionConfig, method: e.target.value })}
             >
@@ -347,7 +347,7 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
             <Label htmlFor="method">Método</Label>
             <select
               id="method"
-              className="w-full bg-[#2d3748] text-white border border-gray-600 rounded-md px-3 py-2"
+              className="w-full  text border border-gray-600 rounded-md px-3 py-2"
               value={actionConfig.method || 'POST'}
               onChange={e => setActionConfig({ ...actionConfig, method: e.target.value })}
             >

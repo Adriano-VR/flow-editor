@@ -3,8 +3,23 @@ import { IconRenderer } from '@/lib/IconRenderer';
 import { NodeActionButtons } from '../NodeActionButtons';
 
 export function ConditionNode({ data }: NodeProps) {
+  const color = data.color || '#EAB308';
   return (
-    <div className="flex flex-col items-center group">
+    <div className="relative flex items-center justify-center" style={{ width: 160, height: 160 }}>
+      {/* Handles fora do losango rotacionado */}
+      {/* Handle de entrada (esquerda) */}
+      <Handle type="target" position={Position.Left} className="absolute left-0 top-1/2 -translate-y-1/2 w-6 h-6 bg-white border-2 rounded-full z-20" style={{ borderColor: color }} />
+      {/* Handle de saída true (baixo) */}
+      <Handle type="source" position={Position.Bottom} id="true" className="absolute bottom-0 left-1/2 -translate-x-1/2 w-9 h-9 bg-white border-2 rounded-full flex items-center justify-center z-20" style={{ borderColor: '#25D366' }} />
+      <div className="absolute left-1/2 -translate-x-1/2" style={{ bottom: -18 }}>
+        <div className="text-green-500 text-base pointer-events-none select-none">✓</div>
+      </div>
+      {/* Handle de saída false (direita) */}
+      <Handle type="source" position={Position.Right} id="false" className="absolute right-0 top-1/2 -translate-y-1/2 w-9 h-9 bg-white border-2 rounded-full flex items-center justify-center z-20" style={{ borderColor: '#F87171' }} />
+      <div className="absolute top-1/2 -translate-y-1/2" style={{ right: -18 }}>
+        <div className="text-red-500 text-base pointer-events-none select-none">✕</div>
+      </div>
+      {/* Losango rotacionado */}
       <div
         className={`
           flex flex-col items-center justify-center
@@ -22,9 +37,9 @@ export function ConditionNode({ data }: NodeProps) {
           ${data.isExecuting ? 'ring-4 ring-blue-500 ring-opacity-50' : ''}
         `}
         style={{
-          borderColor: data.color || '#EAB308',
-          backgroundColor: `${data.color}08`,
-          boxShadow: `0 4px 20px ${data.color}20`,
+          borderColor: color,
+          backgroundColor: `${color}08`,
+          boxShadow: `0 4px 20px ${color}20`,
           animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none',
           width: '120px',
           height: '120px',
@@ -32,34 +47,14 @@ export function ConditionNode({ data }: NodeProps) {
           margin: '20px',
         }}
       >
-        <div className="absolute top-1/2 left-[-85px] -translate-y-1/2 w-5 h-5 z-10" style={{ transform: 'rotate(-45deg)' }}>
-          <div
-            className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
-            style={{ borderColor: data.color || '#EAB308' }}
-          />
-          <Handle type="target" position={Position.Left} className="absolute inset-0 opacity-0" />
-        </div>
-        <div className="flex flex-col items-center justify-center -rotate-45">
-          <div className="rounded-lg p-1 mb-2" style={{ backgroundColor: data.color || '#EAB308' }}>
+        {/* Conteúdo interno rotacionado de volta */}
+        <div className="flex flex-col items-center justify-center" style={{ transform: 'rotate(-45deg)' }}>
+          <div className="rounded-lg p-1 mb-2" style={{ backgroundColor: color }}>
             <IconRenderer iconName={data.icon ?? ''} className="text-3xl text-white" />
           </div>
           <div className="text-center">
-            <div className="text-sm font-bold" style={{ color: data.color || '#EAB308' }}>{data.label}</div>
+            <div className="text-sm font-bold" style={{ color }}>{data.label}</div>
             <div className="text-xs text-gray-500">Condição</div>
-          </div>
-        </div>
-        <div className="absolute bottom-[-25px] left-1/2 -translate-x-1/2 flex items-center justify-between gap-4">
-          <div className="flex flex-col items-center relative">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white" style={{ borderColor: data.color || '#25D366' }}>
-              <div className="text-green-500 text-xs">✓</div>
-            </div>
-            <Handle type="source" position={Position.Bottom} id="true" className="absolute bottom-[-20px] left-1/2 -translate-x-1/2 opacity-0" />
-          </div>
-          <div className="flex flex-col items-center relative">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border hover:scale-110 bg-white" style={{ borderColor: data.color || '#25D366' }}>
-              <div className="text-red-500 text-xs">✕</div>
-            </div>
-            <Handle type="source" position={Position.Bottom} id="false" className="absolute bottom-[-20px] left-1/2 -translate-x-1/2 opacity-0" />
           </div>
         </div>
         <NodeActionButtons data={data} type="condition" />
