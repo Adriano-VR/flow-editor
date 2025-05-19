@@ -1,8 +1,7 @@
 export interface NodeAction {
-  id: string;
+  uuid: string;
   name: string;
-  type: string;
-  category: 'app' | 'internal';
+  type: 'app' | 'trigger';
   subcategory?: string;
   config?: Record<string, unknown>;
 }
@@ -473,6 +472,28 @@ const internalActions: NodeTypeDefinition[] = [
     }
   },
   {
+    id: 'internal_wait_response',
+    name: 'Aguardando Resposta',
+    type: 'webhook',
+    category: 'internal',
+    icon: 'MdOutlineWebhook',
+    color: '#ff4700',
+    label: 'Aguardar Resposta',
+    config: {
+      input: {
+        webhook: {
+          url: '',
+          method: 'POST',
+          headers: {}
+        }
+      },
+      output: {
+        text: 'Aguardando resposta...',
+        variables: {}
+      }
+    }
+  },
+  {
     id: 'internal_error',
     name: 'Erro',
     type: 'error',
@@ -854,4 +875,12 @@ export const getNodeCategories = (): Categories => {
       color: '#EAB308'
     }
   };
-}; 
+};
+
+export interface NodeData {
+  label: string;
+  config: Record<string, unknown>;
+  icon: string;
+  name: string;
+  color: string;
+} 

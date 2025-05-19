@@ -2,7 +2,7 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { Node as ReactFlowNode } from 'reactflow';
 import { MessageSquare, Bot, GitBranch } from 'lucide-react';
 import { Node, Edge } from '@/types/flow';
-import { NodeTypeDefinition } from '@/lib/nodeTypes';
+import { NodeData, NodeTypeDefinition } from '@/lib/nodeTypes';
 
 interface NodeType {
   icon: React.ElementType;
@@ -76,14 +76,22 @@ export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) 
   ): NodeOperationResult => {
     const newNode: Node = {
       id: `node-${Date.now()}`,
-      type: nodeType.type,
+      type: nodeType.type as 'action' | 'internal',
       position,
       data: {
+        type: nodeType.type as 'action' | 'internal',
+        app: nodeType.subcategory as 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap' | undefined,
+        name: nodeType.name,
+        uuid: `node-${Date.now()}`,
         label: String(nodeType.label ?? nodeType.name ?? ''),
-        config: nodeType.config || {},
-        icon: nodeType.icon ?? '',
-        name: nodeType.name ?? '',
-        color: nodeType.color ?? ''
+        stop: false,
+        input: {
+          variables: []
+        },
+        output: {
+          text: ''
+        },
+        config: nodeType.config || {}
       }
     };
 

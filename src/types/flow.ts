@@ -40,14 +40,42 @@ export interface NodeConfig {
   duration?: number;
   unit?: 'seconds' | 'minutes' | 'hours';
   condition?: string;
+
+  // Webhook config
+  webhook?: {
+    url: string;
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+    headers?: Record<string, string>;
+    response?: Record<string, unknown>;
+  };
 }
 
 export type Node = ReactFlowNode<{
-  label: string;
+  type: 'action' | 'internal' | 'webhook';
+  app?: 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap';
   name: string;
-  icon: string;
-  color: string;
-  config?: NodeConfig;
+  uuid: string;
+  label: string;
+  stop: boolean;
+  input: {
+    variables: Array<{
+      variable: string;
+      sourceNodeId?: string;
+      sourceOutput?: string;
+    }>;
+    webhook?: {
+      url: string;
+      method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+      headers?: Record<string, string>;
+    };
+  };
+  output: {
+    text: string;
+    response?: Record<string, unknown>;
+    variables: Record<string, unknown>;
+    sourceNodeId?: string;
+  };
+  config: Record<string, unknown>;
 }>;
 
 export type Edge = ReactFlowEdge;
