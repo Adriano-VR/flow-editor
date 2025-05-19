@@ -1,0 +1,414 @@
+{
+  "nodes": [
+    {
+      "id": "trigger-1",
+      "data": {
+        "icon": "VscDebugStart",
+        "name": "Início",
+        "type": "trigger",
+        "color": "#ff4700",
+        "label": "Início do Chat",
+        "config": {
+          "condition": ""
+        },
+        "category": "internal"
+      },
+      "type": "trigger",
+      "width": 123,
+      "height": 92,
+      "position": {
+        "x": -12.406644551960596,
+        "y": -453.512578360511
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": -12.406644551960596,
+        "y": -453.512578360511
+      }
+    },
+    {
+      "id": "instagram_send_message",
+      "data": {
+        "icon": "FaInstagram",
+        "name": "Enviar Mensagem",
+        "color": "#E1306C",
+        "label": "Mensagem Inicial",
+        "config": {
+          "to": "@Xbase",
+          "type": "text",
+          "message": "Olá! 👋 Sou a assistente virtual da XBase. Vi que você tem interesse em nossas soluções. Posso te ajudar a entender melhor como podemos transformar sua gestão?"
+        },
+        "isActive": false,
+        "isExecuting": false
+      },
+      "type": "action",
+      "width": 313,
+      "height": 76,
+      "dragging": false,
+      "position": {
+        "x": 234.33083870078804,
+        "y": -392.59562901551095
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 234.33083870078804,
+        "y": -392.59562901551095
+      }
+    },
+    {
+      "id": "assistant_create_agent-1",
+      "data": {
+        "icon": "FaRobot",
+        "name": "Criar Agente",
+        "color": "#3B82F6",
+        "label": "Assistente de Vendas",
+        "config": {
+          "name": "Assistente Instagram",
+          "description": "Assistente especializado em vendas e soluções XBase via Instagram",
+          "capabilities": [
+            "Apresentação de produtos",
+            "Qualificação de leads",
+            "Agendamento de demonstração",
+            "Suporte via Instagram"
+          ]
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 148,
+      "dragging": false,
+      "position": {
+        "x": 612.9514758238871,
+        "y": -490.3946571504569
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 612.9514758238871,
+        "y": -490.3946571504569
+      }
+    },
+    {
+      "id": "internal_condition-1",
+      "data": {
+        "icon": "TbAirConditioning",
+        "name": "Condição",
+        "color": "#ff4700",
+        "label": "Qualificação",
+        "config": {
+          "condition": "customer.interest === 'high' "
+        },
+        "isActive": false,
+        "isExecuting": false
+      },
+      "type": "condition",
+      "width": 160,
+      "height": 160,
+      "dragging": false,
+      "position": {
+        "x": 1035.6252889896616,
+        "y": -479.8097710999044
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1035.6252889896616,
+        "y": -479.8097710999044
+      }
+    },
+    {
+      "id": "instagram_send_message-2",
+      "data": {
+        "icon": "FaInstagram",
+        "name": "Enviar Mensagem",
+        "color": "#E1306C",
+        "label": "Agendar Demo",
+        "config": {
+          "to": "@xbase",
+          "type": "text",
+          "message": "Ótimo! 🎯 Gostaria de agendar uma demonstração personalizada para sua empresa? Posso mostrar como nossa solução pode resolver seus desafios específicos. Qual horário seria melhor para você?"
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 76,
+      "dragging": false,
+      "position": {
+        "x": 1282.295491217805,
+        "y": -311.5447150960098
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1282.295491217805,
+        "y": -311.5447150960098
+      }
+    },
+    {
+      "id": "instagram_send_message-3",
+      "data": {
+        "icon": "FaInstagram",
+        "name": "Enviar Mensagem",
+        "color": "#E1306C",
+        "label": "Follow-up",
+        "config": {
+          "to": "@xbase",
+          "type": "text",
+          "message": "Entendi! 💡 Vou manter seu contato em nossa base. Quando estiver pronto para conhecer melhor nossas soluções, estarei à disposição para agendar uma demonstração. Você pode me chamar aqui mesmo no Instagram!"
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 76,
+      "dragging": false,
+      "position": {
+        "x": 1273.929636625874,
+        "y": -516.5354221353311
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1273.929636625874,
+        "y": -516.5354221353311
+      }
+    },
+    {
+      "id": "internal_finish-1",
+      "data": {
+        "icon": "FaRegWindowClose",
+        "name": "Fim",
+        "color": "#ff4700",
+        "label": "Fim do Chat",
+        "config": {
+          "condition": "fim"
+        }
+      },
+      "type": "trigger",
+      "width": 76,
+      "height": 96,
+      "dragging": false,
+      "position": {
+        "x": 1815.5318140951408,
+        "y": -402.9775916554189
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1815.5318140951408,
+        "y": -402.9775916554189
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "trigger-1",
+      "target": "instagram_send_message-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-2",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "instagram_send_message-1",
+      "target": "assistant_create_agent-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      }
+    },
+    {
+      "id": "edge-3",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "assistant_create_agent-1",
+      "target": "internal_condition-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      }
+    },
+    {
+      "id": "edge-4",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "internal_condition-1",
+      "target": "instagram_send_message-2",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "opacity": 0
+      },
+      "sourceHandle": "true"
+    },
+    {
+      "id": "edge-5",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "internal_condition-1",
+      "target": "instagram_send_message-3",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "opacity": 0
+      },
+      "sourceHandle": "false"
+    },
+    {
+      "id": "edge-6",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "instagram_send_message-2",
+      "target": "internal_finish-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "opacity": 0
+      }
+    },
+    {
+      "id": "edge-7",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "instagram_send_message-3",
+      "target": "internal_finish-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      }
+    },
+    {
+      "id": "edge-1747678041641",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "trigger-1",
+      "target": "instagram_send_message",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747678044767",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "instagram_send_message",
+      "target": "assistant_create_agent-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    }
+  ]
+}

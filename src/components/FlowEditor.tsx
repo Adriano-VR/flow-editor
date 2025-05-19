@@ -32,6 +32,8 @@ import { CommentNode } from './nodes/CommentNode';
 import { DatabaseNode } from './nodes/DatabaseNode';
 import { ApiNode } from './nodes/ApiNode';
 import { WebhookNode } from './nodes/WebhookNode';
+import InputNode from './nodes/InputNode';
+import ErrorNode from './nodes/ErrorNode';
 import  FlowEditDrawer  from './FlowEditDrawer';
 import { useFlow } from '@/contexts/FlowContext';
 import { Pencil } from 'lucide-react';
@@ -121,6 +123,8 @@ const nodeTypes = {
   database: DatabaseNode,
   api: ApiNode,
   webhook: WebhookNode,
+  input: InputNode,
+  error: ErrorNode,
 };
 
 export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
@@ -392,9 +396,9 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
       id: `${actionDefinition.id}-${Date.now()}`,
       type: actionDefinition.type,
       data: {
-        label: actionDefinition.name,
-        icon: actionDefinition.icon ?? '',
         name: actionDefinition.name,
+        icon: actionDefinition.icon ?? '',
+        label: actionDefinition.label ?? actionDefinition.name,
         color: actionDefinition.color,
         config: actionDefinition.config || {},
       },

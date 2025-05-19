@@ -6,15 +6,15 @@ import { FiTool } from 'react-icons/fi';
 import { NodeActionButtons } from '../NodeActionButtons';
 
 export function ActionNode({ data }: NodeProps) {
-  const isEndNode = data.label === 'Fim';
-  const isModelNode = data.label === 'Modelo';
-  const isMemoryNode = data.label === 'Memória';
-  const isToolNode = data.label === 'Ferramenta';
+  const isEndNode = data.name === 'Fim';
+  const isModelNode = data.name === 'Modelo';
+  const isMemoryNode = data.name === 'Memória';
+  const isToolNode = data.name === 'Ferramenta';
   const isSpecialNode = isModelNode || isMemoryNode || isToolNode;
-  const isDelayNode = data.label === 'Atraso';
-
+  const isDelayNode = data.name === 'Atraso';
+  const isCreateAgentNode = data.name === 'Criar Agente';
   // Design especial para Criar Agente
-  if (data.name === 'openAi' && data.label === 'Criar Agente') {
+  if (isCreateAgentNode) {
     return (
       <div className="flex flex-col items-center group">
         <div
@@ -22,7 +22,7 @@ export function ActionNode({ data }: NodeProps) {
             flex flex-col items-center justify-center
             border-2 
             relative
-             w-22 h-22
+            
             bg-white
             p-3
             rounded-xl
@@ -103,9 +103,10 @@ export function ActionNode({ data }: NodeProps) {
             flex flex-col items-center justify-center
             border-2
             relative
+            rounded-3xl
             bg-white
             p-3
-            rounded-xl
+         
             min-w-[200px]
             backdrop-blur-sm
             transition-all duration-300
@@ -131,8 +132,8 @@ export function ActionNode({ data }: NodeProps) {
               <IconRenderer className="text-4xl text-white" iconName={data.icon ?? ''} />
             </div>
             <div className="flex flex-col">
-              <div className="text-lg font-bold" style={{ color: data.color || '#3B82F6' }}>{data.label}</div>
-              <div className="text-sm text-gray-500">{data.name}</div>
+              <div className="text-lg font-bold text-center" style={{ color: data.color || '#3B82F6' }}>{data.name}</div>
+              <div className="text-sm text-gray-500">{data.label}</div>
             </div>
           </div>
           <NodeActionButtons data={data} type="action" />
@@ -212,8 +213,8 @@ export function ActionNode({ data }: NodeProps) {
             <IconRenderer iconName={data.icon ?? ''} className="text-4xl text-white" />
           </div>
           <div className="flex flex-col">
-            <div className="text-lg font-bold" style={{ color: data.color || '#3B82F6' }}>{data.label}</div>
-            <div className="text-sm text-gray-500">{data.name}</div>
+            <div className="text-lg font-bold" style={{ color: data.color || '#3B82F6' }}>{data.name}</div>
+            <div className="text-sm text-gray-500">{data.label}</div>
           </div>
         </div>
         {!isEndNode && (

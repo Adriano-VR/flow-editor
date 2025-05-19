@@ -26,7 +26,7 @@ export function ApiNode({ data }: NodeProps) {
           <Handle type="target" position={Position.Left} className="absolute inset-0 opacity-0" />
         </div>
         <div className="flex items-center gap-2 mb-1">
-          <IconRenderer iconName={data.icon ?? ''} className="text-2xl text-sky-700" />
+          <IconRenderer iconName={data.icon ?? ''} className="text-2xl text-sky-600 drop-shadow-md" />
           <span className="text-base font-bold text-sky-900">{data.label}</span>
         </div>
         {data.config?.endpoint && (

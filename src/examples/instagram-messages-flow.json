@@ -1,0 +1,377 @@
+{
+  "nodes": [
+    {
+      "id": "trigger-1",
+      "data": {
+        "icon": "VscDebugStart",
+        "name": "Início",
+        "type": "trigger",
+        "color": "#ff4700",
+        "label": "Início do Chat",
+        "config": {
+          "condition": ""
+        },
+        "category": "internal"
+      },
+      "type": "trigger",
+      "width": 123,
+      "height": 92,
+      "position": {
+        "x": -12.406644551960596,
+        "y": -453.512578360511
+      }
+    },
+    {
+      "id": "instagram_send_message-1",
+      "data": {
+        "icon": "FaInstagram",
+        "name": "Enviar Mensagem",
+        "color": "#E1306C",
+        "label": "Boas-vindas",
+        "config": {
+          "to": "@xbase",
+          "type": "text",
+          "message": "Olá! 👋 Sou a assistente virtual da XBase. Como posso te ajudar hoje?"
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 76,
+      "position": {
+        "x": 234.33083870078804,
+        "y": -392.59562901551095
+      }
+    },
+    {
+      "id": "instagram_send_message-2",
+      "data": {
+        "icon": "FaInstagram",
+        "name": "Enviar Mensagem",
+        "color": "#E1306C",
+        "label": "Apresentação",
+        "config": {
+          "to": "@xbase",
+          "type": "text",
+          "message": "A XBase é uma solução completa para gestão empresarial! 🚀\n\nOferecemos:\n• Gestão de vendas\n• Controle financeiro\n• Gestão de estoque\n• Relatórios em tempo real\n\nGostaria de saber mais sobre algum desses recursos?"
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 120,
+      "position": {
+        "x": 612.9514758238871,
+        "y": -490.3946571504569
+      }
+    },
+    {
+      "id": "internal_condition-1",
+      "data": {
+        "icon": "TbAirConditioning",
+        "name": "Condição",
+        "color": "#ff4700",
+        "label": "Interesse",
+        "config": {
+          "condition": "customer.interest === 'high'"
+        }
+      },
+      "type": "condition",
+      "width": 160,
+      "height": 160,
+      "position": {
+        "x": 1035.6252889896616,
+        "y": -479.8097710999044
+      }
+    },
+    {
+      "id": "instagram_send_message-3",
+      "data": {
+        "icon": "FaInstagram",
+        "name": "Enviar Mensagem",
+        "color": "#E1306C",
+        "label": "Agendar Demo",
+        "config": {
+          "to": "@xbase",
+          "type": "text",
+          "message": "Que legal que você se interessou! 🎯\n\nPosso agendar uma demonstração personalizada para você conhecer melhor nossa solução. Qual horário seria melhor?\n\n• Manhã (9h às 12h)\n• Tarde (14h às 17h)\n• Noite (18h às 20h)"
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 140,
+      "position": {
+        "x": 1282.295491217805,
+        "y": -311.5447150960098
+      }
+    },
+    {
+      "id": "instagram_send_message-4",
+      "data": {
+        "icon": "FaInstagram",
+        "name": "Enviar Mensagem",
+        "color": "#E1306C",
+        "label": "Follow-up",
+        "config": {
+          "to": "@xbase",
+          "type": "text",
+          "message": "Sem problemas! 😊\n\nVou manter seu contato em nossa base. Quando quiser conhecer mais sobre a XBase, é só me chamar aqui mesmo no Instagram!\n\nVocê também pode:\n• Visitar nosso site: www.xbase.com.br\n• Seguir nosso perfil para dicas de gestão\n• Me enviar uma mensagem quando quiser conversar"
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 160,
+      "position": {
+        "x": 1273.929636625874,
+        "y": -516.5354221353311
+      }
+    },
+    {
+      "id": "internal_finish-1",
+      "data": {
+        "icon": "FaRegWindowClose",
+        "name": "Fim",
+        "color": "#ff4700",
+        "label": "Fim do Chat",
+        "config": {
+          "condition": "fim"
+        }
+      },
+      "type": "trigger",
+      "width": 76,
+      "height": 96,
+      "position": {
+        "x": 1815.5318140951408,
+        "y": -402.9775916554189
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "trigger-1",
+      "target": "instagram_send_message-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "sourceHandle": "output",
+      "targetHandle": "input",
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-2",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "instagram_send_message-1",
+      "target": "instagram_send_message-2",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-3",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "instagram_send_message-2",
+      "target": "internal_condition-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-4",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "internal_condition-1",
+      "target": "instagram_send_message-3",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "sourceHandle": "true",
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-5",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "internal_condition-1",
+      "target": "instagram_send_message-4",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "sourceHandle": "false",
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-6",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "instagram_send_message-3",
+      "target": "internal_finish-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-7",
+      "type": "smoothstep",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "instagram_send_message-4",
+      "target": "internal_finish-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    }
+  ]
+} 

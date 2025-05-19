@@ -74,23 +74,23 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                 <li key={flow.id} className="group relative">
                   <div 
                     className={cn(
-                      "h-11 w-full relative overflow-hidden transition-all duration-200 rounded-md cursor-pointer",
+                      "h-15 w-full relative overflow-hidden transition-all duration-200 rounded-md cursor-pointer",
                       "hover:bg-accent/50",
                       selectedFlowId === flow.id && "bg-accent/80 hover:bg-accent"
                     )}
                     onClick={() => handleFlowSelect(flow.id)}
                   >
-                    <div className="flex items-center justify-between w-full h-full px-3">
+                    <div className="flex items-center justify-between w-full h-full px-3 ">
                       <div className="flex gap-1 flex-col items-start">
                         <div className="flex items-center gap-2">
                           {selectedFlowId === flow.id && (
                             <CheckCircle2 className="h-4 w-4 text-primary animate-in fade-in slide-in-from-left-2 duration-200" />
                           )}
                           <span className={cn(
-                            "font-medium capitalize transition-colors duration-200",
+                            "font-medium text-base transition-colors duration-200",
                             selectedFlowId === flow.id && "text-primary"
                           )}>
-                            {flow.attributes.name}
+                            {flow.attributes.name.charAt(0).toUpperCase() + flow.attributes.name.slice(1).toLowerCase()}
                           </span>
                         </div>
                         <span className={cn(

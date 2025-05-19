@@ -1,0 +1,261 @@
+{
+    "nodes": [
+      {
+        "id": "klap_url_input-1",
+        "data": {
+          "icon": "CiLink",
+          "name": "Input URL",
+          "type": "input",
+          "color": "#E1306C",
+          "label": "URL do Vídeo",
+          "config": {
+            "type": "url",
+            "placeholder": "Cole a URL do vídeo aqui",
+            "validation": "url",
+            "required": true
+          }
+        },
+        "type": "input",
+        "width": 256,
+        "height": 118,
+        "dragging": false,
+        "position": {
+          "x": 128.8601769911504,
+          "y": -110.38938053097347
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 128.8601769911504,
+          "y": -110.38938053097347
+        }
+      },
+      {
+        "id": "ai_video_to_text-1",
+        "data": {
+          "name": "Video-to-Text",
+          "icon": "SiConvertio",
+          "label": "Vídeo para Texto",
+          "color": "#6366F1",
+          "config": {
+            "videoUrl": "",
+            "language": "pt-BR",
+            "model": "whisper-1",
+            "outputFormat": "text",
+            "options": {
+              "timestamps": true,
+              "punctuation": true,
+              "speaker_diarization": true
+            }
+          }
+        },
+        "type": "action",
+        "width": 214,
+        "height": 76,
+        "dragging": false,
+        "position": {
+          "x": 500,
+          "y": 0
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 500,
+          "y": 0
+        }
+      },
+      {
+        "id": "assistant_create_agent-1",
+        "data": {
+          "icon": "FaRobot",
+          "name": "Criar Agente",
+          "color": "#3B82F6",
+          "label": "Processar Transcrição",
+          "config": {
+            "name": "Assistente de Transcrição",
+            "description": "Assistente especializado em processar e analisar transcrições de vídeo",
+            "capabilities": [
+              "Resumir conteúdo",
+              "Extrair pontos principais",
+              "Identificar tópicos-chave",
+              "Gerar insights"
+            ]
+          }
+        },
+        "type": "action",
+        "width": 289,
+        "height": 148,
+        "dragging": false,
+        "position": {
+          "x": 800,
+          "y": 0
+        },
+        "selected": false,
+        "positionAbsolute": {
+          "x": 800,
+          "y": 0
+        }
+      },
+      {
+        "id": "internal_finish-1",
+        "type": "trigger",
+        "data": {
+          "name": "Fim",
+          "icon": "FaRegWindowClose",
+          "label": "Fim",
+          "color": "#ff4700",
+          "config": {
+            "condition": "fim"
+          }
+        },
+        "position": {
+          "x": 1212.024778761062,
+          "y": -4.088495575221245
+        },
+        "width": 76,
+        "height": 96,
+        "selected": false,
+        "positionAbsolute": {
+          "x": 1212.024778761062,
+          "y": -4.088495575221245
+        },
+        "dragging": false
+      },
+      {
+        "id": "internal_start-1747680564608",
+        "type": "trigger",
+        "data": {
+          "name": "Início",
+          "icon": "VscDebugStart",
+          "label": "Início",
+          "color": "#ff4700",
+          "config": {
+            "condition": ""
+          }
+        },
+        "position": {
+          "x": -92.63957343796517,
+          "y": -85.51276701378546
+        },
+        "width": 76,
+        "height": 96,
+        "selected": true,
+        "positionAbsolute": {
+          "x": -92.63957343796517,
+          "y": -85.51276701378546
+        },
+        "dragging": false
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-2",
+        "type": "smoothstep",
+        "label": "×",
+        "style": {
+          "stroke": "#64748b",
+          "strokeWidth": 2
+        },
+        "source": "klap_url_input-1",
+        "target": "ai_video_to_text-1",
+        "animated": true,
+        "markerEnd": {
+          "type": "arrowclosed",
+          "color": "#64748b",
+          "width": 20,
+          "height": 20
+        },
+        "labelStyle": {
+          "fill": "#ef4444",
+          "cursor": "pointer",
+          "opacity": 0,
+          "fontSize": 20,
+          "fontWeight": 700
+        },
+        "labelBgStyle": {
+          "fill": "#e5e7eb",
+          "opacity": 0,
+          "fillOpacity": 0.8
+        },
+        "sourceHandle": null,
+        "targetHandle": null,
+        "labelBgPadding": [
+          4,
+          4
+        ],
+        "labelBgBorderRadius": 4
+      },
+      {
+        "id": "edge-3",
+        "type": "smoothstep",
+        "label": "×",
+        "style": {
+          "stroke": "#64748b",
+          "strokeWidth": 2
+        },
+        "source": "ai_video_to_text-1",
+        "target": "assistant_create_agent-1",
+        "animated": true,
+        "markerEnd": {
+          "type": "arrowclosed",
+          "color": "#64748b",
+          "width": 20,
+          "height": 20
+        },
+        "labelStyle": {
+          "fill": "#ef4444",
+          "cursor": "pointer",
+          "opacity": 0,
+          "fontSize": 20,
+          "fontWeight": 700
+        },
+        "labelBgStyle": {
+          "fill": "#e5e7eb",
+          "opacity": 0,
+          "fillOpacity": 0.8
+        },
+        "sourceHandle": null,
+        "targetHandle": null,
+        "labelBgPadding": [
+          4,
+          4
+        ],
+        "labelBgBorderRadius": 4
+      },
+      {
+        "id": "edge-4",
+        "type": "smoothstep",
+        "label": "×",
+        "style": {
+          "stroke": "#64748b",
+          "strokeWidth": 2
+        },
+        "source": "assistant_create_agent-1",
+        "target": "internal_finish-1",
+        "animated": true,
+        "markerEnd": {
+          "type": "arrowclosed",
+          "color": "#64748b",
+          "width": 20,
+          "height": 20
+        },
+        "labelStyle": {
+          "fill": "#ef4444",
+          "cursor": "pointer",
+          "opacity": 0,
+          "fontSize": 20,
+          "fontWeight": 700
+        },
+        "labelBgStyle": {
+          "fill": "#e5e7eb",
+          "opacity": 0,
+          "fillOpacity": 0.8
+        },
+        "sourceHandle": null,
+        "targetHandle": null,
+        "labelBgPadding": [
+          4,
+          4
+        ],
+        "labelBgBorderRadius": 4
+      }
+    ]
+  }

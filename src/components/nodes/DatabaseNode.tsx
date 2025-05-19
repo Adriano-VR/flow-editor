@@ -29,26 +29,26 @@ export function DatabaseNode({ data }: NodeProps) {
           animation: data.isActive ? 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite' : 'none'
         }}
       >
-        <IconRenderer iconName={data.icon ?? ''} className=" size-10 text-[#3B82F6]" />
+        <IconRenderer iconName={data.icon ?? ''} className=" size-10 text-[#FF0000]" />
 
         <div className="text-base font-bold text-gray-800 text-center w-full">
           {data.label || 'Database'}
         </div>
         {/* Handles para conexão */}
-        <div className="absolute left-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+        <div className="absolute left-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
           <div
             className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
             style={{ borderColor: data.color || '#38BDF8' }}
           />
-          <Handle type="target" position={Position.Left} className="absolute inset-0" />
+          <Handle type="target" position={Position.Left} className="absolute inset-0 opacity-0" />
         </div>
         
-        <div className="absolute right-[-18px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+        <div className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
           <div
             className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
             style={{ borderColor: data.color || '#3B82F6' }}
           />
-          <Handle type="source" position={Position.Right} className="absolute inset-0 " />
+          <Handle type="source" position={Position.Right} className="absolute inset-0 opacity-0" />
         </div>
        
        

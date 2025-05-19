@@ -19,6 +19,7 @@ export function NewFlowDialog({ open, onOpenChange, onOptionSelect }: NewFlowDia
 
   const handleBlankFlowClick = () => {
     setShowNameDialog(true);
+    onOpenChange(false);
   };
 
   const handleCreateBlankFlow = async () => {

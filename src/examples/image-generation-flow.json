@@ -1,0 +1,483 @@
+{
+  "nodes": [
+    {
+      "id": "internal_start-1",
+      "type": "trigger",
+      "data": {
+        "name": "Início",
+        "icon": "VscDebugStart",
+        "label": "Início",
+        "color": "#ff4700",
+        "config": {
+          "condition": ""
+        }
+      },
+      "position": {
+        "x": -92.63957343796517,
+        "y": -85.51276701378546
+      },
+      "width": 76,
+      "height": 96,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -92.63957343796517,
+        "y": -85.51276701378546
+      },
+      "dragging": false
+    },
+    {
+      "id": "form_text_input-1",
+      "data": {
+        "icon": "MdInput",
+        "name": "Entrada de Texto",
+        "type": "action",
+        "color": "#EAB308",
+        "label": "Descrição da Imagem",
+        "config": {
+          "fields": [
+            {
+              "id": "prompt",
+              "name": "Descrição",
+              "type": "textarea",
+              "placeholder": "Descreva a imagem que deseja gerar ou editar",
+              "required": true
+            },
+            {
+              "id": "style",
+              "name": "Estilo",
+              "type": "select",
+              "options": [
+                "Realista",
+                "Artístico",
+                "Cartoon",
+                "Minimalista",
+                "3D",
+                "Fotográfico",
+                "Ilustração"
+              ],
+              "required": true
+            },
+            {
+              "id": "aspect_ratio",
+              "name": "Proporção",
+              "type": "select",
+              "options": [
+                "1:1 (Quadrado)",
+                "4:3 (Padrão)",
+                "16:9 (Widescreen)",
+                "9:16 (Vertical)",
+                "3:4 (Retrato)"
+              ],
+              "required": true
+            },
+            {
+              "id": "quality",
+              "name": "Qualidade",
+              "type": "select",
+              "options": [
+                "Standard",
+                "HD",
+                "4K"
+              ],
+              "required": true
+            }
+          ]
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 220,
+      "dragging": false,
+      "position": {
+        "x": 128.8601769911504,
+        "y": -110.38938053097347
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 128.8601769911504,
+        "y": -110.38938053097347
+      }
+    },
+    {
+      "id": "assistant_create_agent-1",
+      "data": {
+        "icon": "FaRobot",
+        "name": "Criar Agente",
+        "color": "#3B82F6",
+        "label": "Processar Descrição",
+        "config": {
+          "name": "Assistente de Imagens",
+          "description": "Assistente especializado em gerar e editar imagens usando GPT-4 Vision",
+          "capabilities": [
+            "Gerar imagens a partir de descrições",
+            "Editar imagens existentes",
+            "Aplicar estilos artísticos",
+            "Otimizar qualidade",
+            "Ajustar proporções",
+            "Gerar variações",
+            "Remover fundos",
+            "Melhorar resolução"
+          ],
+          "model": "gpt-4-vision-preview",
+          "temperature": 0.7
+        }
+      },
+      "type": "action",
+      "width": 289,
+      "height": 148,
+      "dragging": false,
+      "position": {
+        "x": 450,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 450,
+        "y": -110
+      }
+    },
+    {
+      "id": "ai_image_generation-1",
+      "data": {
+        "name": "AI Image Generation",
+        "icon": "SiDalle",
+        "label": "Gerar Imagem",
+        "color": "#6366F1",
+        "config": {
+          "input": "",
+          "outputFormat": "image",
+          "options": {
+            "model": "dall-e-3",
+            "size": "1024x1024",
+            "quality": "standard",
+            "style": "natural",
+            "format": "png",
+            "enhancements": {
+              "upscale": true,
+              "removeBackground": false,
+              "colorCorrection": true,
+              "sharpness": "high"
+            }
+          }
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 180,
+      "dragging": false,
+      "position": {
+        "x": 800,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 800,
+        "y": -110
+      }
+    },
+    {
+      "id": "image_editor-1",
+      "data": {
+        "icon": "FaImage",
+        "name": "Editor de Imagem",
+        "type": "action",
+        "color": "#25D366",
+        "label": "Editar Imagem",
+        "config": {
+          "tools": [
+            "Crop",
+            "Resize",
+            "Filters",
+            "Adjustments",
+            "Text",
+            "Stickers",
+            "Background",
+            "Effects"
+          ],
+          "options": {
+            "allowMultipleEdits": true,
+            "preserveQuality": true,
+            "autoSave": true,
+            "history": true
+          }
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 120,
+      "dragging": false,
+      "position": {
+        "x": 1150,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1150,
+        "y": -110
+      }
+    },
+    {
+      "id": "image_preview-1",
+      "data": {
+        "icon": "FaEye",
+        "name": "Preview",
+        "type": "action",
+        "color": "#8B5CF6",
+        "label": "Visualizar Imagem",
+        "config": {
+          "viewMode": "fullscreen",
+          "options": {
+            "showMetadata": true,
+            "showDownload": true,
+            "showShare": true,
+            "allowFeedback": true
+          }
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 120,
+      "dragging": false,
+      "position": {
+        "x": 1500,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1500,
+        "y": -110
+      }
+    },
+    {
+      "id": "internal_finish-1",
+      "type": "trigger",
+      "data": {
+        "name": "Fim",
+        "icon": "FaRegWindowClose",
+        "label": "Fim",
+        "color": "#ff4700",
+        "config": {
+          "condition": "fim"
+        }
+      },
+      "position": {
+        "x": 1850,
+        "y": -110
+      },
+      "width": 76,
+      "height": 96,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1850,
+        "y": -110
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "internal_start-1",
+      "target": "form_text_input-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-2",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "form_text_input-1",
+      "target": "assistant_create_agent-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-3",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "assistant_create_agent-1",
+      "target": "ai_image_generation-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-4",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "ai_image_generation-1",
+      "target": "image_editor-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-5",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "image_editor-1",
+      "target": "image_preview-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-6",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "image_preview-1",
+      "target": "internal_finish-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    }
+  ]
+} 

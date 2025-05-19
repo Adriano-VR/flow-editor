@@ -1,0 +1,650 @@
+{
+  "nodes": [
+    {
+      "id": "trigger-1",
+      "data": {
+        "icon": "VscDebugStart",
+        "name": "internal_start",
+        "type": "trigger",
+        "color": "#ff4700",
+        "label": "Início da Campanha",
+        "category": "internal"
+      },
+      "type": "trigger",
+      "width": 123,
+      "height": 92,
+      "dragging": false,
+      "position": {
+        "x": -12.406644551960596,
+        "y": -453.512578360511
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": -12.406644551960596,
+        "y": -453.512578360511
+      }
+    },
+    {
+      "id": "whatsapp_send_message_text-1747673610693",
+      "data": {
+        "icon": "FaWhatsapp",
+        "name": "Enviar Mensagem (Texto)",
+        "color": "#25D366",
+        "label": "Enviar Mensagem",
+        "config": {
+          "to": "5195959555",
+          "type": "text",
+          "message": "\"Olá! Somos da UPS Healthcare. Gostaríamos de apresentar nossas soluções especializadas para o setor de saúde. Posso ajudar?\""
+        },
+        "isActive": false,
+        "isExecuting": false
+      },
+      "type": "action",
+      "width": 313,
+      "height": 76,
+      "dragging": false,
+      "position": {
+        "x": 171.22946750698554,
+        "y": -369.2247507955841
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 171.22946750698554,
+        "y": -369.2247507955841
+      }
+    },
+    {
+      "id": "assistant_create_agent-1747673696180",
+      "data": {
+        "icon": "FaRobot",
+        "name": "Criar Agente",
+        "color": "#3B82F6",
+        "label": "Criar Novo Agente",
+        "config": {
+          "name": "Assistente UPS Healthcare",
+          "description": "Assistente especializado em soluções UPS Healthcare para o setor de saúde",
+          "capabilities": [
+            " \"Informações sobre soluções de logística para saúde\",",
+            "            \"Cotações de serviços\",",
+            "            \"Agendamento de consultoria\""
+          ]
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 148,
+      "dragging": false,
+      "position": {
+        "x": 628.1425466668396,
+        "y": -437.8101811556213
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 628.1425466668396,
+        "y": -437.8101811556213
+      }
+    },
+    {
+      "id": "assistant_memory-1747673772432",
+      "data": {
+        "icon": "MdMemory",
+        "name": "Memória",
+        "color": "#3B82F6",
+        "label": "Configurar Memória",
+        "config": {
+          "maxTokens": 5,
+          "temperature": 5
+        },
+        "isActive": false,
+        "isExecuting": false
+      },
+      "type": "action",
+      "width": 219,
+      "height": 76,
+      "dragging": false,
+      "position": {
+        "x": 638.1111361051863,
+        "y": -145.53393883532246
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 638.1111361051863,
+        "y": -145.53393883532246
+      }
+    },
+    {
+      "id": "internal_condition-1747674201256",
+      "data": {
+        "icon": "TbAirConditioning",
+        "name": "Condição",
+        "color": "#ff4700",
+        "label": "Condição",
+        "config": {
+          "condition": "customer.interest === 'high'"
+        },
+        "isActive": false,
+        "isExecuting": false
+      },
+      "type": "condition",
+      "width": 160,
+      "height": 160,
+      "dragging": false,
+      "position": {
+        "x": 1035.6252889896616,
+        "y": -479.8097710999044
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1035.6252889896616,
+        "y": -479.8097710999044
+      }
+    },
+    {
+      "id": "whatsapp_send_message_text-1747674260156",
+      "data": {
+        "icon": "FaWhatsapp",
+        "name": "Enviar Mensagem (Texto)",
+        "color": "#25D366",
+        "label": "Enviar Mensagem",
+        "config": {
+          "to": "5151545151",
+          "type": "text",
+          "message": "Gostaria de agendar uma consultoria personalizada para sua instituição de saúde?"
+        },
+        "isActive": false,
+        "isExecuting": false
+      },
+      "type": "action",
+      "width": 313,
+      "height": 76,
+      "dragging": false,
+      "position": {
+        "x": 1277.6213155738196,
+        "y": -365.2977350018417
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1277.6213155738196,
+        "y": -365.2977350018417
+      }
+    },
+    {
+      "id": "whatsapp_send_message_text-1747674370580",
+      "data": {
+        "icon": "FaWhatsapp",
+        "name": "Enviar Mensagem (Texto)",
+        "color": "#25D366",
+        "label": "Enviar Mensagem",
+        "config": {
+          "to": "55151151515",
+          "type": "text",
+          "message": "Obrigado pelo seu tempo! Se precisar de mais informações sobre nossas soluções de logística para saúde, estamos à disposição."
+        },
+        "isActive": false,
+        "isExecuting": false
+      },
+      "type": "action",
+      "width": 313,
+      "height": 76,
+      "dragging": false,
+      "position": {
+        "x": 1279.772356180856,
+        "y": -244.26469087318267
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1279.772356180856,
+        "y": -244.26469087318267
+      }
+    },
+    {
+      "id": "internal_finish-1747674697489",
+      "type": "trigger",
+      "data": {
+        "name": "Fim",
+        "icon": "FaRegWindowClose",
+        "label": "Fim",
+        "color": "#ff4700",
+        "config": {
+          "condition": "fim"
+        }
+      },
+      "position": {
+        "x": 1840.0712362260638,
+        "y": -296.64009575475137
+      },
+      "width": 76,
+      "height": 96,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1840.0712362260638,
+        "y": -296.64009575475137
+      },
+      "dragging": false
+    },
+    {
+      "id": "assistant_model-1747674783492",
+      "type": "action",
+      "data": {
+        "name": "Modelo",
+        "icon": "MdAssistant",
+        "label": "Configurar Modelo",
+        "color": "#3B82F6",
+        "config": {
+          "model": "gpt 4",
+          "temperature": 0.7
+        }
+      },
+      "position": {
+        "x": 423.55619219657115,
+        "y": -146.93419047784113
+      },
+      "width": 211,
+      "height": 76,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 423.55619219657115,
+        "y": -146.93419047784113
+      },
+      "dragging": false
+    },
+    {
+      "id": "assistant_tool-1747674803485",
+      "type": "action",
+      "data": {
+        "name": "Ferramenta",
+        "icon": "FaTools",
+        "label": "Adicionar Ferramenta",
+        "color": "#3B82F6",
+        "config": {
+          "tool": "analise",
+          "parameters": {}
+        }
+      },
+      "position": {
+        "x": 856.533059307729,
+        "y": -147.468110734206
+      },
+      "width": 229,
+      "height": 76,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 856.533059307729,
+        "y": -147.468110734206
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1747673684012",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "trigger-1",
+      "target": "whatsapp_send_message_text-1747673610693",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747673736077",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "whatsapp_send_message_text-1747673610693",
+      "target": "assistant_create_agent-1747673696180",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747673785174",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "assistant_memory-1747673772432",
+      "target": "assistant_create_agent-1747673696180",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": "memory",
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747674230057",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "assistant_create_agent-1747673696180",
+      "target": "internal_condition-1747674201256",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747674362261",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "internal_condition-1747674201256",
+      "target": "whatsapp_send_message_text-1747674260156",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": "false",
+      "targetHandle": null,
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747674398941",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "internal_condition-1747674201256",
+      "target": "whatsapp_send_message_text-1747674370580",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": "true",
+      "targetHandle": null,
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747674756112",
+      "source": "whatsapp_send_message_text-1747674260156",
+      "target": "internal_finish-1747674697489",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "width": 20,
+        "height": 20,
+        "color": "#64748b"
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "fontWeight": 700,
+        "fontSize": 20,
+        "cursor": "pointer",
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "fillOpacity": 0.8,
+        "opacity": 0
+      },
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747674759654",
+      "source": "whatsapp_send_message_text-1747674370580",
+      "target": "internal_finish-1747674697489",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "width": 20,
+        "height": 20,
+        "color": "#64748b"
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "fontWeight": 700,
+        "fontSize": 20,
+        "cursor": "pointer",
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "fillOpacity": 0.8,
+        "opacity": 0
+      },
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747674798297",
+      "source": "assistant_model-1747674783492",
+      "target": "assistant_create_agent-1747673696180",
+      "sourceHandle": null,
+      "targetHandle": "model",
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "width": 20,
+        "height": 20,
+        "color": "#64748b"
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "fontWeight": 700,
+        "fontSize": 20,
+        "cursor": "pointer",
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "fillOpacity": 0.8,
+        "opacity": 0
+      },
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747674819578",
+      "source": "assistant_tool-1747674803485",
+      "target": "assistant_create_agent-1747673696180",
+      "sourceHandle": null,
+      "targetHandle": "tool",
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "width": 20,
+        "height": 20,
+        "color": "#64748b"
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "fontWeight": 700,
+        "fontSize": 20,
+        "cursor": "pointer",
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "fillOpacity": 0.8,
+        "opacity": 0
+      },
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    }
+  ]
+}

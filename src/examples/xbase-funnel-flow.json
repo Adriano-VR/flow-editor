@@ -1,0 +1,281 @@
+{
+  "nodes": [
+    {
+      "id": "trigger-1",
+      "data": {
+        "icon": "VscDebugStart",
+        "name": "Início",
+        "type": "trigger",
+        "color": "#ff4700",
+        "label": "Início do Funil",
+        "category": "internal",
+        "config": {
+          "condition": ""
+        }
+      },
+      "type": "trigger",
+      "width": 123,
+      "height": 92,
+      "position": {
+        "x": -12.406644551960596,
+        "y": -453.512578360511
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": -12.406644551960596,
+        "y": -453.512578360511
+      }
+    },
+    {
+      "id": "whatsapp_send_message_text-1",
+      "data": {
+        "icon": "FaWhatsapp",
+        "name": "Enviar Mensagem (Texto)",
+        "color": "#25D366",
+        "label": "Mensagem Inicial",
+        "config": {
+          "to": "{{customer.phone}}",
+          "type": "text",
+          "message": "Olá! Sou o consultor da XBase. Vi que você tem interesse em nossas soluções. Posso te ajudar a entender melhor como podemos transformar sua gestão?"
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 76,
+      "position": {
+        "x": 171.22946750698554,
+        "y": -369.2247507955841
+      }
+    },
+    {
+      "id": "assistant_create_agent-1",
+      "data": {
+        "icon": "FaRobot",
+        "name": "Criar Agente",
+        "color": "#3B82F6",
+        "label": "Assistente de Vendas",
+        "config": {
+          "name": "Assistente XBase",
+          "description": "Assistente especializado em vendas e soluções XBase",
+          "capabilities": [
+            "Apresentação de produtos",
+            "Qualificação de leads",
+            "Agendamento de demonstração"
+          ]
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 148,
+      "position": {
+        "x": 628.1425466668396,
+        "y": -437.8101811556213
+      }
+    },
+    {
+      "id": "internal_condition-1",
+      "data": {
+        "icon": "TbAirConditioning",
+        "name": "Condição",
+        "color": "#ff4700",
+        "label": "Qualificação",
+        "config": {
+          "condition": "customer.interest === 'high' && customer.budget === 'confirmed'"
+        }
+      },
+      "type": "condition",
+      "width": 160,
+      "height": 160,
+      "position": {
+        "x": 1035.6252889896616,
+        "y": -479.8097710999044
+      }
+    },
+    {
+      "id": "whatsapp_send_message_text-2",
+      "data": {
+        "icon": "FaWhatsapp",
+        "name": "Enviar Mensagem (Texto)",
+        "color": "#25D366",
+        "label": "Agendar Demo",
+        "config": {
+          "to": "{{customer.phone}}",
+          "type": "text",
+          "message": "Ótimo! Gostaria de agendar uma demonstração personalizada para sua empresa? Posso mostrar como nossa solução pode resolver seus desafios específicos."
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 76,
+      "position": {
+        "x": 1277.6213155738196,
+        "y": -365.2977350018417
+      }
+    },
+    {
+      "id": "whatsapp_send_message_text-3",
+      "data": {
+        "icon": "FaWhatsapp",
+        "name": "Enviar Mensagem (Texto)",
+        "color": "#25D366",
+        "label": "Follow-up",
+        "config": {
+          "to": "{{customer.phone}}",
+          "type": "text",
+          "message": "Entendi! Vou manter seu contato em nossa base. Quando estiver pronto para conhecer melhor nossas soluções, estarei à disposição para agendar uma demonstração."
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 76,
+      "position": {
+        "x": 1279.772356180856,
+        "y": -244.26469087318267
+      }
+    },
+    {
+      "id": "internal_finish-1",
+      "type": "trigger",
+      "data": {
+        "name": "Fim",
+        "icon": "FaRegWindowClose",
+        "label": "Fim do Funil",
+        "color": "#ff4700",
+        "config": {
+          "condition": "fim"
+        }
+      },
+      "position": {
+        "x": 1840.0712362260638,
+        "y": -296.64009575475137
+      },
+      "width": 76,
+      "height": 96
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "type": "smoothstep",
+      "source": "trigger-1",
+      "target": "whatsapp_send_message_text-1",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "sourceHandle": "output",
+      "targetHandle": "input"
+    },
+    {
+      "id": "edge-2",
+      "type": "smoothstep",
+      "source": "whatsapp_send_message_text-1",
+      "target": "assistant_create_agent-1",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      }
+    },
+    {
+      "id": "edge-3",
+      "type": "smoothstep",
+      "source": "assistant_create_agent-1",
+      "target": "internal_condition-1",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      }
+    },
+    {
+      "id": "edge-4",
+      "type": "smoothstep",
+      "source": "internal_condition-1",
+      "target": "whatsapp_send_message_text-2",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "sourceHandle": "true"
+    },
+    {
+      "id": "edge-5",
+      "type": "smoothstep",
+      "source": "internal_condition-1",
+      "target": "whatsapp_send_message_text-3",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "sourceHandle": "false"
+    },
+    {
+      "id": "edge-6",
+      "type": "smoothstep",
+      "source": "whatsapp_send_message_text-2",
+      "target": "internal_finish-1",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      }
+    },
+    {
+      "id": "edge-7",
+      "type": "smoothstep",
+      "source": "whatsapp_send_message_text-3",
+      "target": "internal_finish-1",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      }
+    }
+  ]
+} 

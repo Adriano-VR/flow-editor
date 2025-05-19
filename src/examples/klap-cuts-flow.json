@@ -1,0 +1,378 @@
+  {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "data": {
+          "icon": "VscDebugStart",
+          "name": "Início",
+          "type": "trigger",
+          "color": "#ff4700",
+          "label": "Início do Processo",
+          "config": {
+            "condition": ""
+          },
+          "category": "internal"
+        },
+        "type": "trigger",
+        "width": 123,
+        "height": 92,
+        "position": {
+          "x": -12.406644551960596,
+          "y": -453.512578360511
+        }
+      },
+      {
+        "id": "input_url",
+        "data": {
+          "icon": "FaLink",
+          "name": "Input URL",
+          "color": "#3B82F6",
+          "label": "URL do Vídeo",
+          "config": {
+            "type": "url",
+            "placeholder": "Cole a URL do vídeo aqui",
+            "validation": "url"
+          }
+        },
+        "type": "input",
+        "width": 313,
+        "height": 76,
+        "position": {
+          "x": 234.33083870078804,
+          "y": -392.59562901551095
+        }
+      },
+      {
+        "id": "klap_process",
+        "data": {
+          "icon": "FaVideo",
+          "name": "Processar Klap",
+          "color": "#E1306C",
+          "label": "Criar Corte",
+          "config": {
+            "service": "klap",
+            "options": {
+              "format": "vertical",
+              "duration": "30s",
+              "quality": "high"
+            }
+          }
+        },
+        "type": "action",
+        "width": 313,
+        "height": 120,
+        "position": {
+          "x": 612.9514758238871,
+          "y": -490.3946571504569
+        }
+      },
+      {
+        "id": "internal_condition-1",
+        "data": {
+          "icon": "TbAirConditioning",
+          "name": "Condição",
+          "color": "#ff4700",
+          "label": "Verificar Processamento",
+          "config": {
+            "condition": "klap.status === 'completed'"
+          }
+        },
+        "type": "condition",
+        "width": 160,
+        "height": 160,
+        "position": {
+          "x": 1035.6252889896616,
+          "y": -479.8097710999044
+        }
+      },
+      {
+        "id": "download_cut",
+        "data": {
+          "icon": "FaDownload",
+          "name": "Download",
+          "color": "#10B981",
+          "label": "Baixar Corte",
+          "config": {
+            "type": "download",
+            "format": "mp4",
+            "quality": "high"
+          }
+        },
+        "type": "action",
+        "width": 313,
+        "height": 76,
+        "position": {
+          "x": 1282.295491217805,
+          "y": -311.5447150960098
+        }
+      },
+      {
+        "id": "error_handle",
+        "data": {
+          "icon": "FaExclamationTriangle",
+          "name": "Tratamento de Erro",
+          "color": "#EF4444",
+          "label": "Erro no Processamento",
+          "config": {
+            "message": "Não foi possível processar o vídeo. Verifique a URL e tente novamente."
+          }
+        },
+        "type": "action",
+        "width": 313,
+        "height": 76,
+        "position": {
+          "x": 1273.929636625874,
+          "y": -516.5354221353311
+        }
+      },
+      {
+        "id": "internal_finish-1",
+        "data": {
+          "icon": "FaRegWindowClose",
+          "name": "Fim",
+          "color": "#ff4700",
+          "label": "Fim do Processo",
+          "config": {
+            "condition": "fim"
+          }
+        },
+        "type": "trigger",
+        "width": 76,
+        "height": 96,
+        "position": {
+          "x": 1815.5318140951408,
+          "y": -402.9775916554189
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "edge-1",
+        "type": "smoothstep",
+        "style": {
+          "stroke": "#64748b",
+          "strokeWidth": 2
+        },
+        "source": "trigger-1",
+        "target": "input_url",
+        "animated": true,
+        "markerEnd": {
+          "type": "arrowclosed",
+          "color": "#64748b",
+          "width": 20,
+          "height": 20
+        },
+        "sourceHandle": "output",
+        "targetHandle": "input",
+        "label": "×",
+        "labelStyle": {
+          "fill": "#ef4444",
+          "cursor": "pointer",
+          "opacity": 0,
+          "fontSize": 20,
+          "fontWeight": 700
+        },
+        "labelBgStyle": {
+          "fill": "#e5e7eb",
+          "opacity": 0,
+          "fillOpacity": 0.8
+        },
+        "labelBgPadding": [4, 4],
+        "labelBgBorderRadius": 4
+      },
+      {
+        "id": "edge-2",
+        "type": "smoothstep",
+        "style": {
+          "stroke": "#64748b",
+          "strokeWidth": 2
+        },
+        "source": "input_url",
+        "target": "klap_process",
+        "animated": true,
+        "markerEnd": {
+          "type": "arrowclosed",
+          "color": "#64748b",
+          "width": 20,
+          "height": 20
+        },
+        "label": "×",
+        "labelStyle": {
+          "fill": "#ef4444",
+          "cursor": "pointer",
+          "opacity": 0,
+          "fontSize": 20,
+          "fontWeight": 700
+        },
+        "labelBgStyle": {
+          "fill": "#e5e7eb",
+          "opacity": 0,
+          "fillOpacity": 0.8
+        },
+        "labelBgPadding": [4, 4],
+        "labelBgBorderRadius": 4
+      },
+      {
+        "id": "edge-3",
+        "type": "smoothstep",
+        "style": {
+          "stroke": "#64748b",
+          "strokeWidth": 2
+        },
+        "source": "klap_process",
+        "target": "internal_condition-1",
+        "animated": true,
+        "markerEnd": {
+          "type": "arrowclosed",
+          "color": "#64748b",
+          "width": 20,
+          "height": 20
+        },
+        "label": "×",
+        "labelStyle": {
+          "fill": "#ef4444",
+          "cursor": "pointer",
+          "opacity": 0,
+          "fontSize": 20,
+          "fontWeight": 700
+        },
+        "labelBgStyle": {
+          "fill": "#e5e7eb",
+          "opacity": 0,
+          "fillOpacity": 0.8
+        },
+        "labelBgPadding": [4, 4],
+        "labelBgBorderRadius": 4
+      },
+      {
+        "id": "edge-4",
+        "type": "smoothstep",
+        "style": {
+          "stroke": "#64748b",
+          "strokeWidth": 2
+        },
+        "source": "internal_condition-1",
+        "target": "download_cut",
+        "animated": true,
+        "markerEnd": {
+          "type": "arrowclosed",
+          "color": "#64748b",
+          "width": 20,
+          "height": 20
+        },
+        "sourceHandle": "true",
+        "label": "×",
+        "labelStyle": {
+          "fill": "#ef4444",
+          "cursor": "pointer",
+          "opacity": 0,
+          "fontSize": 20,
+          "fontWeight": 700
+        },
+        "labelBgStyle": {
+          "fill": "#e5e7eb",
+          "opacity": 0,
+          "fillOpacity": 0.8
+        },
+        "labelBgPadding": [4, 4],
+        "labelBgBorderRadius": 4
+      },
+      {
+        "id": "edge-5",
+        "type": "smoothstep",
+        "style": {
+          "stroke": "#64748b",
+          "strokeWidth": 2
+        },
+        "source": "internal_condition-1",
+        "target": "error_handle",
+        "animated": true,
+        "markerEnd": {
+          "type": "arrowclosed",
+          "color": "#64748b",
+          "width": 20,
+          "height": 20
+        },
+        "sourceHandle": "false",
+        "label": "×",
+        "labelStyle": {
+          "fill": "#ef4444",
+          "cursor": "pointer",
+          "opacity": 0,
+          "fontSize": 20,
+          "fontWeight": 700
+        },
+        "labelBgStyle": {
+          "fill": "#e5e7eb",
+          "opacity": 0,
+          "fillOpacity": 0.8
+        },
+        "labelBgPadding": [4, 4],
+        "labelBgBorderRadius": 4
+      },
+      {
+        "id": "edge-6",
+        "type": "smoothstep",
+        "style": {
+          "stroke": "#64748b",
+          "strokeWidth": 2
+        },
+        "source": "download_cut",
+        "target": "internal_finish-1",
+        "animated": true,
+        "markerEnd": {
+          "type": "arrowclosed",
+          "color": "#64748b",
+          "width": 20,
+          "height": 20
+        },
+        "label": "×",
+        "labelStyle": {
+          "fill": "#ef4444",
+          "cursor": "pointer",
+          "opacity": 0,
+          "fontSize": 20,
+          "fontWeight": 700
+        },
+        "labelBgStyle": {
+          "fill": "#e5e7eb",
+          "opacity": 0,
+          "fillOpacity": 0.8
+        },
+        "labelBgPadding": [4, 4],
+        "labelBgBorderRadius": 4
+      },
+      {
+        "id": "edge-7",
+        "type": "smoothstep",
+        "style": {
+          "stroke": "#64748b",
+          "strokeWidth": 2
+        },
+        "source": "error_handle",
+        "target": "internal_finish-1",
+        "animated": true,
+        "markerEnd": {
+          "type": "arrowclosed",
+          "color": "#64748b",
+          "width": 20,
+          "height": 20
+        },
+        "label": "×",
+        "labelStyle": {
+          "fill": "#ef4444",
+          "cursor": "pointer",
+          "opacity": 0,
+          "fontSize": 20,
+          "fontWeight": 700
+        },
+        "labelBgStyle": {
+          "fill": "#e5e7eb",
+          "opacity": 0,
+          "fillOpacity": 0.8
+        },
+        "labelBgPadding": [4, 4],
+        "labelBgBorderRadius": 4
+      }
+    ]
+  } 

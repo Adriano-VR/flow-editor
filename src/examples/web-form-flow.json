@@ -1,0 +1,523 @@
+{
+  "nodes": [
+    {
+      "id": "internal_start-1",
+      "type": "trigger",
+      "data": {
+        "name": "Início",
+        "icon": "VscDebugStart",
+        "label": "Início",
+        "color": "#ff4700",
+        "config": {
+          "condition": ""
+        }
+      },
+      "position": {
+        "x": -92.63957343796517,
+        "y": -85.51276701378546
+      },
+      "width": 76,
+      "height": 96,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -92.63957343796517,
+        "y": -85.51276701378546
+      },
+      "dragging": false
+    },
+    {
+      "id": "internal_finish-1",
+      "type": "trigger",
+      "data": {
+        "name": "Fim",
+        "icon": "FaRegWindowClose",
+        "label": "Fim",
+        "color": "#ff4700",
+        "config": {
+          "condition": "fim"
+        }
+      },
+      "position": {
+        "x": 1089.430277770375,
+        "y": 35.73154118245961
+      },
+      "width": 76,
+      "height": 96,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1089.430277770375,
+        "y": 35.73154118245961
+      },
+      "dragging": false
+    },
+    {
+      "id": "start_form-1747681038154",
+      "type": "trigger",
+      "data": {
+        "name": "Criar Formulario",
+        "icon": "FaWpforms",
+        "label": "Novo Formulário",
+        "color": "#EAB308",
+        "config": {
+          "fields": [
+            {
+              "id": "title",
+              "name": "Título do Formulário",
+              "type": "string",
+              "required": true
+            },
+            {
+              "id": "description",
+              "name": "Descrição",
+              "type": "string",
+              "required": false
+            },
+            {
+              "id": "submit_button_text",
+              "name": "Texto do Botão de Envio",
+              "type": "string",
+              "required": false,
+              "default": "Enviar"
+            },
+            {
+              "id": "success_message",
+              "name": "Mensagem de Sucesso",
+              "type": "string",
+              "required": false,
+              "default": "Formulário enviado com sucesso!"
+            },
+            {
+              "id": "redirect_url",
+              "name": "URL de Redirecionamento",
+              "type": "string",
+              "required": false,
+              "description": "URL para redirecionar após o envio do formulário"
+            }
+          ]
+        }
+      },
+      "position": {
+        "x": 163.6494538654651,
+        "y": -114.38665205325897
+      },
+      "width": 104,
+      "height": 96,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 163.6494538654651,
+        "y": -114.38665205325897
+      },
+      "dragging": false
+    },
+    {
+      "id": "form_text_input-1747681048918",
+      "type": "action",
+      "data": {
+        "name": "Entrada de Texto",
+        "icon": "MdInput",
+        "label": "Campo de Texto",
+        "color": "#EAB308",
+        "config": {
+          "fields": [
+            {
+              "id": "label",
+              "name": "Rótulo",
+              "type": "string",
+              "required": true
+            },
+            {
+              "id": "placeholder",
+              "name": "Placeholder",
+              "type": "string",
+              "required": false
+            },
+            {
+              "id": "required",
+              "name": "Obrigatório",
+              "type": "boolean",
+              "required": false,
+              "default": false
+            }
+          ]
+        }
+      },
+      "position": {
+        "x": 351.92327827069846,
+        "y": -121.1567210580038
+      },
+      "width": 240,
+      "height": 76,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 351.92327827069846,
+        "y": -121.1567210580038
+      },
+      "dragging": false
+    },
+    {
+      "id": "form_number_input-1747681057294",
+      "type": "action",
+      "data": {
+        "name": "Entrada de Número",
+        "icon": "MdInput",
+        "label": "Campo Numérico",
+        "color": "#EAB308",
+        "config": {
+          "fields": [
+            {
+              "id": "label",
+              "name": "Rótulo",
+              "type": "string",
+              "required": true
+            },
+            {
+              "id": "min",
+              "name": "Valor Mínimo",
+              "type": "number",
+              "required": false
+            },
+            {
+              "id": "max",
+              "name": "Valor Máximo",
+              "type": "number",
+              "required": false
+            },
+            {
+              "id": "required",
+              "name": "Obrigatório",
+              "type": "boolean",
+              "required": false,
+              "default": false
+            }
+          ]
+        }
+      },
+      "position": {
+        "x": 681.7364332151599,
+        "y": -119.20672714961911
+      },
+      "width": 260,
+      "height": 76,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 681.7364332151599,
+        "y": -119.20672714961911
+      },
+      "dragging": false
+    },
+    {
+      "id": "form_date_input-1747681065670",
+      "type": "action",
+      "data": {
+        "name": "Entrada de Data",
+        "icon": "BsCalendar2Date",
+        "label": "Seletor de Data",
+        "color": "#EAB308",
+        "config": {
+          "fields": [
+            {
+              "id": "label",
+              "name": "Rótulo",
+              "type": "string",
+              "required": true
+            },
+            {
+              "id": "min_date",
+              "name": "Data Mínima",
+              "type": "string",
+              "required": false
+            },
+            {
+              "id": "max_date",
+              "name": "Data Máxima",
+              "type": "string",
+              "required": false
+            },
+            {
+              "id": "required",
+              "name": "Obrigatório",
+              "type": "boolean",
+              "required": false,
+              "default": false
+            }
+          ]
+        }
+      },
+      "position": {
+        "x": 381.0175899110011,
+        "y": 45.98789701662585
+      },
+      "width": 233,
+      "height": 76,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 381.0175899110011,
+        "y": 45.98789701662585
+      },
+      "dragging": false
+    },
+    {
+      "id": "form_checkbox-1747681073352",
+      "type": "action",
+      "data": {
+        "name": "Checkbox",
+        "icon": "GrCheckboxSelected",
+        "label": "Caixa de Seleção",
+        "color": "#EAB308",
+        "config": {
+          "fields": [
+            {
+              "id": "label",
+              "name": "Rótulo",
+              "type": "string",
+              "required": true
+            },
+            {
+              "id": "default",
+              "name": "Marcado por Padrão",
+              "type": "boolean",
+              "required": false,
+              "default": false
+            }
+          ]
+        }
+      },
+      "position": {
+        "x": 721.2166846631127,
+        "y": 39.23021877701677
+      },
+      "width": 202,
+      "height": 76,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 721.2166846631127,
+        "y": 39.23021877701677
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1747681086492",
+      "source": "internal_start-1",
+      "target": "start_form-1747681038154",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "width": 20,
+        "height": 20,
+        "color": "#64748b"
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "fontWeight": 700,
+        "fontSize": 20,
+        "cursor": "pointer",
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "fillOpacity": 0.8,
+        "opacity": 0
+      },
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747681088301",
+      "source": "start_form-1747681038154",
+      "target": "form_text_input-1747681048918",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "width": 20,
+        "height": 20,
+        "color": "#64748b"
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "fontWeight": 700,
+        "fontSize": 20,
+        "cursor": "pointer",
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "fillOpacity": 0.8,
+        "opacity": 0
+      },
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747681089765",
+      "source": "form_text_input-1747681048918",
+      "target": "form_number_input-1747681057294",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "width": 20,
+        "height": 20,
+        "color": "#64748b"
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "fontWeight": 700,
+        "fontSize": 20,
+        "cursor": "pointer",
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "fillOpacity": 0.8,
+        "opacity": 0
+      },
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747681092831",
+      "source": "form_number_input-1747681057294",
+      "target": "form_date_input-1747681065670",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "width": 20,
+        "height": 20,
+        "color": "#64748b"
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "fontWeight": 700,
+        "fontSize": 20,
+        "cursor": "pointer",
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "fillOpacity": 0.8,
+        "opacity": 0
+      },
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747681100872",
+      "source": "form_date_input-1747681065670",
+      "target": "form_checkbox-1747681073352",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "width": 20,
+        "height": 20,
+        "color": "#64748b"
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "fontWeight": 700,
+        "fontSize": 20,
+        "cursor": "pointer",
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "fillOpacity": 0.8,
+        "opacity": 0
+      },
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-1747681105136",
+      "source": "form_checkbox-1747681073352",
+      "target": "internal_finish-1",
+      "sourceHandle": null,
+      "targetHandle": null,
+      "type": "smoothstep",
+      "animated": true,
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "markerEnd": {
+        "type": "arrowclosed",
+        "width": 20,
+        "height": 20,
+        "color": "#64748b"
+      },
+      "label": "×",
+      "labelStyle": {
+        "fill": "#ef4444",
+        "fontWeight": 700,
+        "fontSize": 20,
+        "cursor": "pointer",
+        "opacity": 0
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "fillOpacity": 0.8,
+        "opacity": 0
+      },
+      "labelBgPadding": [
+        4,
+        4
+      ],
+      "labelBgBorderRadius": 4
+    }
+  ]
+}

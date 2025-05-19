@@ -31,6 +31,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     subcategory: 'whatsapp',
     icon: 'FaWhatsapp',
     color: '#25D366',
+    label: 'Enviar Mensagem',
     config: {
       message: '',
       to: '',
@@ -45,6 +46,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     subcategory: 'whatsapp',
     icon: 'FaWhatsapp',
     color: '#25D366',
+    label: 'Enviar Imagem',
     config: {
       message: '',
       to: '',
@@ -59,6 +61,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     subcategory: 'whatsapp',
     icon: 'FaWhatsapp',
     color: '#25D366',
+    label: 'Enviar Vídeo',
     config: {
       message: '',
       to: '',
@@ -73,6 +76,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     subcategory: 'whatsapp',
     icon: 'FaWhatsapp',
     color: '#25D366',
+    label: 'Resposta Rápida',
     config: {}
   },
   {
@@ -83,6 +87,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     subcategory: 'whatsapp',
     icon: 'FaWhatsapp',
     color: '#25D366',
+    label: 'Lista de Opções',
     config: {}
   },
   {
@@ -93,6 +98,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     subcategory: 'whatsapp',
     icon: 'FaWhatsapp',
     color: '#25D366',
+    label: 'Receber Mensagem',
     config: {
       message: ''
     }
@@ -108,6 +114,7 @@ const assistantActions: NodeTypeDefinition[] = [
     subcategory: 'assistant',
     icon: 'MdAssistant',
     color: '#3B82F6',
+    label: 'Configurar Modelo',
     config: {
       model: '',
       temperature: 0.7
@@ -121,7 +128,12 @@ const assistantActions: NodeTypeDefinition[] = [
     subcategory: 'assistant',
     icon: 'MdMemory',
     color: '#3B82F6',
-    config: {}
+    label: 'Configurar Memória',
+    config: {
+      "maxTokens": 0,
+      "temperature": 0,
+      "retentionPeriod": "1d",
+    }
   },
   {
     id: 'assistant_tool',
@@ -131,6 +143,7 @@ const assistantActions: NodeTypeDefinition[] = [
     subcategory: 'assistant',
     icon: 'FaTools',
     color: '#3B82F6',
+    label: 'Adicionar Ferramenta',
     config: {
       tool: '',
       parameters: {}
@@ -144,6 +157,7 @@ const assistantActions: NodeTypeDefinition[] = [
     subcategory: 'assistant',
     icon: 'FaRobot',
     color: '#3B82F6',
+    label: 'Criar Novo Agente',
     config: {
       name: '',
       description: '',
@@ -161,6 +175,7 @@ const openaiActions: NodeTypeDefinition[] = [
     subcategory: 'openai',
     icon: 'AiOutlineOpenAI',
     color: '#10A37F',
+    label: 'Assistente OpenAI',
     config: {}
   },
   {
@@ -171,6 +186,7 @@ const openaiActions: NodeTypeDefinition[] = [
     subcategory: 'openai',
     icon: 'AiOutlineOpenAI',
     color: '#10A37F',
+    label: 'Texto para Fala',
     config: {}
   },
   {
@@ -181,6 +197,7 @@ const openaiActions: NodeTypeDefinition[] = [
     subcategory: 'openai',
     icon: 'AiOutlineOpenAI',
     color: '#10A37F',
+    label: 'Gerar Imagem',
     config: {}
   },
   {
@@ -191,20 +208,26 @@ const openaiActions: NodeTypeDefinition[] = [
     subcategory: 'openai',
     icon: 'AiOutlineOpenAI',
     color: '#10A37F',
+    label: 'GPT-4 Vision',
     config: {}
   }
 ];
 
 const instagramActions: NodeTypeDefinition[] = [
   {
-    id: 'instagram_post',
-    name: 'Postar',
+    id: 'instagram_send_message',
+    name: 'Enviar Mensagem',
     type: 'action',
     category: 'app',
     subcategory: 'instagram',
     icon: 'FaInstagram',
     color: '#E1306C',
-    config: {}
+    label: 'Criar Post',
+    config: {
+      'to':undefined,
+       "type": "text",
+      "message": undefined
+    }
   },
   {
     id: 'instagram_dm',
@@ -214,16 +237,7 @@ const instagramActions: NodeTypeDefinition[] = [
     subcategory: 'instagram',
     icon: 'FaInstagram',
     color: '#E1306C',
-    config: {}
-  },
-  {
-    id: 'instagram_form',
-    name: 'Formulário',
-    type: 'action',
-    category: 'app',
-    subcategory: 'instagram',
-    icon: 'FaInstagram',
-    color: '#E1306C',
+    label: 'Enviar Mensagem',
     config: {}
   },
   {
@@ -234,6 +248,7 @@ const instagramActions: NodeTypeDefinition[] = [
     subcategory: 'instagram',
     icon: 'FaInstagram',
     color: '#E1306C',
+    label: 'Adicionar Pergunta',
     config: {}
   },
   {
@@ -244,6 +259,7 @@ const instagramActions: NodeTypeDefinition[] = [
     subcategory: 'instagram',
     icon: 'FaInstagram',
     color: '#E1306C',
+    label: 'Resposta Rápida',
     config: {}
   }
 ];
@@ -257,6 +273,7 @@ const conversionActions: NodeTypeDefinition[] = [
     subcategory: 'conversion',
     icon: 'SiConvertio',
     color: '#6366F1',
+    label: 'Converter Texto',
     config: {}
   },
   {
@@ -267,6 +284,7 @@ const conversionActions: NodeTypeDefinition[] = [
     subcategory: 'conversion',
     icon: 'SiConvertio',
     color: '#6366F1',
+    label: 'Texto para Vídeo',
     config: {}
   },
   {
@@ -277,6 +295,7 @@ const conversionActions: NodeTypeDefinition[] = [
     subcategory: 'conversion',
     icon: 'SiConvertio',
     color: '#6366F1',
+    label: 'Texto para Imagem',
     config: {}
   },
   {
@@ -287,6 +306,7 @@ const conversionActions: NodeTypeDefinition[] = [
     subcategory: 'conversion',
     icon: 'SiConvertio',
     color: '#6366F1',
+    label: 'Imagem para Vídeo',
     config: {}
   },
   {
@@ -297,6 +317,7 @@ const conversionActions: NodeTypeDefinition[] = [
     subcategory: 'conversion',
     icon: 'SiConvertio',
     color: '#6366F1',
+    label: 'Texto para Áudio',
     config: {}
   },
   {
@@ -307,7 +328,10 @@ const conversionActions: NodeTypeDefinition[] = [
     subcategory: 'conversion',
     icon: 'SiConvertio',
     color: '#6366F1',
-    config: {}
+    label: 'Vídeo para Texto',
+    config: { 
+      output:'string'
+    }
   },
   {
     id: 'ai_video_to_audio',
@@ -317,6 +341,7 @@ const conversionActions: NodeTypeDefinition[] = [
     subcategory: 'conversion',
     icon: 'SiConvertio',
     color: '#6366F1',
+    label: 'Vídeo para Áudio',
     config: {}
   },
   {
@@ -327,6 +352,7 @@ const conversionActions: NodeTypeDefinition[] = [
     subcategory: 'conversion',
     icon: 'SiConvertio',
     color: '#6366F1',
+    label: 'Áudio para Texto',
     config: {}
   }
 ];
@@ -340,6 +366,7 @@ const veo2Actions: NodeTypeDefinition[] = [
     subcategory: 'veo2',
     icon: 'AiOutlineGoogle',
     color: '#0EA5E9',
+    label: 'Criar Vídeo',
     config: {}
   }
 ];
@@ -353,6 +380,7 @@ const klingaiActions: NodeTypeDefinition[] = [
     subcategory: 'klingai',
     icon: 'RiSparkling2Line',
     color: '#A21CAF',
+    label: 'Sintetizar Voz',
     config: {}
   }
 ];
@@ -366,7 +394,69 @@ const elevenlabsActions: NodeTypeDefinition[] = [
     subcategory: 'elevenlabs',
     icon: 'SiElevenlabs',
     color: '#F59E42',
+    label: 'Converter para Fala',
     config: {}
+  }
+];
+
+const klapActions: NodeTypeDefinition[] = [
+  {
+    id: 'klap_url_input',
+    name: 'Input URL',
+    type: 'input',
+    category: 'app',
+    subcategory: 'klap',
+    icon: 'CiLink',
+    color: '#E1306C',
+    label: 'URL do Vídeo',
+    config: {
+      url: ''
+    }
+  },
+  {
+    id: 'klap_create_cut',
+    name: 'Criar Corte',
+    type: 'action',
+    category: 'app',
+    subcategory: 'klap',
+    icon: 'MdOndemandVideo',
+    color: '#E1306C',
+    label: 'Criar Corte de Vídeo',
+    config: {
+      url: '',
+      options: {
+        format: 'vertical',
+        duration: '30s',
+        quality: 'high'
+      }
+    }
+  },
+  {
+    id: 'klap_process_url',
+    name: 'Processar URL',
+    type: 'action',
+    category: 'app',
+    subcategory: 'klap',
+    icon: 'MdOndemandVideo',
+    color: '#E1306C',
+    label: 'Processar URL do Vídeo',
+    config: {
+    
+    }
+  },
+  {
+    id: 'klap_download',
+    name: 'Download',
+    type: 'action',
+    category: 'app',
+    subcategory: 'klap',
+    icon: 'MdOndemandVideo',
+    color: '#E1306C',
+    label: 'Baixar Corte',
+    config: {
+      format: 'mp4',
+      quality: 'high'
+    }
   }
 ];
 
@@ -377,9 +467,22 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'trigger',
     category: 'internal',
     icon: 'VscDebugStart',
-    color: '#FF0000', 
+    color: '#ff4700', 
     config: {
       condition: ''
+    }
+  },
+  {
+    id: 'internal_error',
+    name: 'Erro',
+    type: 'error',
+    category: 'internal',
+    icon: 'TbError404',
+    color: '#ef4444',
+    label: 'Tratamento de Erro',
+    config: {
+      errorType: 'any',
+      errorMessage: 'error',
     }
   },
   {
@@ -388,7 +491,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'action',
     category: 'internal',
     icon: 'IoTime',
-    color: '#FF0000', 
+    color: '#ff4700', 
     label: 'Atraso',
     config: {
       duration: 0,
@@ -401,7 +504,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'condition',
     category: 'internal',
     icon: 'TbAirConditioning',
-    color: '#FF0000', 
+    color: '#ff4700', 
     config: {
       condition: '',
     }
@@ -409,12 +512,12 @@ const internalActions: NodeTypeDefinition[] = [
   {
     id: 'internal_finish',
     name: 'Fim',
-    type: 'action',
+    type: 'trigger',
     category: 'internal',
-    icon: 'GiFinishLine',
-    color: '#FF0000',  
+    icon: 'FaRegWindowClose',
+    color: '#ff4700',  
     config: {
-      condition: '',
+      condition: 'fim',
     }
   },
   {
@@ -423,7 +526,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'comment',
     category: 'internal',
     icon: 'FaCommentAlt',
-    color: '#FF0000', 
+    color: '#ff4700', 
     label: 'Comentário',
     config: {
       comment: ''
@@ -435,7 +538,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'database',
     category: 'internal',
     icon: 'FaDatabase',
-    color: '#FF0000', 
+    color: '#ff4700', 
     label: 'Banco de Dados',
     config: {
       query: ''
@@ -447,7 +550,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'api',
     category: 'internal',
     icon: 'TbApi',
-    color: '#FF0000', 
+    color: '#ff4700', 
     label: 'Conectar API',
     config: {
       endpoint: '',
@@ -460,7 +563,7 @@ const internalActions: NodeTypeDefinition[] = [
     type: 'webhook',
     category: 'internal',
     icon: 'MdOutlineWebhook',
-    color: '#FF0000', 
+    color: '#ff4700', 
     label: 'Webhook',
     config: {
       url: '',
@@ -477,7 +580,44 @@ const formActions: NodeTypeDefinition[] = [
     category: 'app',
     icon: 'FaWpforms',
     color: '#EAB308',
-    config: {}
+    label: 'Novo Formulário',
+    config: {
+      fields: [
+        {
+          id: 'title',
+          name: 'Título do Formulário',
+          type: 'string',
+          required: true
+        },
+        {
+          id: 'description',
+          name: 'Descrição',
+          type: 'string',
+          required: false
+        },
+        {
+          id: 'submit_button_text',
+          name: 'Texto do Botão de Envio',
+          type: 'string',
+          required: false,
+          default: 'Enviar'
+        },
+        {
+          id: 'success_message',
+          name: 'Mensagem de Sucesso',
+          type: 'string',
+          required: false,
+          default: 'Formulário enviado com sucesso!'
+        },
+        {
+          id: 'redirect_url',
+          name: 'URL de Redirecionamento',
+          type: 'string',
+          required: false,
+          description: 'URL para redirecionar após o envio do formulário'
+        }
+      ]
+    }
   },
   {
     id: 'form_text_input',
@@ -486,6 +626,7 @@ const formActions: NodeTypeDefinition[] = [
     category: 'app',
     icon: 'MdInput',
     color: '#EAB308',
+    label: 'Campo de Texto',
     config: {
       fields: [
         {
@@ -517,6 +658,7 @@ const formActions: NodeTypeDefinition[] = [
     category: 'app',
     icon: 'MdInput',
     color: '#EAB308',
+    label: 'Campo Numérico',
     config: {
       fields: [
         {
@@ -554,6 +696,7 @@ const formActions: NodeTypeDefinition[] = [
     category: 'app',
     icon: 'GrCheckboxSelected',
     color: '#EAB308',
+    label: 'Caixa de Seleção',
     config: {
       fields: [
         {
@@ -579,6 +722,7 @@ const formActions: NodeTypeDefinition[] = [
     category: 'app',
     icon: 'BsCalendar2Date',
     color: '#EAB308',
+    label: 'Seletor de Data',
     config: {
       fields: [
         {
@@ -659,6 +803,11 @@ export const nodeTypes = {
         name: 'Formulário',
         actions: formActions,
         color: '#EAB308'
+      },
+      klap: {
+        name: 'Klap',
+        actions: klapActions,
+        color: '#E1306C'
       }
     }
   },

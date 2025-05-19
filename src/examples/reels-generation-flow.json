@@ -1,0 +1,577 @@
+{
+  "nodes": [
+    {
+      "id": "internal_start-1",
+      "type": "trigger",
+      "data": {
+        "name": "Início",
+        "icon": "VscDebugStart",
+        "label": "Início",
+        "color": "#ff4700",
+        "config": {
+          "condition": ""
+        }
+      },
+      "position": {
+        "x": -92.63957343796517,
+        "y": -85.51276701378546
+      },
+      "width": 76,
+      "height": 96,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -92.63957343796517,
+        "y": -85.51276701378546
+      },
+      "dragging": false
+    },
+    {
+      "id": "form_text_input-1",
+      "data": {
+        "icon": "MdInput",
+        "name": "Entrada de Texto",
+        "type": "action",
+        "color": "#EAB308",
+        "label": "Configuração do Reel",
+        "config": {
+          "fields": [
+            {
+              "id": "content",
+              "name": "Conteúdo",
+              "type": "textarea",
+              "placeholder": "Descreva o conteúdo do Reel que deseja criar",
+              "required": true
+            },
+            {
+              "id": "style",
+              "name": "Estilo",
+              "type": "select",
+              "options": [
+                "Tutorial",
+                "Storytelling",
+                "Transição",
+                "Montagem",
+                "Animação",
+                "Documentário",
+                "Entrevista"
+              ],
+              "required": true
+            },
+            {
+              "id": "duration",
+              "name": "Duração",
+              "type": "select",
+              "options": [
+                "15 segundos",
+                "30 segundos",
+                "60 segundos",
+                "90 segundos"
+              ],
+              "required": true
+            },
+            {
+              "id": "format",
+              "name": "Formato",
+              "type": "select",
+              "options": [
+                "9:16 (Vertical)",
+                "1:1 (Quadrado)",
+                "16:9 (Horizontal)"
+              ],
+              "required": true
+            },
+            {
+              "id": "music",
+              "name": "Música",
+              "type": "select",
+              "options": [
+                "Trending",
+                "Pop",
+                "Eletrônica",
+                "Hip Hop",
+                "Sem música"
+              ],
+              "required": true
+            }
+          ]
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 260,
+      "dragging": false,
+      "position": {
+        "x": 128.8601769911504,
+        "y": -110.38938053097347
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 128.8601769911504,
+        "y": -110.38938053097347
+      }
+    },
+    {
+      "id": "assistant_create_agent-1",
+      "data": {
+        "icon": "FaRobot",
+        "name": "Criar Agente",
+        "color": "#3B82F6",
+        "label": "Processar Conteúdo",
+        "config": {
+          "name": "Assistente de Reels",
+          "description": "Assistente especializado em criar e otimizar Reels usando Kling",
+          "capabilities": [
+            "Gerar storyboard",
+            "Criar transições",
+            "Adicionar efeitos",
+            "Sincronizar música",
+            "Otimizar para Instagram",
+            "Gerar legendas",
+            "Adicionar hashtags",
+            "Criar thumbnails"
+          ],
+          "model": "gpt-4-vision-preview",
+          "temperature": 0.7
+        }
+      },
+      "type": "action",
+      "width": 289,
+      "height": 148,
+      "dragging": false,
+      "position": {
+        "x": 450,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 450,
+        "y": -110
+      }
+    },
+    {
+      "id": "kling_video_generation-1",
+      "data": {
+        "name": "Kling Video Generation",
+        "icon": "SiKling",
+        "label": "Gerar Reel",
+        "color": "#6366F1",
+        "config": {
+          "input": "",
+          "outputFormat": "reel",
+          "options": {
+            "model": "kling-1",
+            "resolution": "1080x1920",
+            "fps": 30,
+            "quality": "high",
+            "format": "mp4",
+            "features": {
+              "transitions": true,
+              "effects": true,
+              "music": true,
+              "captions": true,
+              "filters": true,
+              "stickers": true,
+              "text": true
+            },
+            "optimization": {
+              "compression": "high",
+              "bitrate": "auto",
+              "audioQuality": "high"
+            }
+          }
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 180,
+      "dragging": false,
+      "position": {
+        "x": 800,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 800,
+        "y": -110
+      }
+    },
+    {
+      "id": "video_editor-1",
+      "data": {
+        "icon": "FaVideo",
+        "name": "Editor de Vídeo",
+        "type": "action",
+        "color": "#25D366",
+        "label": "Editar Reel",
+        "config": {
+          "tools": [
+            "Trim",
+            "Split",
+            "Merge",
+            "Transitions",
+            "Effects",
+            "Text",
+            "Music",
+            "Filters",
+            "Speed",
+            "Captions"
+          ],
+          "options": {
+            "allowMultipleEdits": true,
+            "preserveQuality": true,
+            "autoSave": true,
+            "history": true,
+            "preview": true
+          }
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 120,
+      "dragging": false,
+      "position": {
+        "x": 1150,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1150,
+        "y": -110
+      }
+    },
+    {
+      "id": "reel_preview-1",
+      "data": {
+        "icon": "FaEye",
+        "name": "Preview",
+        "type": "action",
+        "color": "#8B5CF6",
+        "label": "Visualizar Reel",
+        "config": {
+          "viewMode": "fullscreen",
+          "options": {
+            "showMetadata": true,
+            "showDownload": true,
+            "showShare": true,
+            "allowFeedback": true,
+            "previewQuality": "high",
+            "showTimeline": true,
+            "showControls": true
+          }
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 120,
+      "dragging": false,
+      "position": {
+        "x": 1500,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1500,
+        "y": -110
+      }
+    },
+    {
+      "id": "instagram_upload-1",
+      "data": {
+        "icon": "FaInstagram",
+        "name": "Upload Instagram",
+        "type": "action",
+        "color": "#E1306C",
+        "label": "Publicar Reel",
+        "config": {
+          "platform": "instagram",
+          "type": "reel",
+          "options": {
+            "autoCaption": true,
+            "addHashtags": true,
+            "schedulePost": false,
+            "crossPost": false,
+            "analytics": true
+          }
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 120,
+      "dragging": false,
+      "position": {
+        "x": 1850,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1850,
+        "y": -110
+      }
+    },
+    {
+      "id": "internal_finish-1",
+      "type": "trigger",
+      "data": {
+        "name": "Fim",
+        "icon": "FaRegWindowClose",
+        "label": "Fim",
+        "color": "#ff4700",
+        "config": {
+          "condition": "fim"
+        }
+      },
+      "position": {
+        "x": 2200,
+        "y": -110
+      },
+      "width": 76,
+      "height": 96,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 2200,
+        "y": -110
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "internal_start-1",
+      "target": "form_text_input-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-2",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "form_text_input-1",
+      "target": "assistant_create_agent-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-3",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "assistant_create_agent-1",
+      "target": "kling_video_generation-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-4",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "kling_video_generation-1",
+      "target": "video_editor-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-5",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "video_editor-1",
+      "target": "reel_preview-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-6",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "reel_preview-1",
+      "target": "instagram_upload-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-7",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "instagram_upload-1",
+      "target": "internal_finish-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    }
+  ]
+} 

@@ -22,6 +22,12 @@ import { MdInput } from "react-icons/md";
 import { GrCheckboxSelected } from "react-icons/gr";
 import { BsCalendar2Date } from "react-icons/bs";
 import { FiX, FiTrash2, FiSave } from 'react-icons/fi';
+import { FaWindowClose } from "react-icons/fa";
+import { FaRegWindowClose } from "react-icons/fa";
+import { MdOndemandVideo } from "react-icons/md";
+import { CiLink } from "react-icons/ci";      
+import { TbError404 } from "react-icons/tb";
+
 
 const iconMap = {
   FaTools,
@@ -51,7 +57,12 @@ const iconMap = {
   BsCalendar2Date,
   FiX,
   FiTrash2,
-  FiSave
+  FiSave,
+  FaWindowClose,
+  FaRegWindowClose,
+  MdOndemandVideo,
+  CiLink,
+  TbError404
 };
 
 interface IconRendererProps {

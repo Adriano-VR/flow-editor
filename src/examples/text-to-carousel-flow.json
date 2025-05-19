@@ -1,0 +1,409 @@
+{
+  "nodes": [
+    {
+      "id": "internal_start-1",
+      "type": "trigger",
+      "data": {
+        "name": "Início",
+        "icon": "VscDebugStart",
+        "label": "Início",
+        "color": "#ff4700",
+        "config": {
+          "condition": ""
+        }
+      },
+      "position": {
+        "x": -92.63957343796517,
+        "y": -85.51276701378546
+      },
+      "width": 76,
+      "height": 96,
+      "selected": false,
+      "positionAbsolute": {
+        "x": -92.63957343796517,
+        "y": -85.51276701378546
+      },
+      "dragging": false
+    },
+    {
+      "id": "form_text_input-1",
+      "data": {
+        "icon": "MdInput",
+        "name": "Entrada de Texto",
+        "type": "action",
+        "color": "#EAB308",
+        "label": "Conteúdo Original",
+        "config": {
+          "fields": [
+            {
+              "id": "content",
+              "name": "Texto",
+              "type": "textarea",
+              "placeholder": "Cole o texto que será convertido em carrossel",
+              "required": true
+            },
+            {
+              "id": "style",
+              "name": "Estilo",
+              "type": "select",
+              "options": [
+                "Educativo",
+                "Storytelling",
+                "Lista",
+                "Passo a Passo",
+                "Comparativo"
+              ],
+              "required": true
+            },
+            {
+              "id": "platform",
+              "name": "Plataforma",
+              "type": "select",
+              "options": [
+                "LinkedIn",
+                "Instagram",
+                "Facebook"
+              ],
+              "required": true
+            },
+            {
+              "id": "slides",
+              "name": "Número de Slides",
+              "type": "number",
+              "min": 3,
+              "max": 10,
+              "default": 5,
+              "required": true
+            }
+          ]
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 220,
+      "dragging": false,
+      "position": {
+        "x": 128.8601769911504,
+        "y": -110.38938053097347
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 128.8601769911504,
+        "y": -110.38938053097347
+      }
+    },
+    {
+      "id": "assistant_create_agent-1",
+      "data": {
+        "icon": "FaRobot",
+        "name": "Criar Agente",
+        "color": "#3B82F6",
+        "label": "Processar Conteúdo",
+        "config": {
+          "name": "Assistente de Carrossel",
+          "description": "Assistente especializado em criar e otimizar carrosséis para redes sociais",
+          "capabilities": [
+            "Dividir conteúdo em slides",
+            "Criar títulos impactantes",
+            "Gerar subtítulos",
+            "Sugerir imagens por slide",
+            "Otimizar para cada plataforma",
+            "Criar transições entre slides",
+            "Gerar hashtags relevantes"
+          ],
+          "model": "gpt-4",
+          "temperature": 0.7
+        }
+      },
+      "type": "action",
+      "width": 289,
+      "height": 148,
+      "dragging": false,
+      "position": {
+        "x": 450,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 450,
+        "y": -110
+      }
+    },
+    {
+      "id": "ai_text_to_text-1",
+      "data": {
+        "name": "AI Text-to-Text",
+        "icon": "SiConvertio",
+        "label": "Formatar Carrossel",
+        "color": "#6366F1",
+        "config": {
+          "input": "",
+          "outputFormat": "carousel",
+          "options": {
+            "slides": [],
+            "formatting": {
+              "titleStyle": "bold",
+              "subtitleStyle": "italic",
+              "bulletPoints": true,
+              "emojiSupport": true,
+              "maxCharsPerSlide": 150,
+              "includeSlideNumbers": true,
+              "includeProgressBar": true
+            },
+            "visual": {
+              "backgroundStyle": "gradient",
+              "textAlignment": "center",
+              "fontSize": "large",
+              "colorScheme": "dynamic"
+            }
+          }
+        }
+      },
+      "type": "action",
+      "width": 276,
+      "height": 180,
+      "dragging": false,
+      "position": {
+        "x": 800,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 800,
+        "y": -110
+      }
+    },
+    {
+      "id": "whatsapp_send_message_text-1",
+      "data": {
+        "icon": "FaWhatsapp",
+        "name": "Enviar Mensagem (Texto)",
+        "type": "action",
+        "color": "#25D366",
+        "label": "Preview do Carrossel",
+        "config": {
+          "to": "preview",
+          "type": "carousel",
+          "message": "",
+          "preview": true,
+          "slides": [],
+          "options": {
+            "showSlideNavigation": true,
+            "showSlideCount": true,
+            "allowSlideEdit": true
+          }
+        }
+      },
+      "type": "action",
+      "width": 313,
+      "height": 120,
+      "dragging": false,
+      "position": {
+        "x": 1150,
+        "y": -110
+      },
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1150,
+        "y": -110
+      }
+    },
+    {
+      "id": "internal_finish-1",
+      "type": "trigger",
+      "data": {
+        "name": "Fim",
+        "icon": "FaRegWindowClose",
+        "label": "Fim",
+        "color": "#ff4700",
+        "config": {
+          "condition": "fim"
+        }
+      },
+      "position": {
+        "x": 1550,
+        "y": -110
+      },
+      "width": 76,
+      "height": 96,
+      "selected": false,
+      "positionAbsolute": {
+        "x": 1550,
+        "y": -110
+      },
+      "dragging": false
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "internal_start-1",
+      "target": "form_text_input-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-2",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "form_text_input-1",
+      "target": "assistant_create_agent-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-3",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "assistant_create_agent-1",
+      "target": "ai_text_to_text-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-4",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "ai_text_to_text-1",
+      "target": "whatsapp_send_message_text-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    },
+    {
+      "id": "edge-5",
+      "type": "smoothstep",
+      "label": "×",
+      "style": {
+        "stroke": "#64748b",
+        "strokeWidth": 2
+      },
+      "source": "whatsapp_send_message_text-1",
+      "target": "internal_finish-1",
+      "animated": true,
+      "markerEnd": {
+        "type": "arrowclosed",
+        "color": "#64748b",
+        "width": 20,
+        "height": 20
+      },
+      "labelStyle": {
+        "fill": "#ef4444",
+        "cursor": "pointer",
+        "opacity": 0,
+        "fontSize": 20,
+        "fontWeight": 700
+      },
+      "labelBgStyle": {
+        "fill": "#e5e7eb",
+        "opacity": 0,
+        "fillOpacity": 0.8
+      },
+      "sourceHandle": null,
+      "targetHandle": null,
+      "labelBgPadding": [4, 4],
+      "labelBgBorderRadius": 4
+    }
+  ]
+} 
