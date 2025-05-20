@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction } from 'react';
-import { Node as ReactFlowNode, Edge as ReactFlowEdge } from 'reactflow';
+import { Edge as ReactFlowEdge } from 'reactflow';
+import { Node } from './node';
 
 export interface Flow {
   id: string;
@@ -14,12 +15,60 @@ export interface Flow {
   };
 }
 
+export type Edge = ReactFlowEdge;
+
+export interface Action {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+}
+
+export interface ActionConfig {
+  subject?: string;
+  to?: string;
+  body?: string;
+  message?: string;
+  phone?: string;
+  template?: string;
+}
+
+export interface FlowContextType {
+  selectedFlowId: string | null;
+  setSelectedFlowId: (id: string | null) => void;
+  flowData: Flow | null;
+  flowName: string;
+  setFlowName: (name: string) => void;
+  isCreating: boolean;
+  isDrawerOpen: boolean;
+  setIsDrawerOpen: (open: boolean) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  isActionModalOpen: boolean;
+  setIsActionModalOpen: (open: boolean) => void;
+  selectedAction: Action | null;
+  setSelectedAction: (action: Action | null) => void;
+  actionConfig: ActionConfig;
+  setActionConfig: Dispatch<SetStateAction<ActionConfig>>;
+  handleCreateFlow: () => Promise<void>;
+  handleSaveFlow: (data: { nodes: Node[]; edges: Edge[] }) => Promise<void>;
+  handleActionSelect: (action: Action) => void;
+  handleActionConfigSubmit: () => Promise<void>;
+}
+
 export interface NodeConfig {
   // WhatsApp config
   to?: string;
   message?: string;
   template?: string;
   phone?: string;
+  credentials?: {
+    provider: string;
+    appName: string;
+    source: string; // phone number
+    webhook: string;
+    apiKey: string;
+  };
   
   // OpenAI/Assistant config
   model?: string;
@@ -48,67 +97,4 @@ export interface NodeConfig {
     headers?: Record<string, string>;
     response?: Record<string, unknown>;
   };
-}
-
-export type Node = ReactFlowNode<{
-  type: 'action' | 'internal';
-  app?: 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap';
-  name: string;
-  uuid: string;
-  label: string;
-  stop: boolean;
-  icon?: string;
-  color?: string;
-  input?: {
-    variables: Array<{
-      variable: string;
-    }>;
-  };
-  output?: {
-    text: string;
-  };
-  config: {
-    [key: string]: unknown;
-  };
-}>;
-
-export type Edge = ReactFlowEdge;
-
-export interface Action {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-}
-
-export interface actionConfig {
-  subject?: string;
-  to?: string;
-  body?: string;
-  message?: string;
-  phone?: string;
-  template?:string
-}
-
-export interface FlowContextType {
-  selectedFlowId: string | null;
-  setSelectedFlowId: (id: string | null) => void;
-  flowData: Flow | null;
-  flowName: string;
-  setFlowName: (name: string) => void;
-  isCreating: boolean;
-  isDrawerOpen: boolean;
-  setIsDrawerOpen: (open: boolean) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  isActionModalOpen: boolean;
-  setIsActionModalOpen: (open: boolean) => void;
-  selectedAction: Action | null;
-  setSelectedAction: (action: Action | null) => void;
-  actionConfig: actionConfig;
-  setActionConfig: Dispatch<SetStateAction<actionConfig>>;
-  handleCreateFlow: () => Promise<void>;
-  handleSaveFlow: (data: { nodes: Node[]; edges: Edge[] }) => Promise<void>;
-  handleActionSelect: (action: Action) => void;
-  handleActionConfigSubmit: () => Promise<void>;
 } 

@@ -1,9 +1,9 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { Node as ReactFlowNode, useReactFlow } from 'reactflow';
 import { MessageSquare, Bot, GitBranch } from 'lucide-react';
-import { Node, Edge } from '@/types/flow';
+import {  Edge } from '@/types/flow';
 import { NodeData, NodeTypeDefinition } from '@/lib/nodeTypes';
-
+import { Node } from '@/types/node';
 interface NodeType {
   icon: React.ElementType;
   color: string;
@@ -84,6 +84,26 @@ export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) 
     position?: { x: number; y: number }
   ): NodeOperationResult => {
     const centerPosition = getCenterPosition();
+    
+    const { credentials, ...restConfig } = nodeType.config || {};
+    const configWithoutCredentials = {
+      ...restConfig
+    } as Record<string, unknown>;
+
+    const defaultCredentials: Record<string, unknown> & {
+      provider?: string;
+      appName?: string;
+      source?: string;
+      webhook?: string;
+      apiKey?: string;
+    } = {
+      provider: '',
+      appName: '',
+      source: '',
+      webhook: '',
+      apiKey: ''
+    };
+
     const newNode: Node = {
       id: `node-${Date.now()}`,
       type: nodeType.type as 'action' | 'internal',
@@ -92,14 +112,17 @@ export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) 
         type: nodeType.type as 'action' | 'internal',
         app: nodeType.subcategory as 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap' | undefined,
         name: nodeType.name,
-        uuid: `node-${Date.now()}`,
+        // uuid: `node-${Date.now()}`,
         label: String(nodeType.label ?? nodeType.name ?? ''),
         stop: false,
+        icon: nodeType.icon,
+        color: nodeType.color,
         input: nodeType.input ? { variables: [{ variable: nodeType.input.variables.nome }] } : { variables: [] },
         output: nodeType.output ? { text: nodeType.output.text || '' } : { text: '' },
-        config: nodeType.config || {},
-        icon: nodeType.icon,
-        color: nodeType.color
+        config: {
+          ...configWithoutCredentials,
+          credentials: credentials || { provider: '', appName: '', source: '', webhook: '', apiKey: '', dummy: '' }
+        }
       }
     };
 

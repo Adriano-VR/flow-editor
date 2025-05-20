@@ -221,12 +221,14 @@ export function FlowProvider({ children }: { children: ReactNode }) {
         type: actionDefinition.type as 'action' | 'internal',
         app: actionDefinition.subcategory as 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap' | undefined,
         name: actionDefinition.name,
-        uuid: `${actionDefinition.id}-${Date.now()}`,
+         uuid: `${actionDefinition.id}-${Date.now()}`,
         label: actionDefinition.label ?? actionDefinition.name,
         stop: false,
         input: actionDefinition.input || { variables: [] },
         output: actionDefinition.output || { text: '' },
-        config: restConfig || {},
+        config: {
+          ...restConfig
+        },
         // Include style properties directly from actionDefinition
         icon: actionDefinition.icon,
         color: actionDefinition.color

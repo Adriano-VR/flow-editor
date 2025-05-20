@@ -31,6 +31,7 @@ export interface NodeTypeDefinition {
   label?: string;
   input?: NodeIO;
   output?: NodeIO;
+  credentials?: Record<string, unknown>;
 }
 
 // Defina arrays de actions para cada subcategoria
@@ -47,8 +48,15 @@ const whatsappActions: NodeTypeDefinition[] = [
     config: {
       message: '',
       to: '4144448585',
-      type: 'text'
-    } ,
+      type: 'text',
+      credentials: {
+        provider: 'a',
+        appName: 'a',
+        source: 'a',
+        webhook: 'a',
+        apiKey: 'a'
+      }
+    },
     input: {
       variables: {
         nome: 'message'
@@ -59,8 +67,7 @@ const whatsappActions: NodeTypeDefinition[] = [
         nome: ''
       },
       text: ''
-    },
-
+    }
   },
   {
     id: 'whatsapp_send_message_image',

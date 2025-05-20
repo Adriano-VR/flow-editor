@@ -95,6 +95,13 @@ interface FlowData {
     attributes: {
       name: string;
       description?: string;
+      credentials?: {
+        provider?: string;
+        appName?: string;
+        source?: string;
+        webhook?: string;
+        apiKey?: string;
+      };
       status: string;
       data: {
         nodes: Node[];
@@ -525,8 +532,8 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
     // Create a new array of nodes with the updated node
     const updatedNodes = nodes.map(node => {
       if (node.id === nodeId) {
-        // Preserva input/output no nível raiz
-        const { input, output, ...restData } = updates.data || {};
+        // Preserva input/output/credentials no nível raiz
+        const { input, output, credentials, ...restData } = updates.data || {};
         
         return {
           ...node, // Keep all original node properties
@@ -536,6 +543,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
             ...node.data, // Keep all original data
             input: input || node.data.input, // Preserva input no nível raiz
             output: output || node.data.output, // Preserva output no nível raiz
+            credentials: credentials || node.data.credentials, // Preserva credentials no nível raiz
             ...restData // Aplica outras atualizações de data
           }
         };

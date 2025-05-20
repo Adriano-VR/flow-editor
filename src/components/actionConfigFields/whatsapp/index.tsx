@@ -3,26 +3,98 @@ import { Label } from '../../ui/label';
 import { Input } from '../../ui/input';
 
 export function renderWhatsAppConfigFields(selectedAction: any, actionConfig: any, setActionConfig: (cfg: any) => void) {
+  // Função auxiliar para atualizar as credenciais
+  const updateCredentials = (field: string, value: string) => {
+    const currentCredentials = actionConfig.credentials || {};
+    setActionConfig({
+      ...actionConfig,
+      credentials: {
+        ...currentCredentials,
+        [field]: value
+      }
+    });
+  };
+
+  // Função auxiliar para atualizar a configuração
+  const updateConfig = (field: string, value: string) => {
+    const currentConfig = actionConfig.config || {};
+    setActionConfig({
+      ...actionConfig,
+      config: {
+        ...currentConfig,
+        [field]: value,
+        type: selectedAction.id.split('_').pop() || 'text'
+      }
+    });
+  };
+
   switch (selectedAction.id) {
     case 'whatsapp_send_message_text':
     case 'whatsapp_send_message_image':
     case 'whatsapp_send_message_video':
+      // Extrai as credenciais do nível raiz
+      const credentials = actionConfig.credentials || {};
+      const config = actionConfig.config || {};
+      
       return (
         <div className="space-y-4">
+          <div className="space-y-4 border-b pb-4">
+            <h3 className="font-medium">Credenciais do WhatsApp</h3>
+            <div className="space-y-2">
+              <Label htmlFor="provider">Provider</Label>
+              <Input
+                id="provider"
+                placeholder="Nome do provider (ex: Twilio, MessageBird)"
+                value={credentials.provider || ''}
+                onChange={e => updateCredentials('provider', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="appName">Nome do App</Label>
+              <Input
+                id="appName"
+                placeholder="Nome da aplicação"
+                value={credentials.appName || ''}
+                onChange={e => updateCredentials('appName', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="source">Número do WhatsApp</Label>
+              <Input
+                id="source"
+                placeholder="+55 (00) 00000-0000"
+                value={credentials.source || ''}
+                onChange={e => updateCredentials('source', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="webhook">Webhook URL</Label>
+              <Input
+                id="webhook"
+                placeholder="https://..."
+                value={credentials.webhook || ''}
+                onChange={e => updateCredentials('webhook', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="apiKey">API Key</Label>
+              <Input
+                id="apiKey"
+                type="password"
+                placeholder="Sua API Key"
+                value={credentials.apiKey || ''}
+                onChange={e => updateCredentials('apiKey', e.target.value)}
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label htmlFor="to">Número do WhatsApp</Label>
+            <Label htmlFor="to">Número do Destinatário</Label>
             <Input
               id="to"
               placeholder="+55 (00) 00000-0000"
-              value={actionConfig.config?.to || ''}
-              onChange={e => {
-                const newConfig = {
-                  to: e.target.value,
-                  type: selectedAction.id.split('_').pop() || 'text',
-                  message: actionConfig.config?.message || ''
-                };
-                setActionConfig({ config: newConfig });
-              }}
+              value={config.to || ''}
+              onChange={e => updateConfig('to', e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -30,15 +102,8 @@ export function renderWhatsAppConfigFields(selectedAction: any, actionConfig: an
             <Input
               id="message"
               placeholder="Digite sua mensagem"
-              value={actionConfig.config?.message || ''}
-              onChange={e => {
-                const newConfig = {
-                  to: actionConfig.config?.to || '',
-                  type: selectedAction.id.split('_').pop() || 'text',
-                  message: e.target.value
-                };
-                setActionConfig({ config: newConfig });
-              }}
+              value={config.message || ''}
+              onChange={e => updateConfig('message', e.target.value)}
             />
           </div>
           <div className="space-y-2">
@@ -62,13 +127,7 @@ export function renderWhatsAppConfigFields(selectedAction: any, actionConfig: an
               id="message"
               placeholder="Mensagem recebida"
               value={actionConfig.config?.message || ''}
-              onChange={e => {
-                setActionConfig({ 
-                  config: { 
-                    message: e.target.value 
-                  } 
-                });
-              }}
+              onChange={e => updateConfig('message', e.target.value)}
             />
           </div>
         </div>
@@ -83,13 +142,7 @@ export function renderWhatsAppConfigFields(selectedAction: any, actionConfig: an
               id="message"
               placeholder="Digite sua mensagem"
               value={actionConfig.config?.message || ''}
-              onChange={e => {
-                setActionConfig({ 
-                  config: { 
-                    message: e.target.value 
-                  } 
-                });
-              }}
+              onChange={e => updateConfig('message', e.target.value)}
             />
           </div>
         </div>

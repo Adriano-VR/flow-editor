@@ -42,6 +42,7 @@ export const IntegrationDialog = ({
     const defaultInput = actionDefinition?.input || { variables: [] };
     const defaultOutput = actionDefinition?.output || { text: '' };
     const defaultConfig = actionDefinition?.config || {};
+    const defaultCredentials = actionDefinition?.config?.credentials || {};
 
     // Pega os valores atuais do config
     const { input: currentInput, output: currentOutput, config: currentConfig } = config || {};
@@ -50,13 +51,17 @@ export const IntegrationDialog = ({
     // Se estamos criando um novo nó, usa os valores padrão
     const isUpdate = currentConfig && Object.keys(currentConfig).length > 0;
     
+    // Extrai as credenciais do config.config se existirem
+    const configCredentials = currentConfig?.config?.credentials || currentConfig?.credentials || {};
+    
+    // Remove as credenciais do config para evitar duplicação
+    const { credentials: _, config: __, ...configWithoutCredentials } = currentConfig || {};
+    
     setCurrentConfig({
       input: isUpdate ? (currentInput || defaultInput) : defaultInput,
       output: isUpdate ? (currentOutput || defaultOutput) : defaultOutput,
-      config: isUpdate ? {
-        ...defaultConfig,  // Mantém a estrutura padrão
-        ...currentConfig   // Sobrescreve com valores atuais
-      } : defaultConfig
+      config: isUpdate ? configWithoutCredentials : defaultConfig,
+      credentials: isUpdate ? configCredentials : defaultCredentials
     });
   }, [config, actionDefinition])
 
@@ -65,16 +70,17 @@ export const IntegrationDialog = ({
       setIsSaving(true)
       
       // Pega os valores atuais
-      const { input, output, config: nodeConfig } = currentConfig;
+      const { input, output, config: nodeConfig, credentials } = currentConfig;
       
-      // Salva mantendo a estrutura completa
+      // Remove qualquer aninhamento extra de config ou credentials
+      const { credentials: _, config: __, ...configWithoutCredentials } = nodeConfig || {};
+      
+      // Salva as credenciais no nível raiz e o resto no config
       onSave({
         input: input || { variables: [] },
         output: output || { text: '' },
-        config: {
-          ...actionDefinition?.config, // Mantém a estrutura padrão
-          ...nodeConfig // Sobrescreve com valores atuais
-        }
+        config: configWithoutCredentials,
+        credentials: credentials || {}
       });
       
       setTimeout(() => {
