@@ -6,6 +6,18 @@ export interface NodeAction {
   config?: Record<string, unknown>;
 }
 
+export interface NodeVariable {
+  name: string;
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
+  value?: unknown;
+}
+
+export interface NodeIO {
+  variables: {
+    nome: string;
+  };
+  text?: string;
+}
 
 export interface NodeTypeDefinition {
   id: string;
@@ -16,9 +28,10 @@ export interface NodeTypeDefinition {
   config: Record<string, unknown>;
   icon?: string;
   color: string;
-  label?:string;
+  label?: string;
+  input?: NodeIO;
+  output?: NodeIO;
 }
-
 
 // Defina arrays de actions para cada subcategoria
 const whatsappActions: NodeTypeDefinition[] = [
@@ -35,7 +48,19 @@ const whatsappActions: NodeTypeDefinition[] = [
       message: '',
       to: '',
       type: 'text'
-    }
+    },
+    input: {
+      variables: {
+        nome: 'message'
+      }
+    },
+    output: {
+      variables: {
+        nome: ''
+      },
+      text: ''
+    },
+    config: {}
   },
   {
     id: 'whatsapp_send_message_image',
@@ -474,11 +499,22 @@ const internalActions: NodeTypeDefinition[] = [
   {
     id: 'internal_wait_response',
     name: 'Aguardando Resposta',
-    type: 'webhook',
+    type: 'action',
     category: 'internal',
     icon: 'MdOutlineWebhook',
     color: '#ff4700',
-    label: 'Aguardar Resposta',
+    label: 'Aguardar Resposta Webhook',
+    input: {
+      variables: {
+        nome: ''
+      }
+    },
+    output: {
+      variables: {
+        nome: ''
+      },
+      text: ''
+    },
     config: {}
   },
   {

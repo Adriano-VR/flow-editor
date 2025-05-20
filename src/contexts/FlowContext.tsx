@@ -34,6 +34,7 @@ interface FlowContextType {
   handleJsonUpdate: (json: string) => Promise<void>;
   setFlows: React.Dispatch<React.SetStateAction<Flow[]>>;
   getFlows: () => Promise<{ data: Flow[] }>;
+  createNode: (actionDefinition: NodeTypeDefinition, position?: { x: number; y: number }) => Node;
 }
 
 const FlowContext = createContext<FlowContextType | undefined>(undefined);
@@ -209,6 +210,31 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     setIsActionModalOpen(true);
   };
 
+  const createNode = (actionDefinition: NodeTypeDefinition, position?: { x: number; y: number }): Node => {
+    // Remove input/output do config se existirem
+    const { input: configInput, output: configOutput, ...restConfig } = actionDefinition.config || {};
+
+    return {
+      id: `${actionDefinition.id}-${Date.now()}`,
+      type: actionDefinition.type as 'action' | 'internal',
+      data: {
+        type: actionDefinition.type as 'action' | 'internal',
+        app: actionDefinition.subcategory as 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap' | undefined,
+        name: actionDefinition.name,
+        uuid: `${actionDefinition.id}-${Date.now()}`,
+        label: actionDefinition.label ?? actionDefinition.name,
+        stop: false,
+        input: actionDefinition.input || { variables: [] },
+        output: actionDefinition.output || { text: '' },
+        config: restConfig || {}
+      },
+      position: position || {
+        x: Math.random() * 500,
+        y: Math.random() * 500,
+      },
+    };
+  };
+
   const handleActionConfigSubmit = async () => {
     if (!selectedAction || !flowData?.attributes?.data || !selectedFlowId) return;
 
@@ -228,39 +254,16 @@ export function FlowProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    let config = {};
-    switch (selectedAction.id) {
-      case 'whatsapp-send-message':
-        config = {
-          phone: actionConfig.phone,
-          message: actionConfig.message
-        };
-        break;
-      case 'whatsapp-receive-message':
-        config = {
-          template: actionConfig.template,
-          phone: actionConfig.phone
-        };
-        break;
-      default:
-        config = actionConfig;
-    }
+    // Cria o nó usando a função createNode
+    const newNode = createNode(actionDefinition);
 
-    const newNode: Node = {
-      id: `${actionDefinition.id}-${Date.now()}`,
-      type: actionDefinition.type,
-      data: {
-        label: actionDefinition.name,
-        config: config,
-        name: actionDefinition.name,
-        icon: actionDefinition.icon || '',
-        color: actionDefinition.color || '#3B82F6',
-      },
-      position: {
-        x: Math.random() * 500,
-        y: Math.random() * 500,
-      },
-    };
+    // Atualiza o input/output com os valores do actionConfig
+    if (actionConfig.input) {
+      newNode.data.input = actionConfig.input;
+    }
+    if (actionConfig.output) {
+      newNode.data.output = actionConfig.output;
+    }
 
     const updatedData = {
       nodes: [...(flowData.attributes?.data.nodes || []), newNode],
@@ -345,6 +348,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     handleJsonUpdate,
     setFlows,
     getFlows,
+    createNode,
   };
 
   return (

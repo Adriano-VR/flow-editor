@@ -145,7 +145,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   const [isExecuting, setIsExecuting] = useState(false);
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
-  const { handleSaveFlow, handleDeleteFlow } = useFlow();
+  const { handleSaveFlow, handleDeleteFlow, createNode } = useFlow();
   const [showCommandMenu, setShowCommandMenu] = useState(false);
   const [showCanvasTooltip, setShowCanvasTooltip] = useState(false);
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -392,39 +392,16 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
     // Se já estiver com um diálogo aberto, não abre outro
     if (isConfigDialogOpen) return;
 
-    const newNode: Node = {
-      id: `${actionDefinition.id}-${Date.now()}`,
-      type: actionDefinition.type as 'action' | 'internal',
-      position: {
-        x: Math.random() * 500,
-        y: Math.random() * 500,
-      },
-      data: {
-        type: actionDefinition.type as 'action' | 'internal',
-        app: actionDefinition.subcategory as 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap' | undefined,
-        name: actionDefinition.name,
-        uuid: `${actionDefinition.id}-${Date.now()}`,
-        label: actionDefinition.label ?? actionDefinition.name,
-        stop: false,
-        input: {
-          variables: []
-        },
-        output: {
-          text: '',
-          variables: {}
-        },
-        config: actionDefinition.config || {}
-      }
-    };
+    // Cria o nó usando a função createNode
+    const newNode = createNode(actionDefinition);
 
     // Para todos os nós que precisam de configuração, abre o diálogo
     if (
       actionDefinition.name === 'Atraso' ||
       actionDefinition.name === 'Início' ||
-      actionDefinition.category === 'app' ||
+      (actionDefinition.category === 'app' && actionDefinition.type !== 'webhook') ||
       actionDefinition.name === 'Comentário' ||
-      actionDefinition.name === 'Banco de Dados' ||
-      actionDefinition.name === 'Webhook'
+      actionDefinition.name === 'Banco de Dados'
     ) {
       setTempNode(newNode);
       setNewNodeConfig(actionDefinition.config || {});
@@ -434,7 +411,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
 
     // Para outros nós internos simples, adiciona direto
     setNodes((nds) => [...nds, newNode]);
-  }, [isConfigDialogOpen, setNodes]);
+  }, [isConfigDialogOpen, setNodes, createNode]);
 
   const handleConfigSubmit = (updatedConfig: Record<string, any>) => {
     if (!tempNode) return;
@@ -442,11 +419,15 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
     // Evita duplo submit/dupla abertura
     if (!isConfigDialogOpen) return;
 
+    const { input, output, ...restConfig } = updatedConfig;
+
     const finalNode = {
       ...tempNode,
       data: {
         ...tempNode.data,
-        config: updatedConfig,
+        input: input || tempNode.data.input,
+        output: output || tempNode.data.output,
+        config: restConfig || {}
       },
     };
 
@@ -544,13 +525,18 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
     // Create a new array of nodes with the updated node
     const updatedNodes = nodes.map(node => {
       if (node.id === nodeId) {
+        // Preserva input/output no nível raiz
+        const { input, output, ...restData } = updates.data || {};
+        
         return {
           ...node, // Keep all original node properties
           ...updates, // Apply updates
           position: node.position, // Explicitly preserve position
           data: {
             ...node.data, // Keep all original data
-            ...(updates.data || {}) // Apply data updates
+            input: input || node.data.input, // Preserva input no nível raiz
+            output: output || node.data.output, // Preserva output no nível raiz
+            ...restData // Aplica outras atualizações de data
           }
         };
       }

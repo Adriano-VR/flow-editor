@@ -69,7 +69,7 @@ export function renderDynamicConfigFields(
 }
 
 // Função principal para renderizar campos de configuração de ação
-export function renderActionConfigFields(selectedAction: any, actionConfig: any, setActionConfig: (cfg: any) => void) {
+export function renderActionConfigFields(selectedAction: any, actionConfig: any, setActionConfig: (cfg: any) => void, actionDefinition: any) {
   if (!selectedAction) return null;
 
   // Determina qual app está sendo usado baseado no ID da ação
@@ -90,7 +90,7 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
       return renderFormConfigFields(selectedAction, actionConfig, setActionConfig);
     
     case 'internal':
-      return renderInternalConfigFields(selectedAction, actionConfig, setActionConfig);
+      return renderInternalConfigFields(selectedAction, actionConfig, setActionConfig, actionDefinition);
 
     case 'ai':
       if (selectedAction.id === 'ai_video_to_text') {

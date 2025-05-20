@@ -57,16 +57,17 @@ export type Node = ReactFlowNode<{
   uuid: string;
   label: string;
   stop: boolean;
-  input: {
+  input?: {
     variables: Array<{
       variable: string;
     }>;
   };
-  output: {
+  output?: {
     text: string;
-    variables: Record<string, unknown>;
   };
-  config: Record<string, unknown>;
+  config: {
+    [key: string]: unknown;
+  };
 }>;
 
 export type Edge = ReactFlowEdge;

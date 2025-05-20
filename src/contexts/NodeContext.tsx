@@ -85,13 +85,8 @@ export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) 
         uuid: `node-${Date.now()}`,
         label: String(nodeType.label ?? nodeType.name ?? ''),
         stop: false,
-        input: {
-          variables: []
-        },
-        output: {
-          text: '',
-          variables: {}
-        },
+        input: nodeType.input || { variables: [] },
+        output: nodeType.output || { text: '', variables: {} },
         config: nodeType.config || {}
       }
     };

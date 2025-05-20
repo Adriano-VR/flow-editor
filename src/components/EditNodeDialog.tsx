@@ -181,15 +181,22 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
             )}
 
             <div className="space-y-6">
-              {renderActionConfigFields(getActionDefinition(), localNode.data.config || {}, (newConfig) => {
+              {renderActionConfigFields(getActionDefinition(), {
+                input: localNode.data.input,
+                output: localNode.data.output,
+                config: localNode.data.config || {}
+              }, (newConfig) => {
+                const { input, output, config } = newConfig;
                 setLocalNode({
                   ...localNode,
                   data: {
                     ...localNode.data,
-                    config: newConfig,
+                    input: input || localNode.data.input,
+                    output: output || localNode.data.output,
+                    config: config || {}
                   },
                 })
-              })}
+              }, getActionDefinition())}
             </div>
           </div>
         </ScrollArea>

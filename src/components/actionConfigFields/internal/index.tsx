@@ -2,7 +2,7 @@ import React from 'react';
 import { Label } from '../../ui/label';
 import { Input } from '../../ui/input';
 
-export function renderInternalConfigFields(selectedAction: any, actionConfig: any, setActionConfig: (cfg: any) => void) {
+export function renderInternalConfigFields(selectedAction: any, actionConfig: any, setActionConfig: (cfg: any) => void, actionDefinition: any) {
   switch (selectedAction.id) {
     case 'internal_start':
       return (
@@ -179,17 +179,15 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
             <Input
               id="input"
               placeholder="Digite o nome da variável de entrada"
-              value={actionConfig.input?.variables?.[0]?.variable || ''}
+              value={actionConfig.input?.variables?.[0]?.variable || actionDefinition?.input?.variables?.[0]?.variable || ''}
               onChange={e => {
-                const value = e.target.value;
+                const newValue = e.target.value;
                 setActionConfig({
                   ...actionConfig,
                   input: {
-                    variables: [
-                      {
-                        variable: value
-                      }
-                    ]
+                    variables: [{
+                      variable: newValue
+                    }]
                   }
                 });
               }}
@@ -202,13 +200,14 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
               placeholder="Digite a mensagem que será enviada para a API"
               value={actionConfig.output?.text || ''}
               onChange={e => {
-                const value = e.target.value;
+                const inputVariable = actionConfig.input?.variables?.[0]?.variable || '';
+                const newValue = e.target.value;
                 setActionConfig({
                   ...actionConfig,
                   output: {
-                    text: value,
+                    text: newValue,
                     variables: {
-                      name: actionConfig.input?.variables?.[0]?.variable || ''
+                      nome: `{{${inputVariable}}}`
                     }
                   }
                 });

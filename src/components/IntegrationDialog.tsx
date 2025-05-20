@@ -38,19 +38,35 @@ export const IntegrationDialog = ({
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
-    // Merge the initial config with default values from actionDefinition
-    const defaultConfig = actionDefinition?.config || {}
-    const mergedConfig = {
-      ...defaultConfig,
-      ...config
-    }
-    setCurrentConfig(mergedConfig)
+    // Inicializa com os valores do actionDefinition
+    const defaultInput = actionDefinition?.input || { variables: [] };
+    const defaultOutput = actionDefinition?.output || { text: '' };
+
+    // Pega os valores atuais do config
+    const { input: currentInput, output: currentOutput, config: currentConfig } = config || {};
+    
+    // Mantém input/output no nível raiz, usando os valores atuais ou os padrões
+    setCurrentConfig({
+      input: currentInput || defaultInput,
+      output: currentOutput || defaultOutput,
+      config: currentConfig || {} // Mantém o config separado
+    });
   }, [config, actionDefinition])
 
   const handleSave = async () => {
     try {
       setIsSaving(true)
-      onSave(currentConfig)
+      
+      // Pega os valores atuais
+      const { input, output, config: nodeConfig } = currentConfig;
+      
+      // Salva mantendo input/output no nível raiz e config separado
+      onSave({
+        input: input || { variables: [] },
+        output: output || { text: '' },
+        config: nodeConfig || {} // Mantém o config separado
+      });
+      
       setTimeout(() => {
         setIsSaving(false)
         onOpenChange(false)
@@ -113,7 +129,7 @@ export const IntegrationDialog = ({
 
             <div className="space-y-6">
               <div className="[&_input]:border-slate-200 [&_input]:focus-visible:ring-blue-500 [&_input]:dark:border-slate-700 [&_input]:dark:bg-slate-800 [&_input]:dark:text-slate-200 [&_select]:border-slate-200 [&_select]:focus:ring-blue-500 [&_select]:dark:border-slate-700 [&_select]:dark:bg-slate-800 [&_select]:dark:text-slate-200 [&_textarea]:border-slate-200 [&_textarea]:focus-visible:ring-blue-500 [&_textarea]:dark:border-slate-700 [&_textarea]:dark:bg-slate-800 [&_textarea]:dark:text-slate-200 [&_label]:text-slate-700 [&_label]:dark:text-slate-300">
-                {renderActionConfigFields(actionDefinition, currentConfig, setCurrentConfig)}
+                {renderActionConfigFields(actionDefinition, currentConfig, setCurrentConfig, actionDefinition)}
               </div>
             </div>
           </div>
