@@ -394,18 +394,27 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
 
     const newNode: Node = {
       id: `${actionDefinition.id}-${Date.now()}`,
-      type: actionDefinition.type,
-      data: {
-        name: actionDefinition.name,
-        icon: actionDefinition.icon ?? '',
-        label: actionDefinition.label ?? actionDefinition.name,
-        color: actionDefinition.color,
-        config: actionDefinition.config || {},
-      },
+      type: actionDefinition.type as 'action' | 'internal',
       position: {
         x: Math.random() * 500,
         y: Math.random() * 500,
       },
+      data: {
+        type: actionDefinition.type as 'action' | 'internal',
+        app: actionDefinition.subcategory as 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap' | undefined,
+        name: actionDefinition.name,
+        uuid: `${actionDefinition.id}-${Date.now()}`,
+        label: actionDefinition.label ?? actionDefinition.name,
+        stop: false,
+        input: {
+          variables: []
+        },
+        output: {
+          text: '',
+          variables: {}
+        },
+        config: actionDefinition.config || {}
+      }
     };
 
     // Para todos os nós que precisam de configuração, abre o diálogo

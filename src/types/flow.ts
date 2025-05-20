@@ -51,7 +51,7 @@ export interface NodeConfig {
 }
 
 export type Node = ReactFlowNode<{
-  type: 'action' | 'internal' | 'webhook';
+  type: 'action' | 'internal';
   app?: 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap';
   name: string;
   uuid: string;
@@ -60,20 +60,11 @@ export type Node = ReactFlowNode<{
   input: {
     variables: Array<{
       variable: string;
-      sourceNodeId?: string;
-      sourceOutput?: string;
     }>;
-    webhook?: {
-      url: string;
-      method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-      headers?: Record<string, string>;
-    };
   };
   output: {
     text: string;
-    response?: Record<string, unknown>;
     variables: Record<string, unknown>;
-    sourceNodeId?: string;
   };
   config: Record<string, unknown>;
 }>;

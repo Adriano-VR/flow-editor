@@ -89,7 +89,8 @@ export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) 
           variables: []
         },
         output: {
-          text: ''
+          text: '',
+          variables: {}
         },
         config: nodeType.config || {}
       }

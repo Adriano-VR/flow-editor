@@ -479,19 +479,7 @@ const internalActions: NodeTypeDefinition[] = [
     icon: 'MdOutlineWebhook',
     color: '#ff4700',
     label: 'Aguardar Resposta',
-    config: {
-      input: {
-        webhook: {
-          url: '',
-          method: 'POST',
-          headers: {}
-        }
-      },
-      output: {
-        text: 'Aguardando resposta...',
-        variables: {}
-      }
-    }
+    config: {}
   },
   {
     id: 'internal_error',
