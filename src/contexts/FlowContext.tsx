@@ -226,7 +226,10 @@ export function FlowProvider({ children }: { children: ReactNode }) {
         stop: false,
         input: actionDefinition.input || { variables: [] },
         output: actionDefinition.output || { text: '' },
-        config: restConfig || {}
+        config: restConfig || {},
+        // Include style properties directly from actionDefinition
+        icon: actionDefinition.icon,
+        color: actionDefinition.color
       },
       position: position || {
         x: Math.random() * 500,

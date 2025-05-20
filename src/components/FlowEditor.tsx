@@ -756,42 +756,42 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
       </div>
 
       <div className="flex-1 border rounded-lg relative">
-        <NodeProvider 
-          onEdit={handleNodeEdit} 
-          onDelete={handleNodeDelete}
-        >
-          <div className="h-full w-full" onContextMenu={handleContextMenu}>
-            {showCanvasTooltip && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg text-sm">
-                Pressione <kbd className="px-1 py-0.5 text-xs bg-gray-100 rounded border">/</kbd> ou clique com botão direito para adicionar um nó
-              </div>
-            )}
-            <ReactFlow
-              nodes={nodesWithAnimation}
-              edges={edges}
-              onNodesChange={handleNodesChange}
-              onEdgesChange={handleEdgesChange}
-              onConnect={onConnect}
-              onNodeClick={handleNodeClick}
-              onEdgeClick={handleDeleteEdge}
-              onEdgeMouseEnter={onEdgeMouseEnter}
-              onEdgeMouseLeave={onEdgeMouseLeave}
-              onMouseMove={handleMouseMove}
-              nodeTypes={nodeTypes}
-              fitView
-              className="cursor-crosshair bg-gray-50 rounded-2xl"
-              style={{ cursor: 'crosshair' }}
+        <div className="h-full w-full" onContextMenu={handleContextMenu}>
+          {showCanvasTooltip && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg text-sm">
+              Pressione <kbd className="px-1 py-0.5 text-xs bg-gray-100 rounded border">/</kbd> ou clique com botão direito para adicionar um nó
+            </div>
+          )}
+          <ReactFlow
+            nodes={nodesWithAnimation}
+            edges={edges}
+            onNodesChange={handleNodesChange}
+            onEdgesChange={handleEdgesChange}
+            onConnect={onConnect}
+            onNodeClick={handleNodeClick}
+            onEdgeClick={handleDeleteEdge}
+            onEdgeMouseEnter={onEdgeMouseEnter}
+            onEdgeMouseLeave={onEdgeMouseLeave}
+            onMouseMove={handleMouseMove}
+            nodeTypes={nodeTypes}
+            fitView
+            className="cursor-crosshair bg-gray-50 rounded-2xl"
+            style={{ cursor: 'crosshair' }}
+          >
+            <Background color="#94a3b8" gap={16} size={1} />
+            <Controls />
+            <NodeProvider 
+              onEdit={handleNodeEdit} 
+              onDelete={handleNodeDelete}
             >
-              <Background color="#94a3b8" gap={16} size={1} />
-              <Controls />
-            </ReactFlow>
-          </div>
-          <NodeCommandMenu
-            open={showCommandMenu}
-            onOpenChange={setShowCommandMenu}
-            onNodeSelect={handleNodeTypeSelect}
-          />
-        </NodeProvider>
+              <NodeCommandMenu
+                open={showCommandMenu}
+                onOpenChange={setShowCommandMenu}
+                onNodeSelect={handleNodeTypeSelect}
+              />
+            </NodeProvider>
+          </ReactFlow>
+        </div>
       </div>
 
       <EditNodeDialog

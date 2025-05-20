@@ -14,8 +14,15 @@ export function renderWhatsAppConfigFields(selectedAction: any, actionConfig: an
             <Input
               id="to"
               placeholder="+55 (00) 00000-0000"
-              value={actionConfig.to || ''}
-              onChange={e => setActionConfig({ ...actionConfig, to: e.target.value })}
+              value={actionConfig.config?.to || ''}
+              onChange={e => {
+                const newConfig = {
+                  to: e.target.value,
+                  type: selectedAction.id.split('_').pop() || 'text',
+                  message: actionConfig.config?.message || ''
+                };
+                setActionConfig({ config: newConfig });
+              }}
             />
           </div>
           <div className="space-y-2">
@@ -23,8 +30,15 @@ export function renderWhatsAppConfigFields(selectedAction: any, actionConfig: an
             <Input
               id="message"
               placeholder="Digite sua mensagem"
-              value={actionConfig.message || ''}
-              onChange={e => setActionConfig({ ...actionConfig, message: e.target.value })}
+              value={actionConfig.config?.message || ''}
+              onChange={e => {
+                const newConfig = {
+                  to: actionConfig.config?.to || '',
+                  type: selectedAction.id.split('_').pop() || 'text',
+                  message: e.target.value
+                };
+                setActionConfig({ config: newConfig });
+              }}
             />
           </div>
           <div className="space-y-2">
@@ -47,8 +61,14 @@ export function renderWhatsAppConfigFields(selectedAction: any, actionConfig: an
             <Input
               id="message"
               placeholder="Mensagem recebida"
-              value={actionConfig.message || ''}
-              onChange={e => setActionConfig({ ...actionConfig, message: e.target.value })}
+              value={actionConfig.config?.message || ''}
+              onChange={e => {
+                setActionConfig({ 
+                  config: { 
+                    message: e.target.value 
+                  } 
+                });
+              }}
             />
           </div>
         </div>
@@ -60,8 +80,16 @@ export function renderWhatsAppConfigFields(selectedAction: any, actionConfig: an
           <div className="space-y-2">
             <Label htmlFor="message">Mensagem</Label>
             <Input
-              id="url"
-              placeholder="mensagem aqui"
+              id="message"
+              placeholder="Digite sua mensagem"
+              value={actionConfig.config?.message || ''}
+              onChange={e => {
+                setActionConfig({ 
+                  config: { 
+                    message: e.target.value 
+                  } 
+                });
+              }}
             />
           </div>
         </div>

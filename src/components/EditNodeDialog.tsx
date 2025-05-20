@@ -150,7 +150,7 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className={`h-10 w-10 rounded-full ${getNodeColor()} flex items-center justify-center`}>
-                <IconRenderer iconName={localNode.data.icon} className="text-xl" />
+                <IconRenderer iconName={localNode.data.icon || 'FaWhatsapp'} className="text-xl" />
               </div>
               <div>
                 <DialogTitle className="text-xl font-bold text-slate-800 dark:text-slate-200">
@@ -186,16 +186,16 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
                 output: localNode.data.output,
                 config: localNode.data.config || {}
               }, (newConfig) => {
-                const { input, output, config } = newConfig;
+                // Simplifica a atualização para evitar aninhamento
                 setLocalNode({
                   ...localNode,
                   data: {
                     ...localNode.data,
-                    input: input || localNode.data.input,
-                    output: output || localNode.data.output,
-                    config: config || {}
-                  },
-                })
+                    input: newConfig.input || localNode.data.input,
+                    output: newConfig.output || localNode.data.output,
+                    config: newConfig.config || localNode.data.config
+                  }
+                });
               }, getActionDefinition())}
             </div>
           </div>

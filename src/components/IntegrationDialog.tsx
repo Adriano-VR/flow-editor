@@ -41,15 +41,22 @@ export const IntegrationDialog = ({
     // Inicializa com os valores do actionDefinition
     const defaultInput = actionDefinition?.input || { variables: [] };
     const defaultOutput = actionDefinition?.output || { text: '' };
+    const defaultConfig = actionDefinition?.config || {};
 
     // Pega os valores atuais do config
     const { input: currentInput, output: currentOutput, config: currentConfig } = config || {};
     
-    // Mantém input/output no nível raiz, usando os valores atuais ou os padrões
+    // Se estamos atualizando um nó existente, mantém os valores atuais
+    // Se estamos criando um novo nó, usa os valores padrão
+    const isUpdate = currentConfig && Object.keys(currentConfig).length > 0;
+    
     setCurrentConfig({
-      input: currentInput || defaultInput,
-      output: currentOutput || defaultOutput,
-      config: currentConfig || {} // Mantém o config separado
+      input: isUpdate ? (currentInput || defaultInput) : defaultInput,
+      output: isUpdate ? (currentOutput || defaultOutput) : defaultOutput,
+      config: isUpdate ? {
+        ...defaultConfig,  // Mantém a estrutura padrão
+        ...currentConfig   // Sobrescreve com valores atuais
+      } : defaultConfig
     });
   }, [config, actionDefinition])
 
@@ -60,11 +67,14 @@ export const IntegrationDialog = ({
       // Pega os valores atuais
       const { input, output, config: nodeConfig } = currentConfig;
       
-      // Salva mantendo input/output no nível raiz e config separado
+      // Salva mantendo a estrutura completa
       onSave({
         input: input || { variables: [] },
         output: output || { text: '' },
-        config: nodeConfig || {} // Mantém o config separado
+        config: {
+          ...actionDefinition?.config, // Mantém a estrutura padrão
+          ...nodeConfig // Sobrescreve com valores atuais
+        }
       });
       
       setTimeout(() => {

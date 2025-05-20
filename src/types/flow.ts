@@ -57,6 +57,8 @@ export type Node = ReactFlowNode<{
   uuid: string;
   label: string;
   stop: boolean;
+  icon?: string;
+  color?: string;
   input?: {
     variables: Array<{
       variable: string;

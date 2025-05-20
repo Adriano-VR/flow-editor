@@ -46,9 +46,9 @@ const whatsappActions: NodeTypeDefinition[] = [
     label: 'Enviar Mensagem',
     config: {
       message: '',
-      to: '',
+      to: '4144448585',
       type: 'text'
-    },
+    } ,
     input: {
       variables: {
         nome: 'message'
@@ -60,7 +60,7 @@ const whatsappActions: NodeTypeDefinition[] = [
       },
       text: ''
     },
-    config: {}
+
   },
   {
     id: 'whatsapp_send_message_image',

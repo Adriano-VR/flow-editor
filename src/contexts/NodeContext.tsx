@@ -1,5 +1,5 @@
 import React, { createContext, useContext, ReactNode } from 'react';
-import { Node as ReactFlowNode } from 'reactflow';
+import { Node as ReactFlowNode, useReactFlow } from 'reactflow';
 import { MessageSquare, Bot, GitBranch } from 'lucide-react';
 import { Node, Edge } from '@/types/flow';
 import { NodeData, NodeTypeDefinition } from '@/lib/nodeTypes';
@@ -21,7 +21,7 @@ interface NodeContextData {
   nodeTypes: Record<string, NodeType>;
   onEdit: (node: ReactFlowNode) => void;
   onDelete: (nodeId: string) => void;
-  createNode: (nodes: Node[], edges: Edge[], nodeType: NodeTypeDefinition, position: { x: number; y: number }) => NodeOperationResult;
+  createNode: (nodes: Node[], edges: Edge[], nodeType: NodeTypeDefinition, position?: { x: number; y: number }) => NodeOperationResult;
   updateNode: (nodes: Node[], edges: Edge[], nodeId: string, updates: Partial<Node>) => NodeOperationResult;
   deleteNode: (nodes: Node[], edges: Edge[], nodeId: string) => NodeOperationResult;
   duplicateNode: (nodes: Node[], edges: Edge[], nodeId: string, offset?: { x: number; y: number }) => NodeOperationResult;
@@ -68,16 +68,26 @@ interface NodeProviderProps {
 }
 
 export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) {
+  const { getViewport } = useReactFlow();
+
+  const getCenterPosition = () => {
+    const { x, y, zoom } = getViewport();
+    const centerX = -x / zoom + window.innerWidth / (2 * zoom);
+    const centerY = -y / zoom + window.innerHeight / (2 * zoom);
+    return { x: centerX, y: centerY };
+  };
+
   const createNode = (
     nodes: Node[],
     edges: Edge[],
     nodeType: NodeTypeDefinition,
-    position: { x: number; y: number }
+    position?: { x: number; y: number }
   ): NodeOperationResult => {
+    const centerPosition = getCenterPosition();
     const newNode: Node = {
       id: `node-${Date.now()}`,
       type: nodeType.type as 'action' | 'internal',
-      position,
+      position: position || centerPosition,
       data: {
         type: nodeType.type as 'action' | 'internal',
         app: nodeType.subcategory as 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap' | undefined,
@@ -85,9 +95,11 @@ export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) 
         uuid: `node-${Date.now()}`,
         label: String(nodeType.label ?? nodeType.name ?? ''),
         stop: false,
-        input: nodeType.input || { variables: [] },
-        output: nodeType.output || { text: '', variables: {} },
-        config: nodeType.config || {}
+        input: nodeType.input ? { variables: [{ variable: nodeType.input.variables.nome }] } : { variables: [] },
+        output: nodeType.output ? { text: nodeType.output.text || '' } : { text: '' },
+        config: nodeType.config || {},
+        icon: nodeType.icon,
+        color: nodeType.color
       }
     };
 
