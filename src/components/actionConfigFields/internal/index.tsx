@@ -34,8 +34,14 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
               id="duration"
               type="number"
               min="0"
-              value={actionConfig.duration || 0}
-              onChange={e => setActionConfig({ ...actionConfig, duration: Number(e.target.value) })}
+              value={actionConfig.config.duration || 0}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  duration: e.target.value 
+                }
+              })}
             />
           </div>
           <div className="space-y-2">
@@ -63,8 +69,14 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
               id="condition"
               className="w-full text-black border border-gray-600 rounded-md px-3 py-2"
               placeholder="Digite a condição"
-              value={actionConfig.condition || ''}
-              onChange={e => setActionConfig({ ...actionConfig, condition: e.target.value })}
+              value={actionConfig.config.condition || ''}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  condition: e.target.value 
+                }
+              })}
             />
           </div>
         </div>
@@ -79,8 +91,14 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
               id="comment"
               className="w-full text border border-gray-600 rounded-md px-3 py-2"
               placeholder="Digite seu comentário"
-              value={actionConfig.comment || ''}
-              onChange={e => setActionConfig({ ...actionConfig, comment: e.target.value })}
+              value={actionConfig.config.comment || ''}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  comment: e.target.value 
+                }
+              })}
             />
           </div>
         </div>
@@ -95,8 +113,14 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
               id="query"
               className="w-full text border border-gray-600 rounded-md px-3 py-2"
               placeholder="Digite a query SQL"
-              value={actionConfig.query || ''}
-              onChange={e => setActionConfig({ ...actionConfig, query: e.target.value })}
+              value={actionConfig.config.query || ''}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  query: e.target.value 
+                }
+              })}
             />
           </div>
         </div>
@@ -110,8 +134,15 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
             <Input
               id="endpoint"
               placeholder="https://api.exemplo.com/endpoint"
-              value={actionConfig.endpoint || ''}
-              onChange={e => setActionConfig({ ...actionConfig, endpoint: e.target.value })}
+              value={actionConfig.config.endpoint || ''}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  endpoint: e.target.value 
+                  
+                }
+              })}
             />
           </div>
           <div className="space-y-2">
@@ -119,8 +150,15 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
             <select
               id="method"
               className="w-full text border border-gray-600 rounded-md px-3 py-2"
-              value={actionConfig.method || 'GET'}
-              onChange={e => setActionConfig({ ...actionConfig, method: e.target.value })}
+              value={actionConfig.config.method || 'GET'}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  method: e.target.value 
+                  
+                }
+              })}
             >
               <option value="GET">GET</option>
               <option value="POST">POST</option>
@@ -140,8 +178,15 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
             <Input
               id="url"
               placeholder="https://webhook.site/unique-url"
-              value={actionConfig.url || ''}
-              onChange={e => setActionConfig({ ...actionConfig, url: e.target.value })}
+              value={actionConfig.config.url || ''}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  url: e.target.value 
+                  
+                }
+              })}
             />
           </div>
           <div className="space-y-2">
@@ -149,8 +194,15 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
             <select
               id="method"
               className="w-full text border border-gray-600 rounded-md px-3 py-2"
-              value={actionConfig.method || 'POST'}
-              onChange={e => setActionConfig({ ...actionConfig, method: e.target.value })}
+              value={actionConfig.config.method || 'POST'}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  method: e.target.value 
+                  
+                }
+              })}
             >
               <option value="POST">POST</option>
               <option value="GET">GET</option>
@@ -166,12 +218,39 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
       return (
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="errorType">Erro</Label>
+            <Label htmlFor="errorType">Tipo do Erro</Label>
+            <select
+              id="errorType"
+              className="w-full text border border-gray-600 rounded-md px-3 py-2"
+              value={actionConfig.config?.errorType || 'any'}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  errorType: e.target.value 
+                }
+              })}
+            >
+              <option value="any">Qualquer Erro</option>
+              <option value="validation">Erro de Validação</option>
+              <option value="system">Erro de Sistema</option>
+              <option value="business">Erro de Negócio</option>
+            </select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="errorMessage">Mensagem de Erro</Label>
             <Input
-              id="erro"
+              id="errorMessage"
               type="text"
-              value={actionConfig.errorMessage || ''}
-              onChange={e => setActionConfig({ ...actionConfig, errorMessage: e.target.value })}
+              placeholder="Digite a mensagem de erro"
+              value={actionConfig.config?.errorMessage || ''}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  errorMessage: e.target.value 
+                }
+              })}
             />
           </div>
         </div>

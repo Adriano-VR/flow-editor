@@ -1,9 +1,10 @@
 "use client"
+import { useReactFlow } from 'reactflow';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { createFlow, getFlow, updateFlow, deleteFlow, getFlows } from "@/lib/api";
 import { nodeTypes as nodeTypeDefinitions } from "@/lib/nodeTypes";
-import { Flow, Node, Edge, Action, actionConfig } from "@/types/flow";
+import { Flow, Node, Edge, Action, ActionConfig } from "@/types/flow";
 import { Flow as FlowType } from "@/types/sidebar";
 import { NodeTypeDefinition } from '@/lib/nodeTypes';
 
@@ -24,8 +25,8 @@ interface FlowContextType {
   setIsActionModalOpen: (isOpen: boolean) => void;
   selectedAction: Action | null;
   setSelectedAction: (action: Action | null) => void;
-  actionConfig: actionConfig;
-  setActionConfig: (config: actionConfig) => void;
+  actionConfig: ActionConfig;
+  setActionConfig: (config: ActionConfig) => void;
   handleCreateFlow: (name: string) => Promise<string | null>;
   handleDeleteFlow: (flowId: string) => Promise<void>;
   handleSaveFlow: (data: { nodes: Node[]; edges: Edge[]; name?: string; status?: string; description?: string }) => Promise<void>;
@@ -50,8 +51,9 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<Action | null>(null);
-  const [actionConfig, setActionConfig] = useState<actionConfig>({});
+  const [actionConfig, setActionConfig] = useState<ActionConfig>({});
   const [flows, setFlows] = useState<FlowType[]>([]);
+  const { project } = useReactFlow();
 
   const handleCreateFlow = async (name: string): Promise<string | null> => {
     if (!name.trim()) return null;
@@ -210,7 +212,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     setIsActionModalOpen(true);
   };
 
-  const createNode = (actionDefinition: NodeTypeDefinition, position?: { x: number; y: number }): Node => {
+  const createNode = (actionDefinition: NodeTypeDefinition): Node => {
     // Remove input/output/credentials do config se existirem
     const { 
       input: configInput, 
@@ -229,6 +231,12 @@ export function FlowProvider({ children }: { children: ReactNode }) {
       ...(configCredentials || {}) // Depois usa credenciais do config se não existirem no nível raiz
     };
 
+    const centerX = window.innerWidth / 2;
+    const centerY = window.innerHeight / 2;
+
+    // Converte coordenadas da tela para coordenadas do flow (considerando zoom e pan)
+    const position = project({ x: centerX, y: centerY });
+
     return {
       id: `${actionDefinition.id}-${Date.now()}`,
       type: actionDefinition.type as 'action' | 'internal',
@@ -238,16 +246,20 @@ export function FlowProvider({ children }: { children: ReactNode }) {
         name: actionDefinition.name,
         label: actionDefinition.label ?? actionDefinition.name,
         stop: false,
-        input: actionDefinition.input || { variables: [] },
-        output: actionDefinition.output || { text: '' },
-        config: configWithoutCredentials, // Config sem credenciais e sem aninhamento
-        credentials: finalCredentials, // Credenciais apenas no nível raiz
+        input: actionDefinition.input ? {
+          variables: [{ variable: actionDefinition.input.variables.nome }]
+        } : { variables: [] },
+        output: actionDefinition.output ? {
+          text: actionDefinition.output.text || ''
+        } : { text: '' },
+        config: configWithoutCredentials as Record<string, unknown>,
+        credentials: finalCredentials,
         icon: actionDefinition.icon,
         color: actionDefinition.color
       },
       position: position || {
-        x: Math.random() * 500,
-        y: Math.random() * 500,
+        x: 400,
+        y: 300,
       },
     };
   };

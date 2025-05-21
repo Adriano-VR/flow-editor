@@ -33,7 +33,11 @@ export function DatabaseNode({ data }: NodeProps) {
 
         <div className="text-base font-bold text-gray-800 text-center w-full">
           {data.label || 'Database'}
+          <div className="mt-2 p-2 bg-gray-50 rounded-lg w-full">
+              <div className="text-sm text-gray-600 break-words">{data.config.query}</div>
+            </div>
         </div>
+       
         {/* Handles para conexão */}
         <div className="absolute left-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
           <div

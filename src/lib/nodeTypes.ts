@@ -133,24 +133,7 @@ const whatsappActions: NodeTypeDefinition[] = [
     },
     config: {}
   },
-  {
-    id: 'whatsapp_list',
-    name: 'List',
-    type: 'action',
-    category: 'app',
-    subcategory: 'whatsapp',
-    icon: 'FaWhatsapp',
-    color: '#25D366',
-    label: 'Lista de Opções',
-    credentials: {
-      provider: '',
-      appName: '',
-      source: '',
-      webhook: '',
-      apiKey: ''
-    },
-    config: {}
-  },
+  
   {
     id: 'whatsapp_receive_message',
     name: 'Receber Mensagem',
@@ -302,9 +285,9 @@ const instagramActions: NodeTypeDefinition[] = [
     color: '#E1306C',
     label: 'Criar Post',
     config: {
-      'to':undefined,
-       "type": "text",
-      "message": undefined
+      account: '',
+      message: '',
+      
     }
   },
   {
@@ -316,7 +299,11 @@ const instagramActions: NodeTypeDefinition[] = [
     icon: 'FaInstagram',
     color: '#E1306C',
     label: 'Enviar Mensagem',
-    config: {}
+    config: {
+      account: 'dadaw',
+      message: '',
+      
+    }
   },
   {
     id: 'instagram_question',

@@ -26,12 +26,21 @@ export interface Action {
 }
 
 export interface ActionConfig {
+  input?: {
+    variables: Array<{
+      variable: string;
+    }>;
+  };
+  output?: {
+    text: string;
+  };
   subject?: string;
   to?: string;
   body?: string;
   message?: string;
   phone?: string;
   template?: string;
+  [key: string]: unknown;
 }
 
 export interface FlowContextType {

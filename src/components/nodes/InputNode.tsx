@@ -52,6 +52,7 @@ const InputNode = memo(({ data, selected }: InputNodeProps) => {
           </div>
           <div className="flex flex-col">
             <div className="text-lg font-bold" style={{ color: data.color || '#3B82F6' }}>{data.label}</div>
+            <span>{data.config?.url as string}</span>
           </div>
         </div>
 
@@ -73,9 +74,9 @@ const InputNode = memo(({ data, selected }: InputNodeProps) => {
         </div>
 
         {/* Action buttons */}
-        <div className="absolute -top-8 right-0">
+        {/* <div className="absolute -top-8 right-0">
           <NodeActionButtons data={data} type="input" />
-        </div>
+        </div> */}
       </div>
     </div>
   )

@@ -12,16 +12,30 @@ export function renderInstagramConfigFields(selectedAction: any, actionConfig: a
             <Input
               id="insta_mensagem"
               placeholder="@insta"
-              value={actionConfig.to || ''}
-              onChange={e => setActionConfig({ ...actionConfig, to: e.target.value })}
+              value={actionConfig.config.account || ''}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  account: e.target.value 
+                  
+                }
+              })}
             />
 
             <Label htmlFor="insta_mensagem">Mensagem</Label>
             <Input
               id="insta_mensagem"
               placeholder="Mensagem"
-              value={actionConfig.message || ''}
-              onChange={e => setActionConfig({ ...actionConfig, message: e.target.value })}
+              value={actionConfig.config.message || ''}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  message: e.target.value 
+                  
+                }
+              })}
             />
           </div>
         </div>

@@ -4,6 +4,7 @@ import FlowEditor from "@/components/FlowEditor";
 import Sidebar from "@/components/Sidebar";
 import DefaultLayout from "@/layout/DefaultLayout";
 import { Button } from "@/components/ui/button";
+import { useFlow } from "@/contexts/FlowContext";
 
 import {
   Dialog,
@@ -12,7 +13,6 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useFlow } from "@/contexts/FlowContext";
 
 export default function Home() {
   const {
@@ -26,12 +26,8 @@ export default function Home() {
     handleActionConfigSubmit,
   } = useFlow();
 
-
-
   return (
     <DefaultLayout>
-   
-      
       <div className="flex h-[calc(100vh-8rem)]">
         <Sidebar onSelectFlow={setSelectedFlowId} />
         <main className="flex-1 p-4">
@@ -40,11 +36,9 @@ export default function Home() {
               <FlowEditor 
                 flowId={selectedFlowId} 
                 initialData={flowData?.attributes?.data ?? undefined}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onSave={handleSaveFlow as any}
-                
               />
-             
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-4">
@@ -54,7 +48,6 @@ export default function Home() {
         </main>
       </div>
 
-    
       <Dialog open={isActionModalOpen} onOpenChange={setIsActionModalOpen}>
         <DialogContent>
           <DialogHeader>

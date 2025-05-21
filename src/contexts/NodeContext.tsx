@@ -68,14 +68,7 @@ interface NodeProviderProps {
 }
 
 export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) {
-  const { getViewport } = useReactFlow();
-
-  const getCenterPosition = () => {
-    const { x, y, zoom } = getViewport();
-    const centerX = -x / zoom + window.innerWidth / (2 * zoom);
-    const centerY = -y / zoom + window.innerHeight / (2 * zoom);
-    return { x: centerX, y: centerY };
-  };
+  
 
   const createNode = (
     nodes: Node[],
@@ -83,7 +76,6 @@ export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) 
     nodeType: NodeTypeDefinition,
     position?: { x: number; y: number }
   ): NodeOperationResult => {
-    const centerPosition = getCenterPosition();
     
     // Remove input/output/credentials do config se existirem
     const { 
@@ -143,12 +135,12 @@ export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) 
         stop: false,
         input,
         output,
-        config: configWithoutCredentials, // Config sem credenciais e sem aninhamento
-        credentials: finalCredentials, // Credenciais apenas no nível raiz
+        config: configWithoutCredentials,
+        credentials: finalCredentials,
         icon: nodeType.icon,
         color: nodeType.color
       },
-      position: position || centerPosition,
+      position: position || { x: 0, y: 0 },
     };
     
     return {
