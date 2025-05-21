@@ -6,6 +6,7 @@ export function TriggerNode({ data }: NodeProps) {
   const isToolNode = data.name === 'Ferramenta';
   const isFinishNode = data.name === 'Fim';
   const isStartNode = data.name === 'Início';
+  const isFormNode = data.name === 'Criar Formulario';
 
   if (isToolNode) {
     return (
@@ -64,6 +65,53 @@ export function TriggerNode({ data }: NodeProps) {
       </div>
     );
   }
+
+  if(isFormNode){
+    return (
+      <div className="flex flex-col items-center group">
+      <div
+        className={`
+          flex flex-col items-center justify-center
+          border-2
+          
+          rounded-xl
+          shadow
+          px-4 py-3
+          min-w-[150px] min-h-[50px]
+          relative
+        `}
+        style={{
+          borderColor: data.color || "#3B82F6",
+          backgroundColor: `${data.color}08`,
+          boxShadow: `0 8px 24px ${data.color}15`,
+          animation: data.isActive ? "pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite" : "none",
+        }}
+      >
+        {/* Handle esquerdo */}
+        <div className="absolute left-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+          <div
+            className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+            style={{ borderColor:data.color || '#38BDF8' }}
+          />
+          <Handle type="target" position={Position.Left} className="absolute inset-0 opacity-0" />
+        </div>
+        <div className="flex items-center gap-2 mb-1">
+          <IconRenderer iconName={data.icon ?? ''} className="text-2xl drop-shadow-md" style={{color: data.color || '#38BDF8'}} /> 
+          <span className="text-base font-bold" style={{color: data.color || '#38BDF8'}}>{data.label}</span>
+        </div>
+       
+       
+        {/* Handle direito */}
+        <div className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
+          <div
+            className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
+            style={{ borderColor: data.color || '#38BDF8' }}
+          />
+          <Handle type="source" position={Position.Right} className="absolute inset-0 opacity-0" />
+        </div>
+      </div>
+    </div>
+   )}
 
   return (
     <div className="flex flex-col items-center group">

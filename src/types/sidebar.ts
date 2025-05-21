@@ -7,6 +7,8 @@ export interface Flow {
     name: string;
     status: string;
     description?: string;
+    createdAt?: string;
+    updatedAt?: string;
     data: {
       nodes: Node[];
       edges: Edge[];

@@ -5,9 +5,10 @@ import { Play, Loader2 } from "lucide-react";
 interface PlayButtonProps {
   onPlay: () => Promise<void>;
   onExecutionStateChange?: (isExecuting: boolean) => void;
+  className?: string;
 }
 
-export function PlayButton({ onPlay, onExecutionStateChange }: PlayButtonProps) {
+export function PlayButton({ onPlay, onExecutionStateChange, className }: PlayButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePlay = async () => {
@@ -25,7 +26,7 @@ export function PlayButton({ onPlay, onExecutionStateChange }: PlayButtonProps) 
     <Button 
       onClick={handlePlay} 
       disabled={isLoading}
-      className="gap-2"
+      className={className}
       variant="outline"
     >
       {isLoading ? (
