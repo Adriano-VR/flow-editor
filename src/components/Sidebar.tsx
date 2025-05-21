@@ -50,8 +50,8 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
   const [favorites, setFavorites] = useState<string[]>([])
   const [localSearch, setLocalSearch] = useState(searchInput)
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({
-    published: true,
-    draft: true,
+    published: false,
+    draft: false,
     archived: false,
   })
 
@@ -529,7 +529,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                 {/* Favorites section */}
                 {groupedFlows.favorites.length > 0 && (
                   <div className="mb-2">
-                    <Collapsible defaultOpen={true}>
+                    <Collapsible>
                       <CollapsibleTrigger className="flex items-center justify-between w-full p-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
                         <div className="flex items-center">
                           <Star className="h-3.5 w-3.5 mr-1.5 text-yellow-400" />
@@ -549,7 +549,6 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                 {groupedFlows.published.length > 0 && (
                   <div className="mb-2">
                     <Collapsible
-                      defaultOpen={expandedGroups.published}
                       onOpenChange={(open) => toggleGroup("published")}
                     >
                       <CollapsibleTrigger className="flex items-center justify-between w-full p-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
@@ -572,7 +571,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                 {/* Draft section */}
                 {groupedFlows.draft.length > 0 && (
                   <div className="mb-2">
-                    <Collapsible defaultOpen={expandedGroups.draft} onOpenChange={(open) => toggleGroup("draft")}>
+                    <Collapsible onOpenChange={(open) => toggleGroup("draft")}>
                       <CollapsibleTrigger className="flex items-center justify-between w-full p-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
                         <div className="flex items-center">
                           <Edit className="h-3.5 w-3.5 mr-1.5 text-blue-500" />
@@ -593,7 +592,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                 {/* Archived section */}
                 {groupedFlows.archived.length > 0 && (
                   <div className="mb-2">
-                    <Collapsible defaultOpen={expandedGroups.archived} onOpenChange={(open) => toggleGroup("archived")}>
+                    <Collapsible onOpenChange={(open) => toggleGroup("archived")}>
                       <CollapsibleTrigger className="flex items-center justify-between w-full p-1.5 text-xs font-medium text-muted-foreground hover:text-foreground">
                         <div className="flex items-center">
                           <Archive className="h-3.5 w-3.5 mr-1.5 text-gray-500" />
