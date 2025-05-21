@@ -14,6 +14,7 @@ export interface Flow {
     data: {
       nodes: Node[];
       edges: Edge[];
+      settings?: string;
     } | null;
   };
 }

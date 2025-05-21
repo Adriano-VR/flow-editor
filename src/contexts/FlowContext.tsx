@@ -66,9 +66,12 @@ export function FlowProvider({ children }: { children: ReactNode }) {
           status: "draft",
           billing: "free",
           published: true,
+        
+
           data: {
             nodes: [],
-            edges: []
+            edges: [],
+            settings: "{}"
           }
         }
       };
@@ -178,7 +181,8 @@ export function FlowProvider({ children }: { children: ReactNode }) {
           published: true,
           data: {
             nodes: data.nodes,
-            edges: data.edges
+            edges: data.edges,
+            settings: flowData?.attributes?.data?.settings || "{}"
           }
         }
       });
@@ -196,7 +200,8 @@ export function FlowProvider({ children }: { children: ReactNode }) {
             data: {
               ...prev.attributes.data,
               nodes: data.nodes,
-              edges: data.edges
+              edges: data.edges,
+              settings: flowData?.attributes?.data?.settings || "{}"
             }
           }
         };

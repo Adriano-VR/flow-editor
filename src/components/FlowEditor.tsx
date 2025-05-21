@@ -182,6 +182,7 @@ interface NodeConfig {
 }
 
 interface FlowData {
+  
   data: {
     id: number
     attributes: {
@@ -196,6 +197,8 @@ interface FlowData {
       }
       status: string
       data: {
+        settings?:string;
+
         nodes: Node[]
         edges: ReactFlowEdge[]
       } | null
