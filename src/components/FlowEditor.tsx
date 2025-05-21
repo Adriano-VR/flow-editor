@@ -181,24 +181,28 @@ interface NodeConfig {
   url?: string
 }
 
+interface Credentials{
+  provider?: string;
+  appName?: string;
+  source?: string;
+  webhook?: string;
+  apiKey?: string;
+}
+
+interface Settings{
+  credentials?: Credentials;
+  sasas
+}
+
 interface FlowData {
-  
   data: {
     id: number
     attributes: {
       name: string
       description?: string
-      credentials?: {
-        provider?: string
-        appName?: string
-        source?: string
-        webhook?: string
-        apiKey?: string
-      }
       status: string
       data: {
-        settings?:string;
-
+        settings?:Settings
         nodes: Node[]
         edges: ReactFlowEdge[]
       } | null

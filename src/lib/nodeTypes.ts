@@ -27,13 +27,22 @@ export interface NodeTypeDefinition {
   type: string;
   category: 'app' | 'internal';
   subcategory?: string;
-  config: Record<string, unknown>;
+  config: {
+    settings?: {
+      credentials?: {
+        provider?: string;
+        appName?: string;
+        source?: string;
+        webhook?: string;
+        apiKey?: string;
+      };
+    } & Record<string, unknown>;
+  } & Record<string, unknown>;
   icon?: string;
   color: string;
   label?: string;
   input?: NodeIO;
   output?: NodeIO;
-  credentials?: Record<string, unknown>;
 }
 
 // Defina arrays de actions para cada subcategoria
@@ -47,14 +56,16 @@ const whatsappActions: NodeTypeDefinition[] = [
     icon: 'FaWhatsapp',
     color: '#25D366',
     label: 'Enviar Mensagem',
-    credentials: {
-      provider: '',
-      appName: '',
-      source: '',
-      webhook: '',
-      apiKey: ''
-    },
     config: {
+      settings: {
+        credentials: {
+          provider: '',
+          appName: '',
+          source: '',
+          webhook: '',
+          apiKey: ''
+        }
+      },
       message: '',
       to: '',
       type: 'text'
@@ -80,14 +91,16 @@ const whatsappActions: NodeTypeDefinition[] = [
     icon: 'FaWhatsapp',
     color: '#25D366',
     label: 'Enviar Imagem',
-    credentials: {
-      provider: '',
-      appName: '',
-      source: '',
-      webhook: '',
-      apiKey: ''
-    },
     config: {
+      settings: {
+        credentials: {
+          provider: '',
+          appName: '',
+          source: '',
+          webhook: '',
+          apiKey: ''
+        }
+      },
       message: '',
       to: '',
       type: 'image'
@@ -102,14 +115,16 @@ const whatsappActions: NodeTypeDefinition[] = [
     icon: 'FaWhatsapp',
     color: '#25D366',
     label: 'Enviar Vídeo',
-    credentials: {
-      provider: '',
-      appName: '',
-      source: '',
-      webhook: '',
-      apiKey: ''
-    },
     config: {
+      settings: {
+        credentials: {
+          provider: '',
+          appName: '',
+          source: '',
+          webhook: '',
+          apiKey: ''
+        }
+      },
       message: '',
       to: '',
       type: 'video'
@@ -124,14 +139,17 @@ const whatsappActions: NodeTypeDefinition[] = [
     icon: 'FaWhatsapp',
     color: '#25D366',
     label: 'Resposta Rápida',
-    credentials: {
-      provider: '',
-      appName: '',
-      source: '',
-      webhook: '',
-      apiKey: ''
-    },
-    config: {}
+    config: {
+      settings: {
+        credentials: {
+          provider: '',
+          appName: '',
+          source: '',
+          webhook: '',
+          apiKey: ''
+        }
+      }
+    }
   },
   
   {
@@ -143,14 +161,16 @@ const whatsappActions: NodeTypeDefinition[] = [
     icon: 'FaWhatsapp',
     color: '#25D366',
     label: 'Receber Mensagem',
-    credentials: {
-      provider: '',
-      appName: '',
-      source: '',
-      webhook: '',
-      apiKey: ''
-    },
     config: {
+      settings: {
+        credentials: {
+          provider: '',
+          appName: '',
+          source: '',
+          webhook: '',
+          apiKey: ''
+        }
+      },
       message: ''
     }
   }
