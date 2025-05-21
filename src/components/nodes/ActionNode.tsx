@@ -88,6 +88,11 @@ export function ActionNode({ data }: NodeProps) {
             <div className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white" style={{ borderColor: data.color || '#3B82F6' }} />
             <Handle type="source" position={Position.Right} className="absolute inset-0 opacity-0" />
           </div>
+          {data.config?.message && (
+            <div className="mt-2 p-2 bg-gray-50 rounded-lg w-full">
+              <div className="text-sm text-gray-600 break-words">{data.config.message}</div>
+            </div>
+          )}
           <NodeActionButtons data={data} type="action" />
         </div>
       </div>
@@ -136,6 +141,11 @@ export function ActionNode({ data }: NodeProps) {
               <div className="text-sm text-gray-500">{data.label}</div>
             </div>
           </div>
+          {data.config?.message && (
+            <div className="mt-2 p-2 bg-gray-50 rounded-lg w-full">
+              <div className="text-sm text-gray-600 break-words">{data.config.message}</div>
+            </div>
+          )}
           <NodeActionButtons data={data} type="action" />
         </div>
       </div>
@@ -217,6 +227,11 @@ export function ActionNode({ data }: NodeProps) {
             <div className="text-sm text-gray-500">{data.label}</div>
           </div>
         </div>
+        {data.config?.message && (
+          <div className="mt-2 p-2 bg-gray-50 rounded-lg w-full">
+            <div className="text-sm text-gray-600 break-words">{data.config.message}</div>
+          </div>
+        )}
         {!isEndNode && (
           <div className="absolute right-[-20px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
             <div className="w-full h-full rounded-full flex items-center justify-center shadow-lg transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white" style={{ borderColor: data.color || '#25D366' }} />

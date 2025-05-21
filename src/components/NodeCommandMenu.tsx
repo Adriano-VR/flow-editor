@@ -17,9 +17,10 @@ interface NodeCommandMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onNodeSelect: (nodeType: NodeTypeDefinition) => void;
+  onClose?: () => void;
 }
 
-export function NodeCommandMenu({ open, onOpenChange, onNodeSelect }: NodeCommandMenuProps) {
+export function NodeCommandMenu({ open, onOpenChange, onNodeSelect, onClose }: NodeCommandMenuProps) {
   // Add keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -62,7 +63,10 @@ export function NodeCommandMenu({ open, onOpenChange, onNodeSelect }: NodeComman
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50" onClick={() => onOpenChange(false)}>
+    <div className="fixed inset-0 z-50 bg-black/50" onClick={() => {
+      onOpenChange(false);
+      onClose?.();
+    }}>
       <div 
         className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90vw] max-w-[450px] max-h-[85vh] overflow-hidden rounded-lg border bg-background shadow-lg"
         onClick={e => e.stopPropagation()}

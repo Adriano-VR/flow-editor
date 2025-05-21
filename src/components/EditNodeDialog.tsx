@@ -45,13 +45,23 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
   const handleSave = async () => {
     try {
       setIsSaving(true)
+      
+      // Remove credenciais do config se existirem
+      const { credentials: configCredentials, ...configWithoutCredentials } = localNode.data.config || {};
+      
+      // Usa as credenciais do nível raiz se existirem, senão usa as do config
+      const finalCredentials = localNode.data.credentials || configCredentials || {};
+      
       const updatedNode = {
         ...editingNode,
         data: {
           ...editingNode.data,
           ...localNode.data,
+          config: configWithoutCredentials, // Config sem credenciais
+          credentials: finalCredentials // Credenciais apenas no nível raiz
         }
       }
+      
       await onSave(updatedNode)
       toast({
         title: "Nó atualizado!",
@@ -184,7 +194,8 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
               {renderActionConfigFields(getActionDefinition(), {
                 input: localNode.data.input,
                 output: localNode.data.output,
-                config: localNode.data.config || {}
+                config: localNode.data.config || {},
+                credentials: localNode.data.credentials || {}
               }, (newConfig) => {
                 // Simplifica a atualização para evitar aninhamento
                 setLocalNode({
@@ -193,7 +204,8 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
                     ...localNode.data,
                     input: newConfig.input || localNode.data.input,
                     output: newConfig.output || localNode.data.output,
-                    config: newConfig.config || localNode.data.config
+                    config: newConfig.config || localNode.data.config,
+                    credentials: newConfig.credentials || localNode.data.credentials
                   }
                 });
               }, getActionDefinition())}

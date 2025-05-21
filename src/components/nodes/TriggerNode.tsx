@@ -112,7 +112,7 @@ export function TriggerNode({ data }: NodeProps) {
         </div>
         <NodeActionButtons data={data} type="trigger" />
       </div>
-      <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.label}</div>
+      <div className="text-xs font-bold text-black text-center px-1 mt-1">{data.config.condition}</div>
     </div>
   );
 } 

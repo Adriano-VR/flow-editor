@@ -45,6 +45,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Progress } from "@/components/ui/progress"
+import { FlowThreadsList } from './FlowThreadsList';
+import { List } from 'lucide-react';
 
 // Add styles for edge hover effect
 const edgeStyles = `
@@ -157,6 +159,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   const [showCanvasTooltip, setShowCanvasTooltip] = useState(false);
   const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [progress, setProgress] = useState(0);
+  const [showThreadsList, setShowThreadsList] = useState(false);
 
   // Efeito para limpar o estado quando o flowId muda
   useEffect(() => {
@@ -532,8 +535,28 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
     // Create a new array of nodes with the updated node
     const updatedNodes = nodes.map(node => {
       if (node.id === nodeId) {
-        // Preserva input/output/credentials no nível raiz
-        const { input, output, credentials, ...restData } = updates.data || {};
+        // Extrai e remove credenciais e config do updates.data para evitar duplicação
+        const { 
+          input, 
+          output, 
+          credentials, 
+          config: newConfig,
+          credentials: _credentials, // Remove credenciais do restData
+          config: _config, // Remove config do restData
+          ...restData 
+        } = updates.data || {};
+        
+        // Remove qualquer aninhamento extra de config ou credentials
+        const { credentials: configCredentials, config: nestedConfig, ...configWithoutCredentials } = newConfig || {};
+        
+        // Mescla o config aninhado se existir
+        const finalConfig = nestedConfig ? {
+          ...nestedConfig,
+          ...configWithoutCredentials
+        } : configWithoutCredentials;
+        
+        // Usa as credenciais do nível raiz se existirem, senão usa as do config
+        const finalCredentials = credentials || configCredentials || node.data.credentials;
         
         return {
           ...node, // Keep all original node properties
@@ -543,8 +566,9 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
             ...node.data, // Keep all original data
             input: input || node.data.input, // Preserva input no nível raiz
             output: output || node.data.output, // Preserva output no nível raiz
-            credentials: credentials || node.data.credentials, // Preserva credentials no nível raiz
-            ...restData // Aplica outras atualizações de data
+            credentials: finalCredentials, // Preserva credentials no nível raiz
+            config: finalConfig, // Config limpo sem aninhamentos
+            ...restData // Aplica outras atualizações de data (sem credenciais/config)
           }
         };
       }
@@ -669,6 +693,29 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
     }
   }, [loading]);
 
+  // Add back the keyboard shortcut handler
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === '/' && !event.metaKey && !event.ctrlKey) {
+        event.preventDefault();
+        setShowCommandMenu(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  // Add back the canvas tooltip handler
+  useEffect(() => {
+    if (showCanvasTooltip) {
+      const timer = setTimeout(() => {
+        setShowCanvasTooltip(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showCanvasTooltip]);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[80vh] gap-4 text-muted-foreground">
@@ -683,124 +730,156 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <style>{edgeStyles}</style>
-      <div className="flex items-center justify-between mb-4 px-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditDrawerOpen(true)}
-            className="flex items-center gap-2"
-          >
-            <Pencil className="h-4 w-4" />
-            Editar
-          </Button>
-          <TooltipProvider>
-            <Tooltip delayDuration={1000}>
-              <TooltipTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => drawerRef.current?.open()}
-                  className="flex items-center gap-2"
-                >
-                  <FiTool className="h-4 w-4" />
-                  Adicionar Nó
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Clique para adicionar um nó, use o botão direito do mouse no canvas ou pressione <kbd className="px-1 py-0.5 text-xs bg-gray-100 rounded border">/</kbd></p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <NodeSelectionDrawer ref={drawerRef} onNodeSelect={handleNodeTypeSelect} />
-        </div>
-
-        <div className="flex flex-col items-center">
-          <h2 className="text-2xl font-extrabold">
-            {flowData?.data?.attributes?.name }
-          </h2>
-          <span className="text-sm text-muted-foreground">
-            Editando {flowData?.data?.attributes?.name}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {lastSaved && (
-            <div className="text-sm text-muted-foreground">
-              Último salvamento: {lastSaved.toLocaleTimeString()}
-            </div>
-          )}
-          <PlayButton 
-            onPlay={handleExecuteFlow} 
-            onExecutionStateChange={setIsExecuting}
-          />
-          <ChatAssistant flowId={flowId} />
-          <JsonEditor 
-            flowData={selectedNode} 
-            onSave={(json) => {
-              if (selectedNode) {
-                const updatedNodes = nodes.map((node) => {
-                  if (node.id === selectedNode.id) {
-                    return {
-                      ...node,
-                      data: {
-                        ...node.data,
-                        config: JSON.parse(json),
-                      },
-                    };
-                  }
-                  return node;
-                });
-                setNodes(updatedNodes);
-                debouncedSave();
-              }
-            }}
-            onCreateFlow={handleCreateFlowFromJson}
-            completeFlow={{ nodes, edges }}
-          />
-        </div>
-      </div>
-
-      <div className="flex-1 border rounded-lg relative">
-        <div className="h-full w-full" onContextMenu={handleContextMenu}>
-          {showCanvasTooltip && (
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg text-sm">
-              Pressione <kbd className="px-1 py-0.5 text-xs bg-gray-100 rounded border">/</kbd> ou clique com botão direito para adicionar um nó
-            </div>
-          )}
-          <ReactFlow
-            nodes={nodesWithAnimation}
-            edges={edges}
-            onNodesChange={handleNodesChange}
-            onEdgesChange={handleEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={handleNodeClick}
-            onEdgeClick={handleDeleteEdge}
-            onEdgeMouseEnter={onEdgeMouseEnter}
-            onEdgeMouseLeave={onEdgeMouseLeave}
-            onMouseMove={handleMouseMove}
-            nodeTypes={nodeTypes}
-            fitView
-            className="cursor-crosshair bg-gray-50 rounded-2xl"
-            style={{ cursor: 'crosshair' }}
-          >
-            <Background color="#94a3b8" gap={16} size={1} />
-            <Controls />
-            <NodeProvider 
-              onEdit={handleNodeEdit} 
-              onDelete={handleNodeDelete}
+    <div className="h-screen flex flex-col">
+      <div className="flex-1 flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => setIsEditDrawerOpen(true)}
+              className="relative"
             >
-              <NodeCommandMenu
-                open={showCommandMenu}
-                onOpenChange={setShowCommandMenu}
-                onNodeSelect={handleNodeTypeSelect}
-              />
-            </NodeProvider>
-          </ReactFlow>
+              <Pencil className="h-4 w-4" />
+            </Button>
+            <TooltipProvider>
+              <Tooltip delayDuration={1000}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => drawerRef.current?.open()}
+                    className="flex items-center gap-2"
+                  >
+                    <FiTool className="h-4 w-4" />
+                    Adicionar Nó
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Clique para adicionar um nó, use o botão direito do mouse no canvas ou pressione <kbd className="px-1 py-0.5 text-xs bg-gray-100 rounded border">/</kbd></p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <NodeSelectionDrawer ref={drawerRef} onNodeSelect={handleNodeTypeSelect} />
+          </div>
+
+          <h1 className="text-xl font-semibold absolute left-1/2 -translate-x-1/2">
+            {flowData?.data?.attributes?.name || 'Flow Editor'}
+          </h1>
+
+          <div className="flex items-center gap-2">
+            {lastSaved && (
+              <div className="text-sm text-muted-foreground">
+                Último salvamento: {lastSaved.toLocaleTimeString()}
+              </div>
+            )}
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowThreadsList(true)}
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Lista de threads <kbd className="px-1 py-0.5 text-xs bg-gray-100 rounded border ml-1">Alt + L</kbd></p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            <PlayButton 
+              onPlay={handleExecuteFlow} 
+              onExecutionStateChange={setIsExecuting}
+            />
+            <ChatAssistant flowId={flowId} />
+            <JsonEditor 
+              flowData={selectedNode} 
+              onSave={(json) => {
+                if (selectedNode) {
+                  const updatedNodes = nodes.map((node) => {
+                    if (node.id === selectedNode.id) {
+                      return {
+                        ...node,
+                        data: {
+                          ...node.data,
+                          config: JSON.parse(json),
+                        },
+                      };
+                    }
+                    return node;
+                  });
+                  setNodes(updatedNodes);
+                  debouncedSave();
+                }
+              }}
+              onCreateFlow={handleCreateFlowFromJson}
+              completeFlow={{ nodes, edges }}
+            />
+          </div>
+        </div>
+
+        <div className="flex-1 relative">
+          <div className="h-full w-full" onContextMenu={handleContextMenu}>
+            {showCanvasTooltip && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg shadow-lg text-sm">
+                Pressione <kbd className="px-1 py-0.5 text-xs bg-gray-100 rounded border">/</kbd> ou clique com botão direito para adicionar um nó
+              </div>
+            )}
+            <ReactFlow
+              nodes={nodesWithAnimation}
+              edges={edges}
+              onNodesChange={handleNodesChange}
+              onEdgesChange={handleEdgesChange}
+              onConnect={onConnect}
+              onNodeClick={handleNodeClick}
+              onEdgeClick={handleDeleteEdge}
+              onEdgeMouseEnter={onEdgeMouseEnter}
+              onEdgeMouseLeave={onEdgeMouseLeave}
+              onMouseMove={handleMouseMove}
+              nodeTypes={nodeTypes}
+              fitView
+              className="bg-slate-50"
+            >
+              <Background />
+              <Controls />
+              {showCommandMenu && (
+                <NodeCommandMenu
+                  open={showCommandMenu}
+                  onOpenChange={setShowCommandMenu}
+                  onClose={() => setShowCommandMenu(false)}
+                  onNodeSelect={handleNodeTypeSelect}
+                />
+              )}
+            </ReactFlow>
+          </div>
         </div>
       </div>
+
+      <FlowThreadsList
+        open={showThreadsList}
+        onOpenChange={setShowThreadsList}
+        nodes={nodes}
+        edges={edges}
+        activeNodeId={activeNodeId}
+        onNodeSelect={(nodeId) => {
+          const node = nodes.find(n => n.id === nodeId);
+          if (node) {
+            setSelectedNode(node);
+            setIsEditDialogOpen(true);
+          }
+        }}
+        onNodeEdit={(nodeId) => {
+          const node = nodes.find(n => n.id === nodeId);
+          if (node) {
+            setSelectedNode(node);
+            setEditingNode(node);
+            setIsEditDialogOpen(true);
+          }
+        }}
+        onNodeDelete={handleNodeDelete}
+      />
 
       <EditNodeDialog
         open={isEditDialogOpen}

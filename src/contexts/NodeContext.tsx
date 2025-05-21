@@ -85,47 +85,72 @@ export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) 
   ): NodeOperationResult => {
     const centerPosition = getCenterPosition();
     
-    const { credentials, ...restConfig } = nodeType.config || {};
+    // Remove input/output/credentials do config se existirem
+    const { 
+      input: configInput, 
+      output: configOutput, 
+      credentials: configCredentials,
+      config: nestedConfig, // Remove config aninhado se existir
+      ...restConfig 
+    } = nodeType.config || {};
+    
+    // Config limpo sem credenciais e sem aninhamento
+    // Se houver um config aninhado, remove as credenciais dele também
+    const cleanNestedConfig = nestedConfig ? {
+      ...nestedConfig,
+      credentials: undefined // Remove credenciais do config aninhado
+    } : {};
+    
     const configWithoutCredentials = {
+      ...cleanNestedConfig,
       ...restConfig
     } as Record<string, unknown>;
-
-    const defaultCredentials: Record<string, unknown> & {
-      provider?: string;
-      appName?: string;
-      source?: string;
-      webhook?: string;
-      apiKey?: string;
-    } = {
+    
+    // Usa as credenciais do nível raiz se existirem, senão usa as do config
+    const defaultCredentials = {
       provider: '',
       appName: '',
       source: '',
       webhook: '',
       apiKey: ''
     };
-
+    
+    // Prioriza credenciais do nível raiz, depois do config, depois defaults
+    // Mas não duplica as credenciais
+    const finalCredentials = {
+      ...defaultCredentials,
+      ...(configCredentials || {}), // Primeiro usa credenciais do config
+      ...(nodeType.credentials || {}) // Depois sobrescreve com credenciais do nível raiz se existirem
+    };
+    
+    // Converte o input/output para o formato correto
+    const input = nodeType.input ? {
+      variables: [{ variable: nodeType.input.variables.nome }]
+    } : { variables: [] };
+    
+    const output = nodeType.output ? {
+      text: nodeType.output.text || ''
+    } : { text: '' };
+    
     const newNode: Node = {
-      id: `node-${Date.now()}`,
+      id: `${nodeType.id}-${Date.now()}`,
       type: nodeType.type as 'action' | 'internal',
-      position: position || centerPosition,
       data: {
         type: nodeType.type as 'action' | 'internal',
         app: nodeType.subcategory as 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap' | undefined,
         name: nodeType.name,
-        // uuid: `node-${Date.now()}`,
-        label: String(nodeType.label ?? nodeType.name ?? ''),
+        label: nodeType.label ?? nodeType.name,
         stop: false,
+        input,
+        output,
+        config: configWithoutCredentials, // Config sem credenciais e sem aninhamento
+        credentials: finalCredentials, // Credenciais apenas no nível raiz
         icon: nodeType.icon,
-        color: nodeType.color,
-        input: nodeType.input ? { variables: [{ variable: nodeType.input.variables.nome }] } : { variables: [] },
-        output: nodeType.output ? { text: nodeType.output.text || '' } : { text: '' },
-        config: {
-          ...configWithoutCredentials,
-          credentials: credentials || { provider: '', appName: '', source: '', webhook: '', apiKey: '', dummy: '' }
-        }
-      }
+        color: nodeType.color
+      },
+      position: position || centerPosition,
     };
-
+    
     return {
       nodes: [...nodes, newNode],
       edges

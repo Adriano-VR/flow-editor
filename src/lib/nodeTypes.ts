@@ -45,17 +45,17 @@ const whatsappActions: NodeTypeDefinition[] = [
     icon: 'FaWhatsapp',
     color: '#25D366',
     label: 'Enviar Mensagem',
+    credentials: {
+      provider: '',
+      appName: '',
+      source: '',
+      webhook: '',
+      apiKey: ''
+    },
     config: {
       message: '',
-      to: '4144448585',
-      type: 'text',
-      credentials: {
-        provider: 'a',
-        appName: 'a',
-        source: 'a',
-        webhook: 'a',
-        apiKey: 'a'
-      }
+      to: '',
+      type: 'text'
     },
     input: {
       variables: {
@@ -78,6 +78,13 @@ const whatsappActions: NodeTypeDefinition[] = [
     icon: 'FaWhatsapp',
     color: '#25D366',
     label: 'Enviar Imagem',
+    credentials: {
+      provider: '',
+      appName: '',
+      source: '',
+      webhook: '',
+      apiKey: ''
+    },
     config: {
       message: '',
       to: '',
@@ -93,6 +100,13 @@ const whatsappActions: NodeTypeDefinition[] = [
     icon: 'FaWhatsapp',
     color: '#25D366',
     label: 'Enviar Vídeo',
+    credentials: {
+      provider: '',
+      appName: '',
+      source: '',
+      webhook: '',
+      apiKey: ''
+    },
     config: {
       message: '',
       to: '',
@@ -108,6 +122,13 @@ const whatsappActions: NodeTypeDefinition[] = [
     icon: 'FaWhatsapp',
     color: '#25D366',
     label: 'Resposta Rápida',
+    credentials: {
+      provider: '',
+      appName: '',
+      source: '',
+      webhook: '',
+      apiKey: ''
+    },
     config: {}
   },
   {
@@ -119,6 +140,13 @@ const whatsappActions: NodeTypeDefinition[] = [
     icon: 'FaWhatsapp',
     color: '#25D366',
     label: 'Lista de Opções',
+    credentials: {
+      provider: '',
+      appName: '',
+      source: '',
+      webhook: '',
+      apiKey: ''
+    },
     config: {}
   },
   {
@@ -130,6 +158,13 @@ const whatsappActions: NodeTypeDefinition[] = [
     icon: 'FaWhatsapp',
     color: '#25D366',
     label: 'Receber Mensagem',
+    credentials: {
+      provider: '',
+      appName: '',
+      source: '',
+      webhook: '',
+      apiKey: ''
+    },
     config: {
       message: ''
     }

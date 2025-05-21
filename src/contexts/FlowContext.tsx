@@ -211,8 +211,23 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   };
 
   const createNode = (actionDefinition: NodeTypeDefinition, position?: { x: number; y: number }): Node => {
-    // Remove input/output do config se existirem
-    const { input: configInput, output: configOutput, ...restConfig } = actionDefinition.config || {};
+    // Remove input/output/credentials do config se existirem
+    const { 
+      input: configInput, 
+      output: configOutput, 
+      credentials: configCredentials,
+      config: nestedConfig, // Remove config aninhado se existir
+      ...restConfig 
+    } = actionDefinition.config || {};
+
+    // Config limpo sem credenciais e sem aninhamento
+    const configWithoutCredentials = nestedConfig || restConfig;
+
+    // Prioriza credenciais do nível raiz, depois do config
+    const finalCredentials = {
+      ...(actionDefinition.credentials || {}), // Primeiro usa credenciais do nível raiz
+      ...(configCredentials || {}) // Depois usa credenciais do config se não existirem no nível raiz
+    };
 
     return {
       id: `${actionDefinition.id}-${Date.now()}`,
@@ -221,15 +236,12 @@ export function FlowProvider({ children }: { children: ReactNode }) {
         type: actionDefinition.type as 'action' | 'internal',
         app: actionDefinition.subcategory as 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap' | undefined,
         name: actionDefinition.name,
-         uuid: `${actionDefinition.id}-${Date.now()}`,
         label: actionDefinition.label ?? actionDefinition.name,
         stop: false,
         input: actionDefinition.input || { variables: [] },
         output: actionDefinition.output || { text: '' },
-        config: {
-          ...restConfig
-        },
-        // Include style properties directly from actionDefinition
+        config: configWithoutCredentials, // Config sem credenciais e sem aninhamento
+        credentials: finalCredentials, // Credenciais apenas no nível raiz
         icon: actionDefinition.icon,
         color: actionDefinition.color
       },

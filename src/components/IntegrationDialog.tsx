@@ -42,26 +42,47 @@ export const IntegrationDialog = ({
     const defaultInput = actionDefinition?.input || { variables: [] };
     const defaultOutput = actionDefinition?.output || { text: '' };
     const defaultConfig = actionDefinition?.config || {};
-    const defaultCredentials = actionDefinition?.config?.credentials || {};
+    const defaultCredentials = actionDefinition?.credentials || {};
 
     // Pega os valores atuais do config
-    const { input: currentInput, output: currentOutput, config: currentConfig } = config || {};
+    const { input: currentInput, output: currentOutput, config: currentConfig, credentials: currentCredentials } = config || {};
     
     // Se estamos atualizando um nó existente, mantém os valores atuais
     // Se estamos criando um novo nó, usa os valores padrão
     const isUpdate = currentConfig && Object.keys(currentConfig).length > 0;
     
-    // Extrai as credenciais do config.config se existirem
-    const configCredentials = currentConfig?.config?.credentials || currentConfig?.credentials || {};
+    // Extrai o config real e remove aninhamentos desnecessários
+    let cleanConfig = { ...currentConfig } || {};
+    
+    // Se tiver config aninhado, mescla com o config pai
+    if (cleanConfig.config) {
+      cleanConfig = {
+        ...cleanConfig.config,
+        ...cleanConfig
+      };
+      delete cleanConfig.config; // Remove o config aninhado
+    }
     
     // Remove as credenciais do config para evitar duplicação
-    const { credentials: _, config: __, ...configWithoutCredentials } = currentConfig || {};
+    const { credentials: configCredentials, ...configWithoutCredentials } = cleanConfig;
+    
+    // Remove campos duplicados, mantendo apenas os valores mais recentes
+    const finalConfig = Object.entries(configWithoutCredentials).reduce((acc, [key, value]) => {
+      // Se o campo já existe, só atualiza se o valor não for vazio
+      if (acc[key] === undefined || value !== '') {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+    
+    // Usa as credenciais do nível raiz se existirem, senão usa as do config
+    const finalCredentials = currentCredentials || configCredentials || defaultCredentials;
     
     setCurrentConfig({
       input: isUpdate ? (currentInput || defaultInput) : defaultInput,
       output: isUpdate ? (currentOutput || defaultOutput) : defaultOutput,
-      config: isUpdate ? configWithoutCredentials : defaultConfig,
-      credentials: isUpdate ? configCredentials : defaultCredentials
+      config: isUpdate ? finalConfig : defaultConfig,
+      credentials: finalCredentials
     });
   }, [config, actionDefinition])
 
@@ -73,14 +94,30 @@ export const IntegrationDialog = ({
       const { input, output, config: nodeConfig, credentials } = currentConfig;
       
       // Remove qualquer aninhamento extra de config ou credentials
-      const { credentials: _, config: __, ...configWithoutCredentials } = nodeConfig || {};
+      const { 
+        credentials: configCredentials, 
+        config: nestedConfig,
+        // Remove credenciais e config do restConfig para evitar duplicação
+        credentials: _credentials,
+        config: _config,
+        ...restConfig 
+      } = nodeConfig || {};
       
-      // Salva as credenciais no nível raiz e o resto no config
+      // Mescla o config aninhado se existir
+      const finalConfig = nestedConfig ? {
+        ...nestedConfig,
+        ...restConfig
+      } : restConfig;
+      
+      // Usa as credenciais do nível raiz se existirem, senão usa as do config
+      const finalCredentials = credentials || configCredentials || {};
+      
+      // Salva as credenciais apenas no nível raiz
       onSave({
         input: input || { variables: [] },
         output: output || { text: '' },
-        config: configWithoutCredentials,
-        credentials: credentials || {}
+        config: finalConfig, // Config limpo sem credenciais
+        credentials: finalCredentials // Credenciais apenas no nível raiz
       });
       
       setTimeout(() => {

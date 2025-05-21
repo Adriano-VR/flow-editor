@@ -5,9 +5,16 @@ import { Input } from '../../ui/input';
 export function renderWhatsAppConfigFields(selectedAction: any, actionConfig: any, setActionConfig: (cfg: any) => void) {
   // Função auxiliar para atualizar as credenciais
   const updateCredentials = (field: string, value: string) => {
+    // Pega as credenciais atuais do nível raiz
     const currentCredentials = actionConfig.credentials || {};
+    
+    // Remove credenciais do config se existirem
+    const { credentials: _credentials, ...configWithoutCredentials } = actionConfig.config || {};
+    
+    // Atualiza apenas as credenciais no nível raiz
     setActionConfig({
       ...actionConfig,
+      config: configWithoutCredentials, // Config sem credenciais
       credentials: {
         ...currentCredentials,
         [field]: value
@@ -17,11 +24,13 @@ export function renderWhatsAppConfigFields(selectedAction: any, actionConfig: an
 
   // Função auxiliar para atualizar a configuração
   const updateConfig = (field: string, value: string) => {
-    const currentConfig = actionConfig.config || {};
+    // Remove credenciais do config ao atualizar
+    const { credentials: _credentials, ...configWithoutCredentials } = actionConfig.config || {};
+    
     setActionConfig({
       ...actionConfig,
       config: {
-        ...currentConfig,
+        ...configWithoutCredentials,
         [field]: value,
         type: selectedAction.id.split('_').pop() || 'text'
       }
@@ -34,7 +43,9 @@ export function renderWhatsAppConfigFields(selectedAction: any, actionConfig: an
     case 'whatsapp_send_message_video':
       // Extrai as credenciais do nível raiz
       const credentials = actionConfig.credentials || {};
-      const config = actionConfig.config || {};
+      // Remove credenciais do config se existirem
+      const { credentials: _credentials, ...config } = actionConfig.config || {};
+      console.log('credentials', credentials);
       
       return (
         <div className="space-y-4">

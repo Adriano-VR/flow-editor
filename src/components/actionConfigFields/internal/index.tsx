@@ -12,8 +12,14 @@ export function renderInternalConfigFields(selectedAction: any, actionConfig: an
             <Input
               id="condition"
               placeholder="Digite a condição de início"
-              value={actionConfig.condition || ''}
-              onChange={e => setActionConfig({ ...actionConfig, condition: e.target.value })}
+              value={actionConfig.config.condition || ''}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  condition: e.target.value 
+                }
+              })}
             />
           </div>
         </div>

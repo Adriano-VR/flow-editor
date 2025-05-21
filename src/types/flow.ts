@@ -2,6 +2,9 @@ import { Dispatch, SetStateAction } from 'react';
 import { Edge as ReactFlowEdge } from 'reactflow';
 import { Node } from './node';
 
+export type { Node } from './node';
+export type Edge = ReactFlowEdge;
+
 export interface Flow {
   id: string;
   attributes: {
@@ -14,8 +17,6 @@ export interface Flow {
     } | null;
   };
 }
-
-export type Edge = ReactFlowEdge;
 
 export interface Action {
   id: string;

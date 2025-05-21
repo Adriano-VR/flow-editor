@@ -12,8 +12,14 @@ export function renderAssistantConfigFields(selectedAction: any, actionConfig: a
             <Input
               id="model"
               placeholder="gpt-3.5-turbo"
-              value={actionConfig.model || ''}
-              onChange={e => setActionConfig({ ...actionConfig, model: e.target.value })}
+              value={actionConfig.config?.model || ''}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  model: e.target.value 
+                }
+              })}
             />
           </div>
           <div className="space-y-2">
@@ -24,8 +30,14 @@ export function renderAssistantConfigFields(selectedAction: any, actionConfig: a
               min="0"
               max="2"
               step="0.1"
-              value={actionConfig.temperature || 0.7}
-              onChange={e => setActionConfig({ ...actionConfig, temperature: Number(e.target.value) })}
+              value={actionConfig.config?.temperature || 0.7}
+              onChange={e => setActionConfig({ 
+                ...actionConfig, 
+                config: {
+                  ...actionConfig.config,
+                  temperature: Number(e.target.value) 
+                }
+              })}
             />
           </div>
         </div>
