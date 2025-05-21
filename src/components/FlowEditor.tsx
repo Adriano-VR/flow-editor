@@ -399,29 +399,12 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   }, []);
 
   const handleNodeTypeSelect = useCallback((actionDefinition: NodeTypeDefinition) => {
-    // Se já estiver com um diálogo aberto, não abre outro
-    if (isConfigDialogOpen) return;
-
     // Cria o nó usando a função createNode
     const newNode = createNode(actionDefinition);
 
-    // Para todos os nós que precisam de configuração, abre o diálogo
-    if (
-      actionDefinition.name === 'Atraso' ||
-      actionDefinition.name === 'Início' ||
-      (actionDefinition.category === 'app' && actionDefinition.type !== 'webhook') ||
-      actionDefinition.name === 'Comentário' ||
-      actionDefinition.name === 'Banco de Dados'
-    ) {
-      setTempNode(newNode);
-      setNewNodeConfig(actionDefinition.config || {});
-      setIsConfigDialogOpen(true);
-      return;
-    }
-
-    // Para outros nós internos simples, adiciona direto
+    // Adiciona o nó diretamente sem abrir o diálogo de configuração
     setNodes((nds) => [...nds, newNode]);
-  }, [isConfigDialogOpen, setNodes, createNode]);
+  }, [setNodes, createNode]);
 
   const handleConfigSubmit = (updatedConfig: Record<string, any>) => {
     if (!tempNode) return;

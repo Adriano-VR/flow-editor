@@ -191,7 +191,10 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
             )}
 
             <div className="space-y-6">
-              {renderActionConfigFields(getActionDefinition(), {
+              {renderActionConfigFields({
+                id: localNode.id.split("-")[0],
+                name: localNode.data.name
+              }, {
                 input: localNode.data.input,
                 output: localNode.data.output,
                 config: localNode.data.config || {},

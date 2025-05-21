@@ -68,9 +68,34 @@ export function renderDynamicConfigFields(
   );
 }
 
+interface ActionConfigFieldsProps {
+  selectedAction: {
+    id: string;
+    name: string;
+  };
+  actionConfig: {
+    input?: Record<string, unknown>;
+    output?: Record<string, unknown>;
+    config: Record<string, unknown>;
+    credentials?: Record<string, unknown>;
+  };
+  setActionConfig: (cfg: {
+    input?: Record<string, unknown>;
+    output?: Record<string, unknown>;
+    config: Record<string, unknown>;
+    credentials?: Record<string, unknown>;
+  }) => void;
+  actionDefinition?: any;
+}
+
 // Função principal para renderizar campos de configuração de ação
-export function renderActionConfigFields(selectedAction: any, actionConfig: any, setActionConfig: (cfg: any) => void, actionDefinition: any) {
-  if (!selectedAction) return null;
+export function renderActionConfigFields(
+  selectedAction: ActionConfigFieldsProps['selectedAction'],
+  actionConfig: ActionConfigFieldsProps['actionConfig'],
+  setActionConfig: ActionConfigFieldsProps['setActionConfig'],
+  actionDefinition?: ActionConfigFieldsProps['actionDefinition']
+) {
+  if (!selectedAction?.id) return null;
 
   // Determina qual app está sendo usado baseado no ID da ação
   const appType = selectedAction.id.split('_')[0];
@@ -84,7 +109,7 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
       return renderInstagramConfigFields(selectedAction, actionConfig, setActionConfig);
     
     case 'assistant':
-      return renderAssistantConfigFields(selectedAction, actionConfig, setActionConfig);
+      return renderAssistantConfigFields({ selectedAction, actionConfig, setActionConfig });
     
     case 'form':
       return renderFormConfigFields(selectedAction, actionConfig, setActionConfig);
@@ -94,15 +119,19 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
 
     case 'ai':
       if (selectedAction.id === 'ai_video_to_text') {
+        const outputFormat = (actionConfig.output as Record<string, unknown>)?.format as string || 'string';
         return (
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="output">Formato de Saida </Label>
               <select
-                id="outout"
+                id="output"
                 className="w-full text border border-gray-600 rounded-md px-3 py-2"
-                value={actionConfig.output || 'string'}
-                onChange={e => setActionConfig({ ...actionConfig, output: e.target.value })}
+                value={outputFormat}
+                onChange={e => setActionConfig({ 
+                  ...actionConfig, 
+                  output: { format: e.target.value } 
+                })}
               >
                 <option value="string">String</option>
                 <option value="json">Json</option>
@@ -116,6 +145,7 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
 
     case 'klap':
       if (selectedAction.id === 'klap_url_input') {
+        const urlValue = (actionConfig.config as Record<string, unknown>)?.url as string || '';
         return (
           <div className="space-y-4">
             <div className="space-y-2">
@@ -123,8 +153,14 @@ export function renderActionConfigFields(selectedAction: any, actionConfig: any,
               <Input
                 id="url"
                 placeholder="https://www.google.com"
-                value={actionConfig.url || ''}
-                onChange={e => setActionConfig({ ...actionConfig, url: e.target.value })}
+                value={urlValue}
+                onChange={e => setActionConfig({ 
+                  ...actionConfig, 
+                  config: { 
+                    ...actionConfig.config,
+                    url: e.target.value 
+                  } 
+                })}
               />
             </div>
           </div>

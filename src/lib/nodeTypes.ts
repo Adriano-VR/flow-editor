@@ -1,3 +1,5 @@
+import { AssistantConfig, AssistantNodeConfig, defaultAssistantConfig } from '../types/assistant';
+
 export interface NodeAction {
   uuid: string;
   name: string;
@@ -182,9 +184,11 @@ const assistantActions: NodeTypeDefinition[] = [
     color: '#3B82F6',
     label: 'Configurar Modelo',
     config: {
-      model: '',
-      temperature: 0.7
-    }
+      models: [{
+        model: defaultAssistantConfig.models[0].model,
+        temperature: defaultAssistantConfig.models[0].temperature
+      }]
+    } as Partial<AssistantConfig>
   },
   {
     id: 'assistant_memory',
@@ -196,10 +200,12 @@ const assistantActions: NodeTypeDefinition[] = [
     color: '#3B82F6',
     label: 'Configurar Memória',
     config: {
-      "maxTokens": 0,
-      "temperature": 0,
-      "retentionPeriod": "1d",
-    }
+      memory: {
+        maxTokens: defaultAssistantConfig.memory.maxTokens,
+        temperature: defaultAssistantConfig.memory.temperature,
+        retentionPeriod: defaultAssistantConfig.memory.retentionPeriod
+      }
+    } as Partial<AssistantConfig>
   },
   {
     id: 'assistant_tool',
@@ -211,9 +217,11 @@ const assistantActions: NodeTypeDefinition[] = [
     color: '#3B82F6',
     label: 'Adicionar Ferramenta',
     config: {
-      tool: '',
-      parameters: {}
-    }
+      tools: [{
+        tool: '',
+        parameters: {}
+      }]
+    } as Partial<AssistantConfig>
   },
   {
     id: 'assistant_create_agent',
@@ -225,10 +233,14 @@ const assistantActions: NodeTypeDefinition[] = [
     color: '#3B82F6',
     label: 'Criar Novo Agente',
     config: {
-      name: '',
-      description: '',
-      capabilities: []
-    }
+      agent: {
+        name: '',
+        description: '',
+        capabilities: [],
+        model: defaultAssistantConfig.models[0].model,
+        temperature: defaultAssistantConfig.models[0].temperature
+      }
+    } as Partial<AssistantConfig>
   }
 ];
 

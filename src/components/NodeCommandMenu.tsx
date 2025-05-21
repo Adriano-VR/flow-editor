@@ -75,6 +75,24 @@ export function NodeCommandMenu({ open, onOpenChange, onNodeSelect, onClose }: N
           <CommandInput placeholder="Buscar tipo de nó..." />
           <CommandList className="max-h-[300px] overflow-y-auto">
             <CommandEmpty>Nenhum nó encontrado.</CommandEmpty>
+            <CommandGroup heading="Internos">
+              {allNodes
+                .filter(node => node.category === 'internal')
+                .map((node) => (
+                  <CommandItem
+                    key={node.id}
+                    onSelect={() => handleSelect(node)}
+                    className="flex items-center gap-2"
+                  >
+                    <IconRenderer 
+                      iconName={node.icon ?? ''} 
+                      className="w-4 h-4"
+                      style={{ color:node.color}} 
+                    />
+                    <span>{node.name}</span>
+                  </CommandItem>
+                ))}
+            </CommandGroup>
             <CommandGroup heading="Aplicativos">
               {allNodes
                 .filter(node => node.category === 'app')
@@ -99,24 +117,6 @@ export function NodeCommandMenu({ open, onOpenChange, onNodeSelect, onClose }: N
                         {node.subcategory}
                       </span>
                     )}
-                  </CommandItem>
-                ))}
-            </CommandGroup>
-            <CommandGroup heading="Internos">
-              {allNodes
-                .filter(node => node.category === 'internal')
-                .map((node) => (
-                  <CommandItem
-                    key={node.id}
-                    onSelect={() => handleSelect(node)}
-                    className="flex items-center gap-2"
-                  >
-                    <IconRenderer 
-                      iconName={node.icon ?? ''} 
-                      className="w-4 h-4"
-                      style={{ color:node.color}} 
-                    />
-                    <span>{node.name}</span>
                   </CommandItem>
                 ))}
             </CommandGroup>
