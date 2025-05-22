@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -23,7 +23,7 @@ interface WhatsAppInstanceCreatorProps {
   }
   onChange: (field: string, value: string) => void
   isEditing?: boolean
-  onSave: () => void
+  onSave: (instance: { name: string; credencias: { provider: string; appName: string; source: string; webhook: string; apiKey: string } }) => void
   onCancel: () => void
   isSaving?: boolean
   open?: boolean
@@ -42,74 +42,58 @@ export function WhatsAppInstanceCreator({
 }: WhatsAppInstanceCreatorProps) {
   const [showApiKey, setShowApiKey] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [localValues, setLocalValues] = useState(instance)
+
+  useEffect(() => {
+    setLocalValues(instance)
+  }, [instance])
+
+  const handleChange = useCallback((field: string, value: string) => {
+    setLocalValues(prev => {
+      const updated = field === 'name'
+        ? { ...prev, name: value }
+        : {
+            ...prev,
+            credencias: { ...prev.credencias, [field]: value }
+          }
+      return updated
+    })
+  }, [])
+
+  const handleBlur = useCallback((field: string) => {
+    const value = field === "name" ? localValues.name : localValues.credencias[field as keyof typeof localValues.credencias]
+    validateField(field, value)
+    onChange(field, value)
+  }, [localValues, onChange])
 
   const validateField = (field: string, value: string) => {
     const newErrors = { ...errors }
-
-    switch (field) {
-      case "name":
-        if (!value.trim()) {
-          newErrors.name = "Nome da instância é obrigatório"
-        } else {
-          delete newErrors.name
-        }
-        break
-      case "appName":
-        if (!value.trim()) {
-          newErrors.appName = "Nome do app é obrigatório"
-        } else {
-          delete newErrors.appName
-        }
-        break
-      case "source":
-        if (!value.trim()) {
-          newErrors.source = "Número de origem é obrigatório"
-        } else {
-          delete newErrors.source
-        }
-        break
-      case "webhook":
-        if (!value.trim()) {
-          newErrors.webhook = "URL do webhook é obrigatório"
-        } else if (!/^https?:\/\/.+/.test(value)) {
-          newErrors.webhook = "URL inválida"
-        } else {
-          delete newErrors.webhook
-        }
-        break
-      case "apiKey":
-        if (!value.trim()) {
-          newErrors.apiKey = "API Key é obrigatória"
-        } else {
-          delete newErrors.apiKey
-        }
-        break
+    if (!value) {
+      newErrors[field] = "Este campo é obrigatório"
+    } else {
+      delete newErrors[field]
     }
-
     setErrors(newErrors)
-  }
-
-  const handleChange = (field: string, value: string) => {
-    onChange(field, value)
-    validateField(field, value)
   }
 
   const handleSave = () => {
     // Validate all fields before saving
-    validateField("name", instance.name)
-    validateField("appName", instance.credencias.appName)
-    validateField("source", instance.credencias.source)
-    validateField("webhook", instance.credencias.webhook)
-    validateField("apiKey", instance.credencias.apiKey)
+    validateField("name", localValues.name)
+    validateField("appName", localValues.credencias.appName)
+    validateField("source", localValues.credencias.source)
+    validateField("webhook", localValues.credencias.webhook)
+    validateField("apiKey", localValues.credencias.apiKey)
 
     // Check if there are any errors
-    if (Object.keys(errors).length === 0) {
-      onSave()
+    if (Object.keys(errors).length > 0) {
+      return
     }
+
+    onSave(localValues)
   }
 
   const handleCancel = () => {
-    if (isEditing || Object.values(instance).some((value) => value)) {
+    if (isEditing || Object.values(localValues).some((value) => value)) {
       if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
         onCancel()
       }
@@ -119,8 +103,8 @@ export function WhatsAppInstanceCreator({
   }
 
   const content = (
-    <Card className="shadow-md w-full h-full">
-      <CardContent className="pt-6 space-y-4">
+    <Card className="shadow-md md:h-9/12 w-full h-full flex flex-col">
+      <CardContent className="pt-6 space-y-4 flex-1 overflow-y-auto">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <Label htmlFor="name" className="text-sm font-medium">
@@ -136,8 +120,9 @@ export function WhatsAppInstanceCreator({
           <Input
             id="name"
             placeholder="Ex: WhatsApp Suporte"
-            value={instance.name}
-            onInput={(e) => handleChange("name", (e.target as HTMLInputElement).value)}
+            value={localValues.name}
+            onChange={(e) => handleChange("name", e.target.value)}
+            onBlur={() => handleBlur("name")}
             className={cn(errors.name && "border-destructive")}
           />
           <p className="text-xs text-muted-foreground">Um nome único para identificar esta instância</p>
@@ -172,8 +157,9 @@ export function WhatsAppInstanceCreator({
               <Input
                 id="appName"
                 placeholder="Ex: Meu App de Suporte"
-                value={instance.credencias.appName || ""}
-                onInput={(e) => handleChange("appName", (e.target as HTMLInputElement).value)}
+                value={localValues.credencias.appName || ""}
+                onChange={(e) => handleChange("appName", e.target.value)}
+                onBlur={() => handleBlur("appName")}
                 className={cn("pl-9", errors.appName && "border-destructive")}
               />
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -198,8 +184,9 @@ export function WhatsAppInstanceCreator({
               <Input
                 id="source"
                 placeholder="Ex: +5511999999999"
-                value={instance.credencias.source || ""}
-                onInput={(e) => handleChange("source", (e.target as HTMLInputElement).value)}
+                value={localValues.credencias.source || ""}
+                onChange={(e) => handleChange("source", e.target.value)}
+                onBlur={() => handleBlur("source")}
                 className={cn("pl-9", errors.source && "border-destructive")}
               />
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -241,8 +228,9 @@ export function WhatsAppInstanceCreator({
               <Input
                 id="webhook"
                 placeholder="Ex: https://meusite.com/api/webhook"
-                value={instance.credencias.webhook || ""}
-                onInput={(e) => handleChange("webhook", (e.target as HTMLInputElement).value)}
+                value={localValues.credencias.webhook || ""}
+                onChange={(e) => handleChange("webhook", e.target.value)}
+                onBlur={() => handleBlur("webhook")}
                 className={cn("pl-9", errors.webhook && "border-destructive")}
               />
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -268,8 +256,9 @@ export function WhatsAppInstanceCreator({
                 id="apiKey"
                 type={showApiKey ? "text" : "password"}
                 placeholder="Sua chave de API secreta"
-                value={instance.credencias.apiKey || ""}
-                onInput={(e) => handleChange("apiKey", (e.target as HTMLInputElement).value)}
+                value={localValues.credencias.apiKey || ""}
+                onChange={(e) => handleChange("apiKey", e.target.value)}
+                onBlur={() => handleBlur("apiKey")}
                 className={cn("pl-9 pr-10", errors.apiKey && "border-destructive")}
               />
               <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -287,7 +276,7 @@ export function WhatsAppInstanceCreator({
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-end gap-2 pt-2 pb-4 px-6 bg-muted/20">
+      <CardFooter className="flex justify-end gap-2 pt-2 pb-4 px-6 bg-muted/20 mt-auto">
         <Button variant="outline" size="sm" onClick={handleCancel} className="gap-1">
           <X className="h-4 w-4" />
           Cancelar
