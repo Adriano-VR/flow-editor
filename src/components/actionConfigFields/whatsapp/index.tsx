@@ -7,6 +7,7 @@ import { useFlow } from "@/contexts/FlowContext"
 import { type Instance } from "@/lib/settingsTypes"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
+import { WhatsAppInstanceCreator } from './WhatsAppInstanceCreator'
 
 // Interface para o output completo do nó
 interface WhatsAppNodeOutput {
@@ -186,7 +187,7 @@ export function WhatsAppConfig({
   }
 
   // Seleciona instância (não abre edição automaticamente)
-  const handleInstanceChange = (instanceName: string) => {
+  const handleInstanceSelect = (instanceName: string) => {
     setSelectedInstance(instanceName)
     setShowCredentials(false)
     setIsCreating(false)
@@ -199,6 +200,22 @@ export function WhatsAppConfig({
       })
     }
   }
+
+  // Manipula mudanças nos campos do formulário
+  const handleInstanceFieldChange = (field: string, value: string) => {
+    if (isCreating) {
+      if (field === 'name') {
+        setNewInstanceDraft({ ...newInstanceDraft, name: value });
+      } else {
+        setNewInstanceDraft({
+          ...newInstanceDraft,
+          credencias: { ...newInstanceDraft.credencias, [field]: value }
+        });
+      }
+    } else {
+      handleCredentialsChange(field, value);
+    }
+  };
 
   // Quando as credenciais são atualizadas, salva no settings
   const handleCredentialsChange = async (field: string, value: string) => {
@@ -323,7 +340,7 @@ export function WhatsAppConfig({
         </div>
         <div className="flex gap-2 items-center">
           {!isCreating && (
-            <Select value={selectedInstance} onValueChange={handleInstanceChange} disabled={isCreating}>
+            <Select value={selectedInstance} onValueChange={handleInstanceSelect} disabled={isCreating}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione uma instância" />
               </SelectTrigger>
@@ -351,103 +368,38 @@ export function WhatsAppConfig({
 
       {/* Formulário de criação de nova instância */}
       {isCreating && newInstanceDraft && (
-        <div className="space-y-2 border p-3 rounded-md bg-muted/50">
-          <Label>Nome da Instância</Label>
-          <Input
-            value={newInstanceDraft.name}
-            onChange={e => setNewInstanceDraft({ ...newInstanceDraft, name: e.target.value })}
+        <>
+          <WhatsAppInstanceCreator
+            instance={newInstanceDraft}
+            onChange={handleInstanceFieldChange}
+            isEditing={false}
+            onSave={handleSaveNewInstance}
+            onCancel={handleCancelCreate}
           />
-          <Label htmlFor="appName">Nome do App</Label>
-          <Input
-            id="appName"
-            placeholder="Nome do seu app WhatsApp"
-            value={newInstanceDraft.credencias.appName || ''}
-            onChange={e => setNewInstanceDraft({
-              ...newInstanceDraft,
-              credencias: { ...newInstanceDraft.credencias, appName: e.target.value }
-            })}
-          />
-          <Label htmlFor="source">Número de Origem</Label>
-          <Input
-            id="source"
-            placeholder="Seu número WhatsApp"
-            value={newInstanceDraft.credencias.source || ''}
-            onChange={e => setNewInstanceDraft({
-              ...newInstanceDraft,
-              credencias: { ...newInstanceDraft.credencias, source: e.target.value }
-            })}
-          />
-          <Label htmlFor="webhook">Webhook URL</Label>
-          <Input
-            id="webhook"
-            placeholder="URL do webhook"
-            value={newInstanceDraft.credencias.webhook || ''}
-            onChange={e => setNewInstanceDraft({
-              ...newInstanceDraft,
-              credencias: { ...newInstanceDraft.credencias, webhook: e.target.value }
-            })}
-          />
-          <Label htmlFor="apiKey">API Key</Label>
-          <Input
-            id="apiKey"
-            type="password"
-            placeholder="Sua API Key"
-            value={newInstanceDraft.credencias.apiKey || ''}
-            onChange={e => setNewInstanceDraft({
-              ...newInstanceDraft,
-              credencias: { ...newInstanceDraft.credencias, apiKey: e.target.value }
-            })}
-          />
-          <div className="flex gap-2 mt-2">
-            <Button variant="default" size="sm" onClick={handleSaveNewInstance}>
-              Salvar
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleCancelCreate}>
-              Cancelar
-            </Button>
-          </div>
-        </div>
+          
+        </>
       )}
 
       {/* Edição de instância existente */}
       {showCredentials && !isCreating && (
         <>
-          <div className="space-y-2">
-            <Label htmlFor="appName">Nome do App</Label>
-            <Input
-              id="appName"
-              placeholder="Nome do seu app WhatsApp"
-              onChange={e => handleCredentialsChange('appName', e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="source">Número de Origem</Label>
-            <Input
-              id="source"
-              placeholder="Seu número WhatsApp"
-              onChange={e => handleCredentialsChange('source', e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="webhook">Webhook URL</Label>
-            <Input
-              id="webhook"
-              placeholder="URL do webhook"
-              onChange={e => handleCredentialsChange('webhook', e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="apiKey">API Key</Label>
-            <Input
-              id="apiKey"
-              type="password"
-              placeholder="Sua API Key"
-              onChange={e => handleCredentialsChange('apiKey', e.target.value)}
-            />
-          </div>
+          <WhatsAppInstanceCreator
+            instance={{
+              name: selectedInstance,
+              credencias: whatsappInstances.find((i: any) => i.name === selectedInstance)?.credencias || {
+                provider: "whatsapp",
+                appName: "",
+                source: "",
+                webhook: "",
+                apiKey: ""
+              }
+            }}
+            onChange={handleInstanceFieldChange}
+            isEditing={true}
+            onSave={() => setShowCredentials(false)}
+            onCancel={() => setShowCredentials(false)}
+          />
+         
         </>
       )}
 

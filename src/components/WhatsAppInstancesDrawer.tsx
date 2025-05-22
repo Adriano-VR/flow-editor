@@ -28,11 +28,11 @@ import {
   ExternalLink,
   Info,
 } from "lucide-react"
-import { getFlow } from "@/lib/api"
+import { getFlow, updateFlow } from "@/lib/api"
 import type { Flow } from "@/types/flow"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
@@ -45,6 +45,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { WhatsAppInstanceCreator } from './actionConfigFields/whatsapp/WhatsAppInstanceCreator'
 
 interface WhatsAppInstance {
   name: string
@@ -134,28 +135,59 @@ export function WhatsAppInstancesDrawer({
         instances: updatedInstances,
       }
 
-      // Atualizar o estado local imediatamente
-      if (flowData?.data?.attributes?.data) {
-        onFlowDataChange({
-          ...flowData,
-          data: {
-            ...flowData.data,
-            attributes: {
-              ...flowData.data.attributes,
-              data: {
-                ...flowData.data.attributes.data,
-                settings: updatedSettings,
-              },
+      // Criar o objeto de flow atualizado
+      const updatedFlowData = {
+        data: {
+          id: parseInt(flowId),
+          attributes: {
+            name: flowData?.data?.attributes?.name || "",
+            status: flowData?.data?.attributes?.status || "draft",
+            description: flowData?.data?.attributes?.description || "",
+            data: {
+              nodes: flowData?.data?.attributes?.data?.nodes || [],
+              edges: flowData?.data?.attributes?.data?.edges || [],
+              settings: updatedSettings,
             },
           },
+        },
+      }
+
+      // Primeiro atualizar o estado local
+      onFlowDataChange({
+        data: {
+          id: parseInt(flowId),
+          attributes: {
+            name: flowData?.data?.attributes?.name || "",
+            status: flowData?.data?.attributes?.status || "draft",
+            description: flowData?.data?.attributes?.description || "",
+            data: {
+              nodes: flowData?.data?.attributes?.data?.nodes || [],
+              edges: flowData?.data?.attributes?.data?.edges || [],
+              settings: updatedSettings,
+            },
+          },
+        },
+      })
+
+      // Depois persistir no backend
+      console.log("Saving to API:", updatedFlowData) // Log para debug
+      const response = await updateFlow(flowId, updatedFlowData)
+      console.log("API Response:", response) // Log para debug
+
+      if (response) {
+        setSaveStatus("success")
+        // Atualizar o estado local com a resposta da API
+        onFlowDataChange({
+          data: response.data,
         })
+      } else {
+        throw new Error("Failed to update flow")
       }
 
       // Simular um pequeno atraso para mostrar o estado de salvamento
       setTimeout(() => {
-        setSaveStatus("success")
-        setTimeout(() => setSaveStatus("idle"), 2000)
-      }, 800)
+        setSaveStatus("idle")
+      }, 2000)
     } catch (error) {
       console.error("Error updating instances:", error)
       setSaveStatus("error")
@@ -193,17 +225,103 @@ export function WhatsAppInstancesDrawer({
 
   // Função para editar instância
   const handleEditInstance = async (updatedInstance: WhatsAppInstance) => {
-    if (editingIndex === null) return
+    if (editingIndex === null) {
+      console.error("Editing index is null")
+      return
+    }
 
-    const currentInstances = getCurrentInstances()
-    const updatedInstances = currentInstances.map((instance: WhatsAppInstance, i: number) =>
-      i === editingIndex ? updatedInstance : instance,
-    )
+    try {
+      setSaveStatus("saving")
+      const currentInstances = getCurrentInstances()
+      
+      // Criar uma cópia profunda das instâncias atualizadas
+      const updatedInstances = currentInstances.map((instance: WhatsAppInstance, i: number) =>
+        i === editingIndex ? { ...updatedInstance } : { ...instance }
+      )
 
-    await updateInstances(updatedInstances)
-    setIsEditDialogOpen(false)
-    setEditingInstance(null)
-    setEditingIndex(null)
+      // Preparar os dados para atualização
+      const currentSettings = flowData?.data?.attributes?.data?.settings
+      const parsedSettings = currentSettings
+        ? typeof currentSettings === "string"
+          ? JSON.parse(currentSettings)
+          : currentSettings
+        : {}
+
+      // Criar o objeto de configurações atualizado
+      const updatedSettings = {
+        ...parsedSettings,
+        instances: updatedInstances,
+      }
+
+      // Criar o objeto de flow atualizado
+      const updatedFlowData = {
+        data: {
+          id: parseInt(flowId),
+          attributes: {
+            name: flowData?.data?.attributes?.name || "",
+            status: flowData?.data?.attributes?.status || "draft",
+            description: flowData?.data?.attributes?.description || "",
+            data: {
+              nodes: flowData?.data?.attributes?.data?.nodes || [],
+              edges: flowData?.data?.attributes?.data?.edges || [],
+              settings: updatedSettings,
+            },
+          },
+        },
+      }
+
+      // Log para debug
+      console.log("Current instances:", currentInstances)
+      console.log("Updated instance:", updatedInstance)
+      console.log("Updated instances:", updatedInstances)
+      console.log("Updated settings:", updatedSettings)
+      console.log("Saving to API:", updatedFlowData)
+
+      // Primeiro atualizar o estado local
+      onFlowDataChange({
+        data: {
+          id: parseInt(flowId),
+          attributes: {
+            name: flowData?.data?.attributes?.name || "",
+            status: flowData?.data?.attributes?.status || "draft",
+            description: flowData?.data?.attributes?.description || "",
+            data: {
+              nodes: flowData?.data?.attributes?.data?.nodes || [],
+              edges: flowData?.data?.attributes?.data?.edges || [],
+              settings: updatedSettings,
+            },
+          },
+        },
+      })
+
+      // Depois persistir no backend
+      const response = await updateFlow(flowId, updatedFlowData)
+      console.log("API Response:", response)
+
+      if (response?.data) {
+        setSaveStatus("success")
+        // Atualizar o estado local com a resposta da API
+        onFlowDataChange({
+          data: response.data,
+        })
+        
+        // Fechar o diálogo e limpar o estado
+        setIsEditDialogOpen(false)
+        setEditingInstance(null)
+        setEditingIndex(null)
+      } else {
+        throw new Error("Failed to update flow")
+      }
+
+      // Simular um pequeno atraso para mostrar o estado de salvamento
+      setTimeout(() => {
+        setSaveStatus("idle")
+      }, 2000)
+    } catch (error) {
+      console.error("Error updating instance:", error)
+      setSaveStatus("error")
+      setTimeout(() => setSaveStatus("idle"), 3000)
+    }
   }
 
   // Função para obter as instâncias atuais
@@ -219,7 +337,9 @@ export function WhatsAppInstancesDrawer({
 
   // Função para abrir o diálogo de edição
   const openEditDialog = (instance: WhatsAppInstance, index: number) => {
-    setEditingInstance({ ...instance })
+    // Garantir que temos uma cópia profunda da instância
+    const instanceCopy = JSON.parse(JSON.stringify(instance))
+    setEditingInstance(instanceCopy)
     setEditingIndex(index)
     setIsEditDialogOpen(true)
   }
@@ -292,7 +412,7 @@ export function WhatsAppInstancesDrawer({
             <div>
               <DrawerTitle className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-primary" />
-                Instâncias WhatsApp
+                Instâncias 
               </DrawerTitle>
               <DrawerDescription className="text-xs mt-1">
                 Gerencie as instâncias WhatsApp conectadas ao seu flow
@@ -664,122 +784,169 @@ export function WhatsAppInstancesDrawer({
       </Drawer>
 
       {/* Edit Instance Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Editar Instância WhatsApp</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label htmlFor="instance-name">Nome da Instância</Label>
-              <Input
-                id="instance-name"
-                value={editingInstance?.name || ""}
-                onChange={(e) => setEditingInstance((prev) => (prev ? { ...prev, name: e.target.value } : null))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="app-name">App Name</Label>
-              <Input
-                id="app-name"
-                value={editingInstance?.credencias?.appName || ""}
-                onChange={(e) =>
-                  setEditingInstance((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          credencias: { ...prev.credencias, appName: e.target.value },
-                        }
-                      : null,
-                  )
+      {editingInstance && (
+        <Dialog 
+          open={isEditDialogOpen} 
+          onOpenChange={(open) => {
+            if (!open && editingInstance) {
+              // Se houver alterações não salvas, confirmar antes de fechar
+              const currentInstance = getCurrentInstances()[editingIndex || 0]
+              const hasChanges = JSON.stringify(currentInstance) !== JSON.stringify(editingInstance)
+              
+              if (hasChanges) {
+                if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
+                  setIsEditDialogOpen(false)
+                  setEditingInstance(null)
+                  setEditingIndex(null)
                 }
-              />
-            </div>
+              } else {
+                setIsEditDialogOpen(false)
+                setEditingInstance(null)
+                setEditingIndex(null)
+              }
+            } else {
+              setIsEditDialogOpen(open)
+            }
+          }}
+        >
+          <DialogContent className="sm:max-w-2xl min-w-4xl p-0 border-none shadow-none">
+            <DialogHeader className="px-6 py-4 border-b">
+              <DialogTitle>Editar Instância WhatsApp</DialogTitle>
+              <DialogDescription>
+                Configure as credenciais e opções da instância. As alterações serão salvas automaticamente.
+              </DialogDescription>
+            </DialogHeader>
+            <WhatsAppInstanceCreator
+              instance={editingInstance}
+              onChange={(field: string, value: string) => {
+                // Atualizar o estado local imediatamente
+                setEditingInstance(prev => {
+                  if (!prev) return null
+                  if (field === 'name') {
+                    return { ...prev, name: value }
+                  } else {
+                    return {
+                      ...prev,
+                      credencias: { ...prev.credencias, [field]: value }
+                    }
+                  }
+                })
+              }}
+              isEditing={true}
+              onSave={async () => {
+                if (editingInstance && editingIndex !== null) {
+                  try {
+                    setSaveStatus("saving")
+                    const currentInstances = getCurrentInstances()
+                    
+                    // Criar uma cópia profunda das instâncias atualizadas
+                    const updatedInstances = currentInstances.map((instance: WhatsAppInstance, i: number) =>
+                      i === editingIndex ? { ...editingInstance } : { ...instance }
+                    )
 
-            <div className="space-y-2">
-              <Label htmlFor="source">Source</Label>
-              <Input
-                id="source"
-                value={editingInstance?.credencias?.source || ""}
-                onChange={(e) =>
-                  setEditingInstance((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          credencias: { ...prev.credencias, source: e.target.value },
-                        }
-                      : null,
-                  )
+                    // Preparar os dados para atualização
+                    const currentSettings = flowData?.data?.attributes?.data?.settings
+                    const parsedSettings = currentSettings
+                      ? typeof currentSettings === "string"
+                        ? JSON.parse(currentSettings)
+                        : currentSettings
+                      : {}
+
+                    // Criar o objeto de configurações atualizado
+                    const updatedSettings = {
+                      ...parsedSettings,
+                      instances: updatedInstances,
+                    }
+
+                    // Criar o objeto de flow atualizado
+                    const updatedFlowData = {
+                      data: {
+                        id: parseInt(flowId),
+                        attributes: {
+                          name: flowData?.data?.attributes?.name || "",
+                          status: flowData?.data?.attributes?.status || "draft",
+                          description: flowData?.data?.attributes?.description || "",
+                          data: {
+                            nodes: flowData?.data?.attributes?.data?.nodes || [],
+                            edges: flowData?.data?.attributes?.data?.edges || [],
+                            settings: updatedSettings,
+                          },
+                        },
+                      },
+                    }
+
+                    // Log para debug
+                    console.log("Current instances:", currentInstances)
+                    console.log("Updated instance:", editingInstance)
+                    console.log("Updated instances:", updatedInstances)
+                    console.log("Updated settings:", updatedSettings)
+                    console.log("Saving to API:", updatedFlowData)
+
+                    // Atualizar o estado local primeiro
+                    onFlowDataChange({
+                      data: {
+                        id: parseInt(flowId),
+                        attributes: {
+                          name: flowData?.data?.attributes?.name || "",
+                          status: flowData?.data?.attributes?.status || "draft",
+                          description: flowData?.data?.attributes?.description || "",
+                          data: {
+                            nodes: flowData?.data?.attributes?.data?.nodes || [],
+                            edges: flowData?.data?.attributes?.data?.edges || [],
+                            settings: updatedSettings,
+                          },
+                        },
+                      },
+                    })
+
+                    // Depois persistir no backend
+                    const response = await updateFlow(flowId, updatedFlowData)
+                    console.log("API Response:", response)
+
+                    if (response?.data) {
+                      setSaveStatus("success")
+                      // Atualizar o estado local com a resposta da API
+                      onFlowDataChange({
+                        data: response.data,
+                      })
+                      
+                      // Fechar o diálogo e limpar o estado
+                      setIsEditDialogOpen(false)
+                      setEditingInstance(null)
+                      setEditingIndex(null)
+                    } else {
+                      throw new Error("Failed to update flow")
+                    }
+                  } catch (error) {
+                    console.error("Error updating instance:", error)
+                    setSaveStatus("error")
+                  } finally {
+                    setTimeout(() => {
+                      setSaveStatus("idle")
+                    }, 2000)
+                  }
                 }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="webhook">Webhook URL</Label>
-              <Input
-                id="webhook"
-                value={editingInstance?.credencias?.webhook || ""}
-                onChange={(e) =>
-                  setEditingInstance((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          credencias: { ...prev.credencias, webhook: e.target.value },
-                        }
-                      : null,
-                  )
+              }}
+              onCancel={() => {
+                const currentInstance = getCurrentInstances()[editingIndex || 0]
+                const hasChanges = JSON.stringify(currentInstance) !== JSON.stringify(editingInstance)
+                
+                if (hasChanges) {
+                  if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
+                    setIsEditDialogOpen(false)
+                    setEditingInstance(null)
+                    setEditingIndex(null)
+                  }
+                } else {
+                  setIsEditDialogOpen(false)
+                  setEditingInstance(null)
+                  setEditingIndex(null)
                 }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="api-key">API Key</Label>
-              <Input
-                id="api-key"
-                type="password"
-                value={editingInstance?.credencias?.apiKey || ""}
-                onChange={(e) =>
-                  setEditingInstance((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          credencias: { ...prev.credencias, apiKey: e.target.value },
-                        }
-                      : null,
-                  )
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="provider">Provider</Label>
-              <Input
-                id="provider"
-                value={editingInstance?.credencias?.provider || "whatsapp"}
-                onChange={(e) =>
-                  setEditingInstance((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          credencias: { ...prev.credencias, provider: e.target.value },
-                        }
-                      : null,
-                  )
-                }
-              />
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={() => editingInstance && handleEditInstance(editingInstance)}>Salvar Alterações</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              }}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
