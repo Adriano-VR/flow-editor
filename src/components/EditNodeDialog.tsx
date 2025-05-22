@@ -49,16 +49,12 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
       // Remove credenciais do config se existirem
       const { credentials: configCredentials, ...configWithoutCredentials } = localNode.data.config || {};
       
-      // Usa as credenciais do nível raiz se existirem, senão usa as do config
-      const finalCredentials = localNode.data.credentials || configCredentials || {};
-      
       const updatedNode = {
         ...editingNode,
         data: {
           ...editingNode.data,
           ...localNode.data,
-          config: configWithoutCredentials, // Config sem credenciais
-          credentials: finalCredentials // Credenciais apenas no nível raiz
+          config: configWithoutCredentials // Config sem credenciais
         }
       }
       
@@ -77,15 +73,9 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
     } catch (error) {
       console.error("Error saving node:", error)
       toast({
-        title: "Erro ao salvar",
-        description: (
-          <div className="flex items-center gap-2 mt-1">
-            <AlertCircle className="h-5 w-5 text-red-500" />
-            <span>Não foi possível salvar as alterações</span>
-          </div>
-        ),
-        variant: "destructive",
-        className: "bg-red-50 border-red-200 text-red-800 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800",
+        title: "Erro ao salvar!",
+        description: "Ocorreu um erro ao salvar as alterações. Tente novamente.",
+        variant: "destructive"
       })
     } finally {
       setIsSaving(false)

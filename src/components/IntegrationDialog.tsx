@@ -91,7 +91,7 @@ export const IntegrationDialog = ({
       setIsSaving(true)
       
       // Pega os valores atuais
-      const { input, output, config: nodeConfig, credentials } = currentConfig;
+      const { input, output, config: nodeConfig } = currentConfig;
       
       // Remove qualquer aninhamento extra de config ou credentials
       const { 
@@ -109,15 +109,11 @@ export const IntegrationDialog = ({
         ...restConfig
       } : restConfig;
       
-      // Usa as credenciais do nível raiz se existirem, senão usa as do config
-      const finalCredentials = credentials || configCredentials || {};
-      
-      // Salva as credenciais apenas no nível raiz
+      // Salva sem credenciais no nó
       onSave({
         input: input || { variables: [] },
         output: output || { text: '' },
-        config: finalConfig, // Config limpo sem credenciais
-        credentials: finalCredentials // Credenciais apenas no nível raiz
+        config: finalConfig // Config limpo sem credenciais
       });
       
       setTimeout(() => {

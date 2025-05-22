@@ -232,12 +232,6 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     // Config limpo sem credenciais e sem aninhamento
     const configWithoutCredentials = nestedConfig || restConfig;
 
-    // Prioriza credenciais do nível raiz, depois do config
-    const finalCredentials = {
-      ...(actionDefinition.credentials || {}), // Primeiro usa credenciais do nível raiz
-      ...(configCredentials || {}) // Depois usa credenciais do config se não existirem no nível raiz
-    };
-
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
 
@@ -260,7 +254,6 @@ export function FlowProvider({ children }: { children: ReactNode }) {
           text: actionDefinition.output.text || ''
         } : { text: '' },
         config: configWithoutCredentials as Record<string, unknown>,
-        credentials: finalCredentials,
         icon: actionDefinition.icon,
         color: actionDefinition.color
       },

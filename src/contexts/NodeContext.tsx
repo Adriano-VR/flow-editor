@@ -98,21 +98,10 @@ export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) 
       ...restConfig
     } as Record<string, unknown>;
     
-    // Usa as credenciais do nível raiz se existirem, senão usa as do config
-    const defaultCredentials = {
-      provider: '',
-      appName: '',
-      source: '',
-      webhook: '',
-      apiKey: ''
-    };
-    
-    // Prioriza credenciais do nível raiz, depois do config, depois defaults
-    // Mas não duplica as credenciais
+    // Usa apenas as credenciais definidas no nodeType
     const finalCredentials = {
-      ...defaultCredentials,
-      ...(configCredentials || {}), // Primeiro usa credenciais do config
-      ...(nodeType.credentials || {}) // Depois sobrescreve com credenciais do nível raiz se existirem
+      ...(nodeType.credentials || {}), // Usa credenciais do nível raiz se existirem
+      ...(configCredentials || {}) // Depois usa credenciais do config se não existirem no nível raiz
     };
     
     // Converte o input/output para o formato correto
@@ -136,7 +125,6 @@ export function NodeProvider({ children, onEdit, onDelete }: NodeProviderProps) 
         input,
         output,
         config: configWithoutCredentials,
-        credentials: finalCredentials,
         icon: nodeType.icon,
         color: nodeType.color
       },

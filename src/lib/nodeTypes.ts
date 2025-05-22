@@ -15,7 +15,7 @@ export interface NodeVariable {
 }
 
 export interface NodeIO {
-  variables: {
+  variables?: {
     nome: string;
   };
   text?: string;
@@ -40,7 +40,7 @@ export interface NodeTypeDefinition {
 // Defina arrays de actions para cada subcategoria
 const whatsappActions: NodeTypeDefinition[] = [
   {
-    id: 'whatsapp_send_message',
+    id: 'whatsapp_send_message_wait',
     name: 'Enviar Mensagem com Resposta ',
     type: 'action',
     category: 'app',
@@ -49,6 +49,29 @@ const whatsappActions: NodeTypeDefinition[] = [
     color: '#25D366',
     stop: true,
     label: 'Esperando Resposta',
+    messageType: 'text',
+    config: {
+    
+    },
+    input: {
+      variables: {
+        nome: 'variableName'
+      }
+    },
+    output: {
+
+    }
+  },
+  {
+    id: 'whatsapp_send_message',
+    name: 'Enviar Mensagem',
+    type: 'action',
+    category: 'app',
+    subcategory: 'whatsapp',
+    icon: 'FaWhatsapp',
+    color: '#25D366',
+    stop: false,
+    label: 'Enviar Mensagem',
     messageType: 'text',
     config: {
       message: '',

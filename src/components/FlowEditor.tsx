@@ -641,9 +641,8 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
         const {
           input,
           output,
-          credentials,
-          config: newConfig,
           credentials: _credentials, // Remove credenciais do restData
+          config: newConfig,
           config: _config, // Remove config do restData
           ...restData
         } = updates.data || {}
@@ -659,9 +658,6 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
             }
           : configWithoutCredentials
 
-        // Usa as credenciais do nível raiz se existirem, senão usa as do config
-        const finalCredentials = credentials || configCredentials || node.data.credentials
-
         return {
           ...node, // Keep all original node properties
           ...updates, // Apply updates
@@ -670,7 +666,6 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
             ...node.data, // Keep all original data
             input: input || node.data.input, // Preserva input no nível raiz
             output: output || node.data.output, // Preserva output no nível raiz
-            credentials: finalCredentials, // Preserva credentials no nível raiz
             config: finalConfig, // Config limpo sem aninhamentos
             ...restData, // Aplica outras atualizações de data (sem credenciais/config)
           },

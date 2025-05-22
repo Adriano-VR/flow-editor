@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, type ReactElement } from 'react';
 import { Label } from '../../ui/label';
 import { Input } from '../../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -8,64 +8,52 @@ import { type Instance } from "@/lib/settingsTypes"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
 
-// Tipos específicos para cada tipo de saída
-interface WhatsAppTextOutput {
+// Interface para o output completo do nó
+interface WhatsAppNodeOutput {
   type: 'text';
   text: string;
-  variables: {
-    nome: string;
-  };
 }
 
-interface WhatsAppVideoOutput {
-  type: 'video';
-  url: string;
-  variables: {
-    nome: string;
-  };
-}
-
-interface WhatsAppImageOutput {
+interface ImageOutput {
   type: 'image';
   originalUrl: string;
   caption: string;
-  variables: {
-    nome: string;
-  };
 }
 
-// Tipo união para todas as saídas possíveis
-type WhatsAppOutput = WhatsAppTextOutput | WhatsAppVideoOutput | WhatsAppImageOutput;
+interface VideoOutput {
+  type: 'video';
+  url: string;
+}
+
+type WhatsAppOutput = WhatsAppNodeOutput | ImageOutput | VideoOutput;
 
 interface WhatsAppConfigProps {
   config?: {
     to?: string;
     messageType?: 'text' | 'video' | 'image';
+    templateName?: string;
+    templateLanguage?: string;
+    components?: any[];
   };
   output?: WhatsAppOutput;
-  credentials?: {
-    apiKey?: string;
-    source?: string;
-    appName?: string;
-    webhook?: string;
-    provider?: string;
-  };
+
   updateConfig: (config: any) => void;
   updateCredentials: (field: string, value: string) => void;
   stop?: boolean;
   setStop?: (stop: boolean) => void;
+  nodeType: 'whatsapp_send_message' | 'whatsapp_send_message_wait' | 'whatsapp_send_template' | 'whatsapp_send_template_wait';
 }
 
 export function WhatsAppConfig({ 
   config = {}, 
-  output = {} as WhatsAppOutput,
-  credentials = {}, 
+  output = { type: 'text', text: '' },
   updateConfig, 
   updateCredentials,
   setActionConfig,
   actionConfig,
   stop = true,
-  setStop
+  setStop,
+  nodeType
 }: WhatsAppConfigProps & { 
   setActionConfig: (cfg: any) => void;
   actionConfig: {
@@ -74,6 +62,9 @@ export function WhatsAppConfig({
     config: {
       to?: string;
       messageType?: 'text' | 'video' | 'image';
+      templateName?: string;
+      templateLanguage?: string;
+      components?: any[];
     };
     credentials?: {
       apiKey?: string;
@@ -96,38 +87,27 @@ export function WhatsAppConfig({
   useEffect(() => {
     const messageType = config?.messageType || 'text'
     
-    if (!output?.type || output.type !== messageType) {
+    if (!output || (output.type !== messageType && (
+      (messageType === 'text' && 'text' in output) ||
+      (messageType === 'video' && 'url' in output) ||
+      (messageType === 'image' && 'originalUrl' in output)
+    ))) {
       let newOutput: WhatsAppOutput;
+      
       switch (messageType) {
         case 'text':
-          newOutput = { 
-            type: 'text',
-            text: '',
-            variables: { nome: '' }
-          } as WhatsAppTextOutput;
+          newOutput = { type: 'text', text: '' };
           break;
         case 'video':
-          newOutput = { 
-            type: 'video',
-            url: '',
-            variables: { nome: '' }
-          } as WhatsAppVideoOutput;
+          newOutput = { type: 'video', url: '' };
           break;
         case 'image':
-          newOutput = { 
-            type: 'image',
-            originalUrl: '',
-            caption: '',
-            variables: { nome: '' }
-          } as WhatsAppImageOutput;
+          newOutput = { type: 'image', originalUrl: '', caption: '' };
           break;
         default:
-          newOutput = { 
-            type: 'text',
-            text: '',
-            variables: { nome: '' }
-          } as WhatsAppTextOutput;
+          newOutput = { type: 'text', text: '' };
       }
+      
       setActionConfig({
         ...actionConfig,
         output: newOutput
@@ -213,25 +193,15 @@ export function WhatsAppConfig({
     setNewInstanceDraft(null)
     const instance = whatsappInstances.find((i: any) => i.name === instanceName)
     if (instance) {
-      // Atualiza as credenciais do nó
-      Object.entries(instance.credencias).forEach(([key, value]) => {
-        if (typeof value === 'string') {
-          updateCredentials(key, value)
-        }
-      })
       // Atualiza o config do nó mantendo as configurações existentes
       updateConfig({
-        ...config,
-        credentials: instance.credencias
+        ...config
       })
     }
   }
 
   // Quando as credenciais são atualizadas, salva no settings
   const handleCredentialsChange = async (field: string, value: string) => {
-    // Atualiza as credenciais do nó
-    updateCredentials(field, value)
-
     // Se não houver instância selecionada, cria uma nova
     if (!selectedInstance) {
       const newInstanceName = `WhatsApp ${whatsappInstances.length + 1}`
@@ -246,7 +216,6 @@ export function WhatsAppConfig({
           {
             name: newInstanceName,
             credencias: {
-              ...credentials,
               [field]: value,
               provider: "whatsapp"
             }
@@ -303,35 +272,29 @@ export function WhatsAppConfig({
     const newConfig = { ...config, messageType };
     
     let newOutput: WhatsAppOutput;
+    
     switch (messageType) {
       case 'text':
         newOutput = { 
-          type: 'text',
-          text: (output as WhatsAppTextOutput)?.text || '',
-          variables: { nome: output?.variables?.nome || '' }
-        } as WhatsAppTextOutput;
+          type: 'text', 
+          text: (output as WhatsAppNodeOutput)?.text || '' 
+        };
         break;
       case 'video':
         newOutput = { 
-          type: 'video',
-          url: (output as WhatsAppVideoOutput)?.url || '',
-          variables: { nome: output?.variables?.nome || '' }
-        } as WhatsAppVideoOutput;
+          type: 'video', 
+          url: (output as VideoOutput)?.url || '' 
+        };
         break;
       case 'image':
         newOutput = { 
-          type: 'image',
-          originalUrl: (output as WhatsAppImageOutput)?.originalUrl || '',
-          caption: (output as WhatsAppImageOutput)?.caption || '',
-          variables: { nome: output?.variables?.nome || '' }
-        } as WhatsAppImageOutput;
+          type: 'image', 
+          originalUrl: (output as ImageOutput)?.originalUrl || '',
+          caption: (output as ImageOutput)?.caption || ''
+        };
         break;
       default:
-        newOutput = { 
-          type: 'text',
-          text: '',
-          variables: { nome: '' }
-        } as WhatsAppTextOutput;
+        newOutput = { type: 'text', text: '' };
     }
 
     setActionConfig({
@@ -339,7 +302,7 @@ export function WhatsAppConfig({
       config: newConfig,
       output: newOutput,
       stop: true
-    })
+    });
   }
 
   return (
@@ -454,7 +417,6 @@ export function WhatsAppConfig({
             <Input
               id="appName"
               placeholder="Nome do seu app WhatsApp"
-              value={credentials?.appName || ''}
               onChange={e => handleCredentialsChange('appName', e.target.value)}
             />
           </div>
@@ -464,7 +426,6 @@ export function WhatsAppConfig({
             <Input
               id="source"
               placeholder="Seu número WhatsApp"
-              value={credentials?.source || ''}
               onChange={e => handleCredentialsChange('source', e.target.value)}
             />
           </div>
@@ -474,7 +435,6 @@ export function WhatsAppConfig({
             <Input
               id="webhook"
               placeholder="URL do webhook"
-              value={credentials?.webhook || ''}
               onChange={e => handleCredentialsChange('webhook', e.target.value)}
             />
           </div>
@@ -485,7 +445,6 @@ export function WhatsAppConfig({
               id="apiKey"
               type="password"
               placeholder="Sua API Key"
-              value={credentials?.apiKey || ''}
               onChange={e => handleCredentialsChange('apiKey', e.target.value)}
             />
           </div>
@@ -512,92 +471,196 @@ export function WhatsAppConfig({
               }}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="messageType">Tipo de Mensagem</Label>
-            <select
-              id="messageType"
-              className="w-full text border border-gray-600 rounded-md px-3 py-2"
-              value={config?.messageType || 'text'}
-              onChange={e => handleMessageTypeChange(e.target.value as 'text' | 'video' | 'image')}
-            >
-              <option value="text">Texto</option>
-              <option value="video">Vídeo</option>
-              <option value="image">Imagem</option>
-            </select>
 
-            {config?.messageType === 'text' && (
-              <div className="space-y-2">
-                <Label htmlFor="text">Mensagem de Texto</Label>
-                <Input
-                  id="text"
-                  placeholder="Digite sua mensagem"
-                  value={(output as WhatsAppTextOutput)?.text || ''}
-                  onChange={e => setActionConfig({
-                    ...actionConfig,
-                    output: { 
-                      type: 'text',
-                      text: e.target.value,
-                      variables: { nome: output?.variables?.nome || '' }
-                    } as WhatsAppTextOutput
-                  })}
-                />
-              </div>
-            )}
+          {/* Formulário simplificado para nós que não esperam resposta */}
+          {(nodeType === 'whatsapp_send_message' || nodeType === 'whatsapp_send_template') && (
+            <>
+              {nodeType === 'whatsapp_send_message' ? (
+                <div className="space-y-2">
+                  <Label htmlFor="text">Mensagem</Label>
+                  <Input
+                    id="text"
+                    placeholder="Digite sua mensagem"
+                    value={(output as WhatsAppNodeOutput)?.text || ''}
+                    onChange={e => setActionConfig({
+                      ...actionConfig,
+                      output: { 
+                        type: 'text',
+                        text: e.target.value
+                      }
+                    })}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Label htmlFor="templateName">Nome do Template</Label>
+                  <Input
+                    id="templateName"
+                    placeholder="Nome do template"
+                    value={config?.templateName || ''}
+                    onChange={(e) => {
+                      const newConfig = { ...config, templateName: e.target.value };
+                      updateConfig(newConfig);
+                      setActionConfig({
+                        ...actionConfig,
+                        config: newConfig,
+                        stop: true
+                      });
+                    }}
+                  />
 
-            {config?.messageType === 'video' && (
-              <div className="space-y-2">
-                <Label htmlFor="videoUrl">URL do Vídeo</Label>
-                <Input
-                  id="videoUrl"
-                  placeholder="URL do vídeo"
-                  value={(output as WhatsAppVideoOutput)?.url || ''}
-                  onChange={e => setActionConfig({
-                    ...actionConfig,
-                    output: { 
-                      type: 'video',
-                      url: e.target.value,
-                      variables: { nome: output?.variables?.nome || '' }
-                    } as WhatsAppVideoOutput
-                  })}
-                />
-              </div>
-            )}
+                  <Label htmlFor="templateLanguage">Idioma do Template</Label>
+                  <Input
+                    id="templateLanguage"
+                    placeholder="pt_BR"
+                    value={config?.templateLanguage || ''}
+                    onChange={(e) => {
+                      const newConfig = { ...config, templateLanguage: e.target.value };
+                      updateConfig(newConfig);
+                      setActionConfig({
+                        ...actionConfig,
+                        config: newConfig,
+                        stop: true
+                      });
+                    }}
+                  />
+                </div>
+              )}
+            </>
+          )}
 
-            {config?.messageType === 'image' && (
-              <div className="space-y-2">
-                <Label htmlFor="imageUrl">URL da Imagem</Label>
-                <Input
-                  id="imageUrl"
-                  placeholder="URL da imagem"
-                  value={(output as WhatsAppImageOutput)?.originalUrl || ''}
-                  onChange={e => setActionConfig({
-                    ...actionConfig,
-                    output: { 
-                      type: 'image',
-                      originalUrl: e.target.value,
-                      caption: (output as WhatsAppImageOutput)?.caption || '',
-                      variables: { nome: output?.variables?.nome || '' }
-                    } as WhatsAppImageOutput
-                  })}
-                />
-                <Label htmlFor="caption">Legenda</Label>
-                <Input
-                  id="caption"
-                  placeholder="Legenda da imagem"
-                  value={(output as WhatsAppImageOutput)?.caption || ''}
-                  onChange={e => setActionConfig({
-                    ...actionConfig,
-                    output: { 
-                      type: 'image',
-                      originalUrl: (output as WhatsAppImageOutput)?.originalUrl || '',
-                      caption: e.target.value,
-                      variables: { nome: output?.variables?.nome || '' }
-                    } as WhatsAppImageOutput
-                  })}
-                />
+          {/* Formulário completo para nós que esperam resposta */}
+          {(nodeType === 'whatsapp_send_message_wait' || nodeType === 'whatsapp_send_template_wait') && (
+            <>
+              {nodeType === 'whatsapp_send_message_wait' && (
+                <div className="space-y-2">
+                  <Label htmlFor="messageType">Tipo de Mensagem</Label>
+                  <select
+                    id="messageType"
+                    className="w-full text border border-gray-600 rounded-md px-3 py-2"
+                    value={config?.messageType || 'text'}
+                    onChange={e => handleMessageTypeChange(e.target.value as 'text' | 'video' | 'image')}
+                  >
+                    <option value="text">Texto</option>
+                    <option value="video">Vídeo</option>
+                    <option value="image">Imagem</option>
+                  </select>
+
+                  {config?.messageType === 'text' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="text">Mensagem de Texto</Label>
+                      <Input
+                        id="text"
+                        placeholder="Digite sua mensagem"
+                        value={(output as WhatsAppNodeOutput)?.text || ''}
+                        onChange={e => setActionConfig({
+                          ...actionConfig,
+                          output: { 
+                            type: 'text',
+                            text: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                  )}
+
+                  {config?.messageType === 'video' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="videoUrl">URL do Vídeo</Label>
+                      <Input
+                        id="videoUrl"
+                        placeholder="URL do vídeo"
+                        value={(output as VideoOutput)?.url || ''}
+                        onChange={e => setActionConfig({
+                          ...actionConfig,
+                          output: { 
+                            type: 'video',
+                            url: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                  )}
+
+                  {config?.messageType === 'image' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="imageUrl">URL da Imagem</Label>
+                      <Input
+                        id="imageUrl"
+                        placeholder="URL da imagem"
+                        value={(output as ImageOutput)?.originalUrl || ''}
+                        onChange={e => setActionConfig({
+                          ...actionConfig,
+                          output: { 
+                            type: 'image',
+                            originalUrl: e.target.value,
+                            caption: (output as ImageOutput)?.caption || ''
+                          }
+                        })}
+                      />
+                      <Label htmlFor="caption">Legenda</Label>
+                      <Input
+                        id="caption"
+                        placeholder="Legenda da imagem"
+                        value={(output as ImageOutput)?.caption || ''}
+                        onChange={e => setActionConfig({
+                          ...actionConfig,
+                          output: { 
+                            type: 'image',
+                            originalUrl: (output as ImageOutput)?.originalUrl || '',
+                            caption: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {nodeType === 'whatsapp_send_template_wait' && (
+                <div className="space-y-2">
+                  <Label htmlFor="templateName">Nome do Template</Label>
+                  <Input
+                    id="templateName"
+                    placeholder="Nome do template"
+                    value={config?.templateName || ''}
+                    onChange={(e) => {
+                      const newConfig = { ...config, templateName: e.target.value };
+                      updateConfig(newConfig);
+                      setActionConfig({
+                        ...actionConfig,
+                        config: newConfig,
+                        stop: true
+                      });
+                    }}
+                  />
+
+                  <Label htmlFor="templateLanguage">Idioma do Template</Label>
+                  <Input
+                    id="templateLanguage"
+                    placeholder="pt_BR"
+                    value={config?.templateLanguage || ''}
+                    onChange={(e) => {
+                      const newConfig = { ...config, templateLanguage: e.target.value };
+                      updateConfig(newConfig);
+                      setActionConfig({
+                        ...actionConfig,
+                        config: newConfig,
+                        stop: true
+                      });
+                    }}
+                  />
+                </div>
+              )}
+
+              <div className="p-4 bg-muted/50 rounded-md">
+                <p className="text-sm text-muted-foreground">
+                  Este nó irá aguardar uma resposta do usuário antes de continuar o fluxo.
+                  A resposta será armazenada na variável de saída do nó.
+                </p>
               </div>
-            )}
-          </div>
+            </>
+          )}
         </>
       )}
     </div>
@@ -612,6 +675,9 @@ export function renderWhatsAppConfigFields(
     config: {
       to?: string;
       messageType?: 'text' | 'video' | 'image';
+      templateName?: string;
+      templateLanguage?: string;
+      components?: any[];
     };
     credentials?: {
       apiKey?: string;
@@ -623,8 +689,8 @@ export function renderWhatsAppConfigFields(
     stop?: boolean;
   },
   setActionConfig: (cfg: any) => void
-) {
-  const updateConfig = (newConfig: any) => {
+): ReactElement {
+  const updateConfig = (newConfig: any): void => {
     setActionConfig({
       ...actionConfig,
       config: newConfig,
@@ -632,13 +698,10 @@ export function renderWhatsAppConfigFields(
     });
   };
 
-  const updateCredentials = (field: string, value: string) => {
+  const updateCredentials = (field: string, value: string): void => {
+    // Não armazena as credenciais no nó, apenas atualiza o estado local
     setActionConfig({
       ...actionConfig,
-      credentials: {
-        ...actionConfig.credentials,
-        [field]: value
-      },
       stop: true
     });
   };
@@ -647,13 +710,13 @@ export function renderWhatsAppConfigFields(
     <WhatsAppConfig
       config={actionConfig.config}
       output={actionConfig.output}
-      credentials={actionConfig.credentials}
       updateConfig={updateConfig}
       updateCredentials={updateCredentials}
       setActionConfig={setActionConfig}
       actionConfig={actionConfig}
       stop={actionConfig.stop}
-      setStop={(stop) => setActionConfig({ ...actionConfig, stop })}
+      setStop={(stop: boolean) => setActionConfig({ ...actionConfig, stop })}
+      nodeType={selectedAction.id as 'whatsapp_send_message' | 'whatsapp_send_message_wait' | 'whatsapp_send_template' | 'whatsapp_send_template_wait'}
     />
   );
 } 
