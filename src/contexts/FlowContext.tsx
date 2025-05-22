@@ -29,7 +29,7 @@ interface FlowContextType {
   setActionConfig: (config: ActionConfig) => void;
   handleCreateFlow: (name: string) => Promise<string | null>;
   handleDeleteFlow: (flowId: string) => Promise<void>;
-  handleSaveFlow: (data: { nodes: Node[]; edges: Edge[]; name?: string; status?: string; description?: string }) => Promise<void>;
+  handleSaveFlow: (data: { nodes: Node[]; edges: Edge[]; name?: string; status?: string; description?: string; settings?: Settings }) => Promise<void>;
   handleActionSelect: (action: Action) => void;
   handleActionConfigSubmit: () => Promise<void>;
   handleJsonUpdate: (json: string) => Promise<void>;
@@ -66,12 +66,10 @@ export function FlowProvider({ children }: { children: ReactNode }) {
           status: "draft",
           billing: "free",
           published: true,
-        
-
           data: {
             nodes: [],
             edges: [],
-            settings: "{}"
+            settings: {}
           }
         }
       };
@@ -163,7 +161,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     loadFlowData();
   }, [selectedFlowId]);
 
-  const handleSaveFlow = async (data: { nodes: Node[]; edges: Edge[]; name?: string; status?: string; description?: string }) => {
+  const handleSaveFlow = async (data: { nodes: Node[]; edges: Edge[]; name?: string; status?: string; description?: string; settings?: Settings }) => {
     if (!selectedFlowId) return;
 
     try {
@@ -171,6 +169,10 @@ export function FlowProvider({ children }: { children: ReactNode }) {
       if (updatedName) {
         setFlowName(updatedName);
       }
+
+      // Converte o settings para objeto se for string
+      const currentSettings = flowData?.attributes?.data?.settings;
+      const settingsObject = typeof currentSettings === 'string' ? JSON.parse(currentSettings) : currentSettings;
 
       await updateFlow(selectedFlowId, {
         data: {
@@ -182,7 +184,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
           data: {
             nodes: data.nodes,
             edges: data.edges,
-            settings: flowData?.attributes?.data?.settings || "{}"
+            settings: data.settings || settingsObject || {}
           }
         }
       });
@@ -201,7 +203,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
               ...prev.attributes.data,
               nodes: data.nodes,
               edges: data.edges,
-              settings: flowData?.attributes?.data?.settings || "{}"
+              settings: data.settings || settingsObject || {}
             }
           }
         };
@@ -217,7 +219,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     setIsActionModalOpen(true);
   };
 
-  const createNode = (actionDefinition: NodeTypeDefinition): Node => {
+  const createNode = (actionDefinition: NodeTypeDefinition, position?: { x: number; y: number }) => {
     // Remove input/output/credentials do config se existirem
     const { 
       input: configInput, 
@@ -240,7 +242,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     const centerY = window.innerHeight / 2;
 
     // Converte coordenadas da tela para coordenadas do flow (considerando zoom e pan)
-    const position = project({ x: centerX, y: centerY });
+    const positionFlow = position || project({ x: centerX, y: centerY });
 
     return {
       id: `${actionDefinition.id}-${Date.now()}`,
@@ -250,7 +252,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
         app: actionDefinition.subcategory as 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap' | undefined,
         name: actionDefinition.name,
         label: actionDefinition.label ?? actionDefinition.name,
-        stop: false,
+        stop: actionDefinition.stop === undefined ? false : actionDefinition.stop,
         input: actionDefinition.input ? {
           variables: [{ variable: actionDefinition.input.variables.nome }]
         } : { variables: [] },
@@ -262,7 +264,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
         icon: actionDefinition.icon,
         color: actionDefinition.color
       },
-      position: position || {
+      position: positionFlow || {
         x: 400,
         y: 300,
       },

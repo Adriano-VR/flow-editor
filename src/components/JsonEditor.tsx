@@ -26,7 +26,7 @@ interface JsonEditorProps {
 
 export function JsonEditor({ flowData, onSave, onCreateFlow, completeFlow }: JsonEditorProps) {
   const [jsonInput, setJsonInput] = useState<string>(
-    flowData ? JSON.stringify(flowData, null, 2) : ""
+    completeFlow ? JSON.stringify(completeFlow, null, 2) : flowData ? JSON.stringify(flowData, null, 2) : ""
   );
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -121,21 +121,24 @@ export function JsonEditor({ flowData, onSave, onCreateFlow, completeFlow }: Jso
           <Code className="h-4 w-4" />
         </Button>
       </DrawerTrigger>
-      <DrawerContent className="h-full w-[400px] right-0 top-0 bottom-0 rounded-r-lg rounded-l-none">
-        <div className="mx-auto w-full max-w-3xl min-h-screen overflow-y-auto">
+      <DrawerContent className="h-full w-[4=00px] right-0 top-0 bottom-0 rounded-r-lg rounded-l-none">
+        <div className="mx-auto w-full max-w-3xl h-full flex flex-col">
           <DrawerHeader>
             <DrawerTitle>Editor JSON</DrawerTitle>
             <DrawerDescription>
               Cole ou edite o JSON para criar ou atualizar o flow
             </DrawerDescription>
           </DrawerHeader>
-          <div className="p-4">
+          <div className="flex-1 p-4 overflow-hidden flex flex-col">
             <JsonErrorDisplay error={error} />
-            <JsonTextarea
-              value={jsonInput}
-              onChange={setJsonInput}
-              onError={setError}
-            />
+            <div className="flex-1 min-h-0">
+              <JsonTextarea
+                value={jsonInput}
+                onChange={setJsonInput}
+                onError={setError}
+                className="h-full"
+              />
+            </div>
           </div>
           <DrawerFooter>
             <div className="flex justify-between items-center">

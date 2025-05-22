@@ -27,52 +27,36 @@ export interface NodeTypeDefinition {
   type: string;
   category: 'app' | 'internal';
   subcategory?: string;
-  config: {
-    settings?: {
-      credentials?: {
-        provider?: string;
-        appName?: string;
-        source?: string;
-        webhook?: string;
-        apiKey?: string;
-      };
-    } & Record<string, unknown>;
-  } & Record<string, unknown>;
   icon?: string;
   color: string;
   label?: string;
   input?: NodeIO;
   output?: NodeIO;
+  config?: Record<string, unknown>;
+  messageType?: 'text' | 'video' | 'image';
+  stop?: boolean;
 }
 
 // Defina arrays de actions para cada subcategoria
 const whatsappActions: NodeTypeDefinition[] = [
   {
-    id: 'whatsapp_send_message_text',
-    name: 'Enviar Mensagem (Texto)',
+    id: 'whatsapp_send_message',
+    name: 'Enviar Mensagem com Resposta ',
     type: 'action',
     category: 'app',
     subcategory: 'whatsapp',
     icon: 'FaWhatsapp',
     color: '#25D366',
-    label: 'Enviar Mensagem',
+    stop: true,
+    label: 'Esperando Resposta',
+    messageType: 'text',
     config: {
-      settings: {
-        credentials: {
-          provider: '',
-          appName: '',
-          source: '',
-          webhook: '',
-          apiKey: ''
-        }
-      },
       message: '',
       to: '',
-      type: 'text'
     },
     input: {
       variables: {
-        nome: 'message'
+        nome: 'variableName'
       }
     },
     output: {
@@ -83,97 +67,62 @@ const whatsappActions: NodeTypeDefinition[] = [
     }
   },
   {
-    id: 'whatsapp_send_message_image',
-    name: 'Enviar Mensagem (Imagem)',
+    id: 'whatsapp_send_template',
+    name: 'Enviar Template',
     type: 'action',
     category: 'app',
     subcategory: 'whatsapp',
     icon: 'FaWhatsapp',
     color: '#25D366',
-    label: 'Enviar Imagem',
+    label: 'Enviar Mensagem Template',
+    messageType: 'text',
     config: {
-      settings: {
-        credentials: {
-          provider: '',
-          appName: '',
-          source: '',
-          webhook: '',
-          apiKey: ''
-        }
-      },
-      message: '',
+      templateName: '',
+      templateLanguage: '',
       to: '',
-      type: 'image'
-    }
-  },
-  {
-    id: 'whatsapp_send_message_video',
-    name: 'Enviar Mensagem (Vídeo)',
-    type: 'action',
-    category: 'app',
-    subcategory: 'whatsapp',
-    icon: 'FaWhatsapp',
-    color: '#25D366',
-    label: 'Enviar Vídeo',
-    config: {
-      settings: {
-        credentials: {
-          provider: '',
-          appName: '',
-          source: '',
-          webhook: '',
-          apiKey: ''
-        }
-      },
-      message: '',
-      to: '',
-      type: 'video'
-    }
-  },
-  {
-    id: 'whatsapp_quick_reply',
-    name: 'Quick Reply',
-    type: 'action',
-    category: 'app',
-    subcategory: 'whatsapp',
-    icon: 'FaWhatsapp',
-    color: '#25D366',
-    label: 'Resposta Rápida',
-    config: {
-      settings: {
-        credentials: {
-          provider: '',
-          appName: '',
-          source: '',
-          webhook: '',
-          apiKey: ''
-        }
+      components: []
+    },
+    input: {
+      variables: {
+        nome: 'variableName'
       }
+    },
+    output: {
+      variables: {
+        nome: ''
+      },
+      text: ''
     }
   },
-  
   {
-    id: 'whatsapp_receive_message',
-    name: 'Receber Mensagem',
+    id: 'whatsapp_send_template_wait',
+    name: 'Enviar Template com Resposta',
     type: 'action',
     category: 'app',
     subcategory: 'whatsapp',
     icon: 'FaWhatsapp',
     color: '#25D366',
-    label: 'Receber Mensagem',
+    stop: true,
+    label: 'Esperando Resposta do Template',
+    messageType: 'text',
     config: {
-      settings: {
-        credentials: {
-          provider: '',
-          appName: '',
-          source: '',
-          webhook: '',
-          apiKey: ''
-        }
+      templateName: '',
+      templateLanguage: '',
+      to: '',
+      components: []
+    },
+    input: {
+      variables: {
+        nome: 'variableName'
+      }
+    },
+    output: {
+      variables: {
+        nome: ''
       },
-      message: ''
+      text: ''
     }
-  }
+  },
 ];
 
 const assistantActions: NodeTypeDefinition[] = [
@@ -235,15 +184,6 @@ const assistantActions: NodeTypeDefinition[] = [
     icon: 'FaRobot',
     color: '#3B82F6',
     label: 'Criar Novo Agente',
-    config: {
-      agent: {
-        name: '',
-        description: '',
-        capabilities: [],
-        model: defaultAssistantConfig.models[0].model,
-        temperature: defaultAssistantConfig.models[0].temperature
-      }
-    } as Partial<AssistantConfig>
   }
 ];
 

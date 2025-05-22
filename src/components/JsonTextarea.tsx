@@ -4,9 +4,10 @@ interface JsonTextareaProps {
   value: string;
   onChange: (value: string) => void;
   onError: (error: string | null) => void;
+  className?: string;
 }
 
-export function JsonTextarea({ value, onChange, onError }: JsonTextareaProps) {
+export function JsonTextarea({ value, onChange, onError, className }: JsonTextareaProps) {
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e.target.value);
     onError(null);
@@ -30,7 +31,7 @@ export function JsonTextarea({ value, onChange, onError }: JsonTextareaProps) {
       value={value}
       onChange={handleChange}
       onPaste={handlePaste}
-      className="h-[500px] resize-none bg-background border rounded-md"
+      className={`resize-none bg-background border rounded-md ${className || ''}`}
       placeholder="Cole ou edite o JSON do fluxo aqui..."
       style={{
         tabSize: 2,

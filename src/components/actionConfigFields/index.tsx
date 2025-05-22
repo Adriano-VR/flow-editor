@@ -109,7 +109,7 @@ export function renderActionConfigFields(
       return renderInstagramConfigFields(selectedAction, actionConfig, setActionConfig);
     
     case 'assistant':
-      return renderAssistantConfigFields({ selectedAction, actionConfig, setActionConfig });
+      return renderAssistantConfigFields(selectedAction, actionConfig, setActionConfig);
     
     case 'form':
       return renderFormConfigFields(selectedAction, actionConfig, setActionConfig);

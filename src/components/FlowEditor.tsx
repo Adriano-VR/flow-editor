@@ -24,7 +24,7 @@ import { FiSave, FiInfo } from "react-icons/fi"
 import { JsonEditor } from "./JsonEditor"
 import { EditNodeDialog } from "./EditNodeDialog"
 import { NodeSelectionDrawer, type NodeSelectionDrawerRef } from "./NodeSelectionDrawer"
-import type { Node, Edge } from "@/types/flow"
+import type { Node, Edge, Flow } from "@/types/flow"
 import { PlayButton } from "./PlayButton"
 import { IntegrationDialog } from "./IntegrationDialog"
 import { ChatAssistant } from "./ChatAssistant"
@@ -39,7 +39,7 @@ import InputNode from "./nodes/InputNode"
 import ErrorNode from "./nodes/ErrorNode"
 import FlowEditDrawer from "./FlowEditDrawer"
 import { useFlow } from "@/contexts/FlowContext"
-import { Pencil, List, Save, MoreHorizontal, Plus, Layers, Command, Keyboard } from "lucide-react"
+import { Pencil, List, Save, MoreHorizontal, Plus, Layers, Command, Keyboard, Settings, RefreshCw } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Progress } from "@/components/ui/progress"
 import { FlowThreadsList } from "./FlowThreadsList"
@@ -57,6 +57,8 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
+import { SettingsDrawer } from "@/components/SettingsDrawer"
+import { WhatsAppInstancesDrawer } from "./WhatsAppInstancesDrawer"
 
 // Add styles for edge hover effect
 const edgeStyles = `
@@ -181,34 +183,8 @@ interface NodeConfig {
   url?: string
 }
 
-interface Credentials{
-  provider?: string;
-  appName?: string;
-  source?: string;
-  webhook?: string;
-  apiKey?: string;
-}
-
-interface Settings{
-  credentials?: Credentials;
-  sasas
-}
-
 interface FlowData {
-  data: {
-    id: number
-    attributes: {
-      name: string
-      description?: string
-      status: string
-      data: {
-        settings?:Settings
-        nodes: Node[]
-        edges: ReactFlowEdge[]
-      } | null
-    }
-  }
-  meta: unknown
+  data: Flow
 }
 
 interface FlowEditorProps {
@@ -218,6 +194,17 @@ interface FlowEditorProps {
     edges: Edge[]
   }
   onSave?: (data: { nodes: Node[]; edges: Edge[] }) => Promise<void>
+}
+
+interface WhatsAppInstance {
+  name: string;
+  credencias: {
+    apiKey: string;
+    source: string;
+    appName: string;
+    webhook: string;
+    provider: string;
+  };
 }
 
 const nodeTypes = {
@@ -259,6 +246,8 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false)
   const [showMinimap, setShowMinimap] = useState(false)
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
+  const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false)
+  const [showInstancesDialog, setShowInstancesDialog] = useState(false)
 
   // Efeito para limpar o estado quando o flowId muda
   useEffect(() => {
@@ -1066,6 +1055,10 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
                   <List className="h-4 w-4 mr-2" />
                   Ver threads
                 </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setShowInstancesDialog(true)}>
+                  <List className="h-4 w-4 mr-2" />
+                  Instâncias WhatsApp
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                   <ChatAssistant flowId={flowId} />
@@ -1459,6 +1452,42 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
           </Tabs>
         </DialogContent>
       </Dialog>
+
+      <SettingsDrawer
+        open={settingsDrawerOpen}
+        onOpenChange={setSettingsDrawerOpen}
+        settings={(() => {
+          try {
+            const settings = flowData?.data?.attributes?.data?.settings;
+            return settings ? (typeof settings === 'string' ? JSON.parse(settings) : settings) : null;
+          } catch {
+            return null;
+          }
+        })()}
+        onSave={async (newSettings) => {
+          if (!flowData?.data?.attributes?.data) return;
+          
+          const currentData = flowData.data.attributes.data;
+          const updatedData = {
+            nodes: currentData.nodes,
+            edges: currentData.edges,
+            name: flowData.data.attributes.name,
+            status: flowData.data.attributes.status,
+            description: flowData.data.attributes.description,
+            settings: newSettings
+          };
+          
+          await handleSaveFlow(updatedData);
+        }}
+      />
+
+      <WhatsAppInstancesDrawer
+        open={showInstancesDialog}
+        onOpenChange={setShowInstancesDialog}
+        flowId={flowId}
+        flowData={flowData}
+        onFlowDataChange={setFlowData}
+      />
     </div>
   )
 }

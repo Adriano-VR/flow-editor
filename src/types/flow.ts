@@ -1,20 +1,21 @@
 import { Dispatch, SetStateAction } from 'react';
 import { Edge as ReactFlowEdge } from 'reactflow';
 import { Node } from './node';
+import { Settings } from '@/lib/settingsTypes';
 
 export type { Node } from './node';
 export type Edge = ReactFlowEdge;
 
 export interface Flow {
-  id: string;
+  id: number;
   attributes: {
     name: string;
-    status: string;
     description?: string;
+    status: string;
     data: {
       nodes: Node[];
       edges: Edge[];
-      settings?: string;
+      settings?: Settings;
     } | null;
   };
 }
