@@ -68,7 +68,7 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+                <div className="absolute left-[-25px] top-1/2 -translate-y-1/2 w-4 h-4 z-10">
                   <div
                     className="w-full h-full rounded-full flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
                     style={{ borderColor: data.color || "#3B82F6" }}
@@ -165,7 +165,7 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-5 h-5 z-10">
+                <div className="absolute right-[-25px] top-1/2 -translate-y-1/2 w-4 h-4  z-10">
                   <div
                     className="w-full h-full rounded-full flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer border-2 hover:scale-110 bg-white"
                     style={{ borderColor: data.color || "#3B82F6" }}
@@ -509,7 +509,7 @@ export const ActionNode = memo(({ data, selected }: NodeProps) => {
             <div className="text-lg font-bold" style={{ color: data.color || "#3B82F6" }}>
               {data.name}
             </div>
-            <div className="text-sm text-gray-500">{data.label}</div>
+            <div className="text-sm text-gray-500">{data.config.messageType}</div>
           </div>
         </div>
 

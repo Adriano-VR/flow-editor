@@ -76,6 +76,9 @@ export function WhatsAppInstancesDrawer({
   onFlowDataChange,
 }: WhatsAppInstancesDrawerProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false)
+  const [autoReconnect, setAutoReconnect] = useState(true)
+  const [debugMode, setDebugMode] = useState(false)
   const [editingInstance, setEditingInstance] = useState<WhatsAppInstance | null>(null)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
@@ -216,10 +219,79 @@ export function WhatsAppInstancesDrawer({
 
   // Função para salvar nova instância
   const handleSaveNewInstance = async (instance: WhatsAppInstance) => {
-    const currentInstances = getCurrentInstances()
-    await updateInstances([...currentInstances, instance])
-    setIsCreateDialogOpen(false)
-    setNewInstance(null)
+    try {
+      setSaveStatus("saving")
+      const currentInstances = getCurrentInstances()
+      
+      // Manter a estrutura exata da instância
+      const updatedInstances = [...currentInstances, instance]
+
+      // Preparar os dados para atualização
+      const currentSettings = flowData?.data?.attributes?.data?.settings
+      const parsedSettings = currentSettings
+        ? typeof currentSettings === "string"
+          ? JSON.parse(currentSettings)
+          : currentSettings
+        : {}
+
+      // Criar o objeto de configurações atualizado
+      const updatedSettings = {
+        ...parsedSettings,
+        instances: updatedInstances,
+      }
+
+      // Criar o objeto de flow atualizado mantendo a estrutura existente
+      const updatedFlowData = {
+        data: {
+          id: parseInt(flowId),
+          attributes: {
+            ...flowData?.data?.attributes,
+            data: {
+              nodes: flowData?.data?.attributes?.data?.nodes || [],
+              edges: flowData?.data?.attributes?.data?.edges || [],
+              settings: updatedSettings,
+            },
+          },
+        },
+      }
+
+      // Primeiro atualizar o estado local
+      onFlowDataChange({
+        data: {
+          ...flowData?.data,
+          attributes: {
+            ...flowData?.data?.attributes,
+            data: {
+              nodes: flowData?.data?.attributes?.data?.nodes || [],
+              edges: flowData?.data?.attributes?.data?.edges || [],
+              settings: updatedSettings,
+            },
+          },
+        },
+      })
+
+      // Depois persistir no backend
+      const response = await updateFlow(flowId, updatedFlowData)
+
+      if (response?.data) {
+        setSaveStatus("success")
+        onFlowDataChange({
+          data: response.data,
+        })
+        setIsCreateDialogOpen(false)
+        setNewInstance(null)
+      } else {
+        throw new Error("Failed to update flow")
+      }
+
+      setTimeout(() => {
+        setSaveStatus("idle")
+      }, 2000)
+    } catch (error) {
+      console.error("Error saving new instance:", error)
+      setSaveStatus("error")
+      setTimeout(() => setSaveStatus("idle"), 3000)
+    }
   }
 
   // Função para remover instância
@@ -760,7 +832,7 @@ export function WhatsAppInstancesDrawer({
                               Receba notificações sobre o status das instâncias
                             </p>
                           </div>
-                          <Switch />
+                          <Switch checked={notificationsEnabled} onCheckedChange={setNotificationsEnabled} />
                         </div>
 
                         <div className="flex items-center justify-between">
@@ -770,7 +842,7 @@ export function WhatsAppInstancesDrawer({
                               Reconectar automaticamente quando a conexão for perdida
                             </p>
                           </div>
-                          <Switch defaultChecked />
+                          <Switch checked={autoReconnect} onCheckedChange={setAutoReconnect} />
                         </div>
 
                         <div className="flex items-center justify-between">
@@ -780,7 +852,7 @@ export function WhatsAppInstancesDrawer({
                               Ativar logs detalhados para solução de problemas
                             </p>
                           </div>
-                          <Switch />
+                          <Switch checked={debugMode} onCheckedChange={setDebugMode} />
                         </div>
                       </CardContent>
                     </Card>
@@ -877,27 +949,20 @@ export function WhatsAppInstancesDrawer({
           }}
         >
           <DialogContent className="sm:max-w-2xl h-full p-0 border-none shadow-none">
-           
             <WhatsAppInstanceCreator
               instance={editingInstance}
               onChange={(field: string, value: string) => {
-                // Atualizar apenas o estado local
-                setEditingInstance(prev => {
-                  if (!prev) return null
-                  return field === 'name' 
-                    ? { ...prev, name: value }
-                    : {
-                        ...prev,
-                        credencias: { ...prev.credencias, [field]: value }
-                      }
-                })
+                // Atualizar o estado local e propagar a mudança
+                const updatedInstance = field === 'name' 
+                  ? { ...editingInstance, name: value }
+                  : {
+                      ...editingInstance,
+                      credencias: { ...editingInstance.credencias, [field]: value }
+                    }
+                setEditingInstance(updatedInstance)
               }}
               isEditing={true}
-              onSave={async () => {
-                if (editingInstance && editingIndex !== null) {
-                  await handleEditInstance(editingInstance)
-                }
-              }}
+              onSave={handleEditInstance}
               onCancel={() => {
                 const currentInstance = getCurrentInstances()[editingIndex || 0]
                 const hasChanges = JSON.stringify(currentInstance) !== JSON.stringify(editingInstance)
@@ -914,6 +979,7 @@ export function WhatsAppInstancesDrawer({
                   setEditingIndex(null)
                 }
               }}
+              isSaving={saveStatus === "saving"}
             />
           </DialogContent>
         </Dialog>
@@ -972,7 +1038,7 @@ export function WhatsAppInstancesDrawer({
         >
           <DialogContent className="sm:max-w-2xl min-w-4xl p-0 border-none shadow-none">
             <DialogHeader className="px-6 py-4 border-b">
-              <DialogTitle>Nova Instância WhatsApp</DialogTitle>
+              <DialogTitle>Nova Instância</DialogTitle>
               <DialogDescription>
                 Configure as credenciais e opções da nova instância. As alterações serão salvas apenas quando você clicar em Salvar.
               </DialogDescription>

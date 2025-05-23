@@ -7,7 +7,6 @@ import { useFlow } from "@/contexts/FlowContext"
 import { type Instance } from "@/lib/settingsTypes"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
-import { WhatsAppInstanceCreator } from './WhatsAppInstanceCreator'
 
 // Interface para o output completo do nó
 interface WhatsAppNodeOutput {
@@ -26,12 +25,23 @@ interface VideoOutput {
   url: string;
 }
 
-type WhatsAppOutput = WhatsAppNodeOutput | ImageOutput | VideoOutput;
+interface FileOutput {
+  type: 'file';
+  url: string;
+  fileName: string;
+}
+
+interface AudioOutput {
+  type: 'audio';
+  url: string;
+}
+
+type WhatsAppOutput = WhatsAppNodeOutput | ImageOutput | VideoOutput | FileOutput | AudioOutput;
 
 interface WhatsAppConfigProps {
   config?: {
     to?: string;
-    messageType?: 'text' | 'video' | 'image';
+    messageType?: 'text' | 'video' | 'image' | 'file' | 'audio';
     templateName?: string;
     templateLanguage?: string;
     components?: any[];
@@ -62,7 +72,7 @@ export function WhatsAppConfig({
     output?: WhatsAppOutput;
     config: {
       to?: string;
-      messageType?: 'text' | 'video' | 'image';
+      messageType?: 'text' | 'video' | 'image' | 'file' | 'audio';
       templateName?: string;
       templateLanguage?: string;
       components?: any[];
@@ -83,6 +93,19 @@ export function WhatsAppConfig({
   const [showCredentials, setShowCredentials] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [newInstanceDraft, setNewInstanceDraft] = useState<any>(null)
+  const [localCredentials, setLocalCredentials] = useState<{
+    appName?: string;
+    source?: string;
+    webhook?: string;
+    apiKey?: string;
+    provider?: string;
+  }>({
+    appName: '',
+    source: '',
+    webhook: '',
+    apiKey: '',
+    provider: 'whatsapp'
+  });
 
   // Inicializa o output quando o componente monta ou quando messageType muda
   useEffect(() => {
@@ -188,12 +211,19 @@ export function WhatsAppConfig({
 
   // Seleciona instância (não abre edição automaticamente)
   const handleInstanceSelect = (instanceName: string) => {
-    setSelectedInstance(instanceName)
-    setShowCredentials(false)
-    setIsCreating(false)
-    setNewInstanceDraft(null)
     const instance = whatsappInstances.find((i: any) => i.name === instanceName)
     if (instance) {
+      setSelectedInstance(instanceName)
+      setShowCredentials(false)
+      setIsCreating(false)
+      setNewInstanceDraft(null)
+      setLocalCredentials({
+        appName: instance.credencias.appName || '',
+        source: instance.credencias.source || '',
+        webhook: instance.credencias.webhook || '',
+        apiKey: instance.credencias.apiKey || '',
+        provider: 'whatsapp'
+      })
       // Atualiza o config do nó mantendo as configurações existentes
       updateConfig({
         ...config
@@ -202,7 +232,7 @@ export function WhatsAppConfig({
   }
 
   // Manipula mudanças nos campos do formulário
-  const handleInstanceFieldChange = (field: string, value: string) => {
+  const handleCredentialsChange = (field: string, value: string) => {
     if (isCreating) {
       if (field === 'name') {
         setNewInstanceDraft({ ...newInstanceDraft, name: value });
@@ -213,12 +243,15 @@ export function WhatsAppConfig({
         });
       }
     } else {
-      handleCredentialsChange(field, value);
+      setLocalCredentials(prev => ({
+        ...prev,
+        [field]: value
+      }));
     }
   };
 
-  // Quando as credenciais são atualizadas, salva no settings
-  const handleCredentialsChange = async (field: string, value: string) => {
+  // Salva as credenciais quando o usuário terminar de editar
+  const handleSaveCredentials = async () => {
     // Se não houver instância selecionada, cria uma nova
     if (!selectedInstance) {
       const newInstanceName = `WhatsApp ${whatsappInstances.length + 1}`
@@ -233,7 +266,7 @@ export function WhatsAppConfig({
           {
             name: newInstanceName,
             credencias: {
-              [field]: value,
+              ...localCredentials,
               provider: "whatsapp"
             }
           }
@@ -263,7 +296,7 @@ export function WhatsAppConfig({
             ...instance,
             credencias: {
               ...instance.credencias,
-              [field]: value
+              ...localCredentials
             }
           }
         }
@@ -283,9 +316,10 @@ export function WhatsAppConfig({
         }
       })
     }
-  }
+    setShowCredentials(false);
+  };
 
-  const handleMessageTypeChange = (messageType: 'text' | 'video' | 'image') => {
+  const handleMessageTypeChange = (messageType: 'text' | 'video' | 'image' | 'file' | 'audio') => {
     const newConfig = { ...config, messageType };
     
     let newOutput: WhatsAppOutput;
@@ -310,6 +344,19 @@ export function WhatsAppConfig({
           caption: (output as ImageOutput)?.caption || ''
         };
         break;
+      case 'file':
+        newOutput = {
+          type: 'file',
+          url: (output as FileOutput)?.url || '',
+          fileName: (output as FileOutput)?.fileName || ''
+        };
+        break;
+      case 'audio':
+        newOutput = {
+          type: 'audio',
+          url: (output as AudioOutput)?.url || ''
+        };
+        break;
       default:
         newOutput = { type: 'text', text: '' };
     }
@@ -327,16 +374,6 @@ export function WhatsAppConfig({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <Label htmlFor="instance">Instância WhatsApp</Label>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCreateInstance}
-            className="flex items-center gap-2"
-            disabled={isCreating}
-          >
-            <Plus className="h-4 w-4" />
-            Nova Instância
-          </Button>
         </div>
         <div className="flex gap-2 items-center">
           {!isCreating && (
@@ -359,7 +396,7 @@ export function WhatsAppConfig({
             </Button>
           )}
           {showCredentials && !isCreating && (
-            <Button variant="outline" size="sm" onClick={() => setShowCredentials(false)}>
+            <Button variant="secondary" size="sm" onClick={() => setShowCredentials(false)}>
               Cancelar edição
             </Button>
           )}
@@ -368,39 +405,95 @@ export function WhatsAppConfig({
 
       {/* Formulário de criação de nova instância */}
       {isCreating && newInstanceDraft && (
-        <>
-          <WhatsAppInstanceCreator
-            instance={newInstanceDraft}
-            onChange={handleInstanceFieldChange}
-            isEditing={false}
-            onSave={handleSaveNewInstance}
-            onCancel={handleCancelCreate}
+        <div className="space-y-2 border p-3 rounded-md bg-muted/50">
+          <Label>Nome da Instância</Label>
+          <Input
+            value={newInstanceDraft.name}
+            onChange={e => setNewInstanceDraft({ ...newInstanceDraft, name: e.target.value })}
           />
-          
-        </>
+          <Label htmlFor="appName">Nome do App</Label>
+          <Input
+            id="appName"
+            placeholder="Nome do App"
+            value={newInstanceDraft.credencias.appName || ''}
+            onChange={e => setNewInstanceDraft({
+              ...newInstanceDraft,
+              credencias: { ...newInstanceDraft.credencias, appName: e.target.value }
+            })}
+          />
+          <Label htmlFor="source">Source</Label>
+          <Input
+            id="source"
+            placeholder="Source"
+            value={newInstanceDraft.credencias.source || ''}
+            onChange={e => setNewInstanceDraft({
+              ...newInstanceDraft,
+              credencias: { ...newInstanceDraft.credencias, source: e.target.value }
+            })}
+          />
+          <Label htmlFor="webhook">Webhook</Label>
+          <Input
+            id="webhook"
+            placeholder="Webhook URL"
+            value={newInstanceDraft.credencias.webhook || ''}
+            onChange={e => setNewInstanceDraft({
+              ...newInstanceDraft,
+              credencias: { ...newInstanceDraft.credencias, webhook: e.target.value }
+            })}
+          />
+          <Label htmlFor="apiKey">API Key</Label>
+          <Input
+            id="apiKey"
+            placeholder="API Key"
+            value={newInstanceDraft.credencias.apiKey || ''}
+            onChange={e => setNewInstanceDraft({
+              ...newInstanceDraft,
+              credencias: { ...newInstanceDraft.credencias, apiKey: e.target.value }
+            })}
+          />
+        </div>
       )}
 
       {/* Edição de instância existente */}
       {showCredentials && !isCreating && (
-        <>
-          <WhatsAppInstanceCreator
-            instance={{
-              name: selectedInstance,
-              credencias: whatsappInstances.find((i: any) => i.name === selectedInstance)?.credencias || {
-                provider: "whatsapp",
-                appName: "",
-                source: "",
-                webhook: "",
-                apiKey: ""
-              }
-            }}
-            onChange={handleInstanceFieldChange}
-            isEditing={true}
-            onSave={() => setShowCredentials(false)}
-            onCancel={() => setShowCredentials(false)}
+        <div className="space-y-2 border p-3 rounded-md bg-muted/50">
+          <Label htmlFor="appName">Nome do App</Label>
+          <Input
+            id="appName"
+            placeholder="Nome do App"
+            value={localCredentials?.appName || ''}
+            onChange={e => handleCredentialsChange('appName', e.target.value)}
           />
-         
-        </>
+          <Label htmlFor="source">Source</Label>
+          <Input
+            id="source"
+            placeholder="Source"
+            value={localCredentials?.source || ''}
+            onChange={e => handleCredentialsChange('source', e.target.value)}
+          />
+          <Label htmlFor="webhook">Webhook</Label>
+          <Input
+            id="webhook"
+            placeholder="Webhook URL"
+            value={localCredentials?.webhook || ''}
+            onChange={e => handleCredentialsChange('webhook', e.target.value)}
+          />
+          <Label htmlFor="apiKey">API Key</Label>
+          <Input
+            id="apiKey"
+            placeholder="API Key"
+            value={localCredentials?.apiKey || ''}
+            onChange={e => handleCredentialsChange('apiKey', e.target.value)}
+          />
+          <div className="flex gap-2 mt-2">
+            <Button variant="secondary" size="sm" onClick={handleSaveCredentials}>
+              Salvar
+            </Button>
+            <Button variant="secondary" size="sm" onClick={() => setShowCredentials(false)}>
+              Cancelar
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Campos do nó: Número de Destino e Mensagem */}
@@ -491,11 +584,13 @@ export function WhatsAppConfig({
                     id="messageType"
                     className="w-full text border border-gray-600 rounded-md px-3 py-2"
                     value={config?.messageType || 'text'}
-                    onChange={e => handleMessageTypeChange(e.target.value as 'text' | 'video' | 'image')}
+                    onChange={e => handleMessageTypeChange(e.target.value as 'text' | 'video' | 'image' | 'file' | 'audio')}
                   >
                     <option value="text">Texto</option>
                     <option value="video">Vídeo</option>
                     <option value="image">Imagem</option>
+                    <option value="file">Arquivo</option>
+                    <option value="audio">Áudio</option>
                   </select>
 
                   {config?.messageType === 'text' && (
@@ -566,6 +661,57 @@ export function WhatsAppConfig({
                       />
                     </div>
                   )}
+
+                  {config?.messageType === 'file' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="fileUrl">URL do Arquivo</Label>
+                      <Input
+                        id="fileUrl"
+                        placeholder="URL do arquivo"
+                        value={(output as FileOutput)?.url || ''}
+                        onChange={e => setActionConfig({
+                          ...actionConfig,
+                          output: { 
+                            type: 'file',
+                            url: e.target.value,
+                            fileName: (output as FileOutput)?.fileName || ''
+                          }
+                        })}
+                      />
+                      <Label htmlFor="fileName">Nome do Arquivo</Label>
+                      <Input
+                        id="fileName"
+                        placeholder="Nome do arquivo"
+                        value={(output as FileOutput)?.fileName || ''}
+                        onChange={e => setActionConfig({
+                          ...actionConfig,
+                          output: { 
+                            type: 'file',
+                            url: (output as FileOutput)?.url || '',
+                            fileName: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                  )}
+
+                  {config?.messageType === 'audio' && (
+                    <div className="space-y-2">
+                      <Label htmlFor="audioUrl">URL do Áudio</Label>
+                      <Input
+                        id="audioUrl"
+                        placeholder="URL do áudio"
+                        value={(output as AudioOutput)?.url || ''}
+                        onChange={e => setActionConfig({
+                          ...actionConfig,
+                          output: { 
+                            type: 'audio',
+                            url: e.target.value
+                          }
+                        })}
+                      />
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -626,7 +772,7 @@ export function renderWhatsAppConfigFields(
     output?: WhatsAppOutput;
     config: {
       to?: string;
-      messageType?: 'text' | 'video' | 'image';
+      messageType?: 'text' | 'video' | 'image' | 'file' | 'audio';
       templateName?: string;
       templateLanguage?: string;
       components?: any[];

@@ -39,7 +39,7 @@ import InputNode from "./nodes/InputNode"
 import ErrorNode from "./nodes/ErrorNode"
 import FlowEditDrawer from "./FlowEditDrawer"
 import { useFlow } from "@/contexts/FlowContext"
-import { Pencil, List, Save, MoreHorizontal, Plus, Layers, Command, Keyboard, Settings, RefreshCw } from "lucide-react"
+import { Pencil, List, Save, MoreHorizontal, Plus, Layers, Command, Keyboard, Settings, RefreshCw, Bot } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Progress } from "@/components/ui/progress"
 import { FlowThreadsList } from "./FlowThreadsList"
@@ -59,6 +59,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { SettingsDrawer } from "@/components/SettingsDrawer"
 import { WhatsAppInstancesDrawer } from "./WhatsAppInstancesDrawer"
+import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog"
 
 // Add styles for edge hover effect
 const edgeStyles = `
@@ -1008,7 +1009,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
               className="h-9"
             />
 
-            <TooltipProvider>
+            {/* <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -1027,7 +1028,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
                   </p>
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
+            </TooltipProvider> */}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -1051,12 +1052,13 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
                   Ver threads
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setShowInstancesDialog(true)}>
-                  <List className="h-4 w-4 mr-2" />
-                  Instâncias WhatsApp
+                  <Bot className="h-4 w-4 mr-2" />
+                  Instâncias
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                   <ChatAssistant flowId={flowId} />
+                  Assistente 
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                   <JsonEditor
@@ -1082,6 +1084,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
                     onCreateFlow={handleCreateFlowFromJson}
                     completeFlow={{ nodes, edges }}
                   />
+                  JSON Editor
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -1271,182 +1274,10 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
         onDelete={() => handleDeleteFlow(flowId)}
       />
 
-      <Dialog open={showKeyboardShortcuts} onOpenChange={setShowKeyboardShortcuts}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Atalhos de Teclado</DialogTitle>
-            <DialogDescription>Atalhos para aumentar sua produtividade</DialogDescription>
-          </DialogHeader>
-
-          <Tabs defaultValue="general" className="mt-4">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="general">Geral</TabsTrigger>
-              <TabsTrigger value="navigation">Navegação</TabsTrigger>
-              <TabsTrigger value="editing">Edição</TabsTrigger>
-            </TabsList>
-            <TabsContent value="general" className="mt-4">
-              <ScrollArea className="h-[300px] pr-4">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium mb-2">Comandos Gerais</h3>
-                    <div className="space-y-2">
-                      {[
-                        { keys: ["Ctrl", "S"], description: "Salvar flow" },
-                        { keys: ["Ctrl", "K"], description: "Mostrar atalhos de teclado" },
-                        { keys: ["/"], description: "Abrir menu de comandos" },
-                        { keys: ["Alt", "L"], description: "Mostrar/esconder lista de threads" },
-                        { keys: ["Alt", "M"], description: "Mostrar/esconder minimap" },
-                        { keys: ["Ctrl", "Enter"], description: "Executar flow" },
-                      ].map((shortcut, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <span className="text-sm text-gray-700">{shortcut.description}</span>
-                          <div className="flex items-center gap-1">
-                            {shortcut.keys.map((key, keyIndex) => (
-                              <React.Fragment key={keyIndex}>
-                                <kbd className="px-2 py-1 text-xs bg-gray-100 rounded border">{key}</kbd>
-                                {keyIndex < shortcut.keys.length - 1 && <span className="text-xs">+</span>}
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <Separator />
-                  <div>
-                    <h3 className="text-sm font-medium mb-2">Interface</h3>
-                    <div className="space-y-2">
-                      {[
-                        { keys: ["Esc"], description: "Fechar diálogos e menus" },
-                        { keys: ["F1"], description: "Mostrar ajuda" },
-                      ].map((shortcut, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <span className="text-sm text-gray-700">{shortcut.description}</span>
-                          <div className="flex items-center gap-1">
-                            {shortcut.keys.map((key, keyIndex) => (
-                              <React.Fragment key={keyIndex}>
-                                <kbd className="px-2 py-1 text-xs bg-gray-100 rounded border">{key}</kbd>
-                                {keyIndex < shortcut.keys.length - 1 && <span className="text-xs">+</span>}
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </ScrollArea>
-            </TabsContent>
-            <TabsContent value="navigation" className="mt-4">
-              <ScrollArea className="h-[300px] pr-4">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium mb-2">Navegação no Canvas</h3>
-                    <div className="space-y-2">
-                      {[
-                        { keys: ["Scroll"], description: "Zoom in/out" },
-                        { keys: ["Espaço", "Arrastar"], description: "Mover canvas" },
-                        { keys: ["Ctrl", "0"], description: "Ajustar visualização" },
-                        { keys: ["Ctrl", "+"], description: "Aumentar zoom" },
-                        { keys: ["Ctrl", "-"], description: "Diminuir zoom" },
-                      ].map((shortcut, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <span className="text-sm text-gray-700">{shortcut.description}</span>
-                          <div className="flex items-center gap-1">
-                            {shortcut.keys.map((key, keyIndex) => (
-                              <React.Fragment key={keyIndex}>
-                                <kbd className="px-2 py-1 text-xs bg-gray-100 rounded border">{key}</kbd>
-                                {keyIndex < shortcut.keys.length - 1 && <span className="text-xs">+</span>}
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <Separator />
-                  <div>
-                    <h3 className="text-sm font-medium mb-2">Seleção</h3>
-                    <div className="space-y-2">
-                      {[
-                        { keys: ["Click"], description: "Selecionar nó" },
-                        { keys: ["Shift", "Click"], description: "Selecionar múltiplos nós" },
-                        { keys: ["Ctrl", "A"], description: "Selecionar todos os nós" },
-                        { keys: ["Esc"], description: "Desselecionar" },
-                      ].map((shortcut, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <span className="text-sm text-gray-700">{shortcut.description}</span>
-                          <div className="flex items-center gap-1">
-                            {shortcut.keys.map((key, keyIndex) => (
-                              <React.Fragment key={keyIndex}>
-                                <kbd className="px-2 py-1 text-xs bg-gray-100 rounded border">{key}</kbd>
-                                {keyIndex < shortcut.keys.length - 1 && <span className="text-xs">+</span>}
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </ScrollArea>
-            </TabsContent>
-            <TabsContent value="editing" className="mt-4">
-              <ScrollArea className="h-[300px] pr-4">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-sm font-medium mb-2">Edição de Nós</h3>
-                    <div className="space-y-2">
-                      {[
-                        { keys: ["Delete"], description: "Remover nó selecionado" },
-                        { keys: ["Ctrl", "C"], description: "Copiar nó" },
-                        { keys: ["Ctrl", "V"], description: "Colar nó" },
-                        { keys: ["Ctrl", "D"], description: "Duplicar nó" },
-                        { keys: ["Ctrl", "Z"], description: "Desfazer" },
-                        { keys: ["Ctrl", "Y"], description: "Refazer" },
-                      ].map((shortcut, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <span className="text-sm text-gray-700">{shortcut.description}</span>
-                          <div className="flex items-center gap-1">
-                            {shortcut.keys.map((key, keyIndex) => (
-                              <React.Fragment key={keyIndex}>
-                                <kbd className="px-2 py-1 text-xs bg-gray-100 rounded border">{key}</kbd>
-                                {keyIndex < shortcut.keys.length - 1 && <span className="text-xs">+</span>}
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  <Separator />
-                  <div>
-                    <h3 className="text-sm font-medium mb-2">Conexões</h3>
-                    <div className="space-y-2">
-                      {[
-                        { keys: ["Arrastar de handle"], description: "Criar conexão" },
-                        { keys: ["Click na conexão"], description: "Remover conexão" },
-                      ].map((shortcut, index) => (
-                        <div key={index} className="flex justify-between items-center">
-                          <span className="text-sm text-gray-700">{shortcut.description}</span>
-                          <div className="flex items-center gap-1">
-                            {shortcut.keys.map((key, keyIndex) => (
-                              <React.Fragment key={keyIndex}>
-                                <kbd className="px-2 py-1 text-xs bg-gray-100 rounded border">{key}</kbd>
-                                {keyIndex < shortcut.keys.length - 1 && <span className="text-xs">+</span>}
-                              </React.Fragment>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </ScrollArea>
-            </TabsContent>
-          </Tabs>
-        </DialogContent>
-      </Dialog>
+      {/* <KeyboardShortcutsDialog 
+        open={showKeyboardShortcuts} 
+        onOpenChange={setShowKeyboardShortcuts} 
+      /> */}
 
       <SettingsDrawer
         open={settingsDrawerOpen}

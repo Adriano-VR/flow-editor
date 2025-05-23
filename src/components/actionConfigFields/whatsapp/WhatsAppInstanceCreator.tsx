@@ -58,13 +58,13 @@ export function WhatsAppInstanceCreator({
           }
       return updated
     })
-  }, [])
+    onChange(field, value)
+  }, [onChange])
 
   const handleBlur = useCallback((field: string) => {
     const value = field === "name" ? localValues.name : localValues.credencias[field as keyof typeof localValues.credencias]
     validateField(field, value)
-    onChange(field, value)
-  }, [localValues, onChange])
+  }, [localValues])
 
   const validateField = (field: string, value: string) => {
     const newErrors = { ...errors }
