@@ -7,6 +7,7 @@ import { useFlow } from "@/contexts/FlowContext"
 import { type Instance } from "@/lib/settingsTypes"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
+import { WhatsAppInstanceCreator } from "./WhatsAppInstanceCreator"
 
 // Interface para o output completo do nó
 interface WhatsAppNodeOutput {
@@ -390,6 +391,12 @@ export function WhatsAppConfig({
               </SelectContent>
             </Select>
           )}
+          {!isCreating && !showCredentials && (
+            <Button variant="outline" size="sm" onClick={handleCreateInstance} className="gap-1">
+              <Plus className="h-4 w-4" />
+              Nova Instância
+            </Button>
+          )}
           {selectedInstance && !showCredentials && !isCreating && (
             <Button variant="secondary" size="sm" onClick={() => setShowCredentials(true)}>
               Editar
@@ -405,95 +412,56 @@ export function WhatsAppConfig({
 
       {/* Formulário de criação de nova instância */}
       {isCreating && newInstanceDraft && (
-        <div className="space-y-2 border p-3 rounded-md bg-muted/50">
-          <Label>Nome da Instância</Label>
-          <Input
-            value={newInstanceDraft.name}
-            onChange={e => setNewInstanceDraft({ ...newInstanceDraft, name: e.target.value })}
-          />
-          <Label htmlFor="appName">Nome do App</Label>
-          <Input
-            id="appName"
-            placeholder="Nome do App"
-            value={newInstanceDraft.credencias.appName || ''}
-            onChange={e => setNewInstanceDraft({
-              ...newInstanceDraft,
-              credencias: { ...newInstanceDraft.credencias, appName: e.target.value }
-            })}
-          />
-          <Label htmlFor="source">Source</Label>
-          <Input
-            id="source"
-            placeholder="Source"
-            value={newInstanceDraft.credencias.source || ''}
-            onChange={e => setNewInstanceDraft({
-              ...newInstanceDraft,
-              credencias: { ...newInstanceDraft.credencias, source: e.target.value }
-            })}
-          />
-          <Label htmlFor="webhook">Webhook</Label>
-          <Input
-            id="webhook"
-            placeholder="Webhook URL"
-            value={newInstanceDraft.credencias.webhook || ''}
-            onChange={e => setNewInstanceDraft({
-              ...newInstanceDraft,
-              credencias: { ...newInstanceDraft.credencias, webhook: e.target.value }
-            })}
-          />
-          <Label htmlFor="apiKey">API Key</Label>
-          <Input
-            id="apiKey"
-            placeholder="API Key"
-            value={newInstanceDraft.credencias.apiKey || ''}
-            onChange={e => setNewInstanceDraft({
-              ...newInstanceDraft,
-              credencias: { ...newInstanceDraft.credencias, apiKey: e.target.value }
-            })}
-          />
-        </div>
+        <WhatsAppInstanceCreator
+          instance={{
+            name: newInstanceDraft.name,
+            credencias: {
+              provider: "whatsapp",
+              appName: newInstanceDraft.credencias.appName || "",
+              source: newInstanceDraft.credencias.source || "",
+              webhook: newInstanceDraft.credencias.webhook || "",
+              apiKey: newInstanceDraft.credencias.apiKey || ""
+            }
+          }}
+          onChange={(field: string, value: string) => {
+            if (field === 'name') {
+              setNewInstanceDraft({ ...newInstanceDraft, name: value });
+            } else {
+              setNewInstanceDraft({
+                ...newInstanceDraft,
+                credencias: { ...newInstanceDraft.credencias, [field]: value }
+              });
+            }
+          }}
+          onSave={handleSaveNewInstance}
+          onCancel={handleCancelCreate}
+          isSaving={false}
+          open={isCreating}
+          onOpenChange={setIsCreating}
+        />
       )}
 
       {/* Edição de instância existente */}
       {showCredentials && !isCreating && (
-        <div className="space-y-2 border p-3 rounded-md bg-muted/50">
-          <Label htmlFor="appName">Nome do App</Label>
-          <Input
-            id="appName"
-            placeholder="Nome do App"
-            value={localCredentials?.appName || ''}
-            onChange={e => handleCredentialsChange('appName', e.target.value)}
-          />
-          <Label htmlFor="source">Source</Label>
-          <Input
-            id="source"
-            placeholder="Source"
-            value={localCredentials?.source || ''}
-            onChange={e => handleCredentialsChange('source', e.target.value)}
-          />
-          <Label htmlFor="webhook">Webhook</Label>
-          <Input
-            id="webhook"
-            placeholder="Webhook URL"
-            value={localCredentials?.webhook || ''}
-            onChange={e => handleCredentialsChange('webhook', e.target.value)}
-          />
-          <Label htmlFor="apiKey">API Key</Label>
-          <Input
-            id="apiKey"
-            placeholder="API Key"
-            value={localCredentials?.apiKey || ''}
-            onChange={e => handleCredentialsChange('apiKey', e.target.value)}
-          />
-          <div className="flex gap-2 mt-2">
-            <Button variant="secondary" size="sm" onClick={handleSaveCredentials}>
-              Salvar
-            </Button>
-            <Button variant="secondary" size="sm" onClick={() => setShowCredentials(false)}>
-              Cancelar
-            </Button>
-          </div>
-        </div>
+        <WhatsAppInstanceCreator
+          instance={{
+            name: selectedInstance,
+            credencias: {
+              provider: "whatsapp",
+              appName: localCredentials?.appName || "",
+              source: localCredentials?.source || "",
+              webhook: localCredentials?.webhook || "",
+              apiKey: localCredentials?.apiKey || ""
+            }
+          }}
+          onChange={handleCredentialsChange}
+          onSave={handleSaveCredentials}
+          onCancel={() => setShowCredentials(false)}
+          isEditing={true}
+          isSaving={false}
+          open={showCredentials}
+          onOpenChange={setShowCredentials}
+        />
       )}
 
       {/* Campos do nó: Número de Destino e Mensagem */}

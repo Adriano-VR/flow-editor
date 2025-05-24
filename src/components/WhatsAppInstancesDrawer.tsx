@@ -124,6 +124,20 @@ export function WhatsAppInstancesDrawer({
     }
   }
 
+  // Função para obter as instâncias atuais
+  const getCurrentInstances = (): WhatsAppInstance[] => {
+    try {
+      const settings = flowData?.data?.attributes?.data?.settings
+      if (!settings) return []
+      
+      const parsedSettings = typeof settings === "string" ? JSON.parse(settings) : settings
+      return (parsedSettings?.instances || [])
+    } catch (error) {
+      console.error("Error parsing instances:", error)
+      return []
+    }
+  }
+
   // Função para atualizar as instâncias
   const updateInstances = async (updatedInstances: WhatsAppInstance[]) => {
     try {
@@ -145,12 +159,9 @@ export function WhatsAppInstancesDrawer({
         data: {
           id: parseInt(flowId),
           attributes: {
-            name: flowData?.data?.attributes?.name || "",
-            status: flowData?.data?.attributes?.status || "draft",
-            description: flowData?.data?.attributes?.description || "",
+            ...flowData?.data?.attributes,
             data: {
-              nodes: flowData?.data?.attributes?.data?.nodes || [],
-              edges: flowData?.data?.attributes?.data?.edges || [],
+              ...flowData?.data?.attributes?.data,
               settings: updatedSettings,
             },
           },
@@ -160,14 +171,11 @@ export function WhatsAppInstancesDrawer({
       // Primeiro atualizar o estado local
       onFlowDataChange({
         data: {
-          id: parseInt(flowId),
+          ...flowData?.data,
           attributes: {
-            name: flowData?.data?.attributes?.name || "",
-            status: flowData?.data?.attributes?.status || "draft",
-            description: flowData?.data?.attributes?.description || "",
+            ...flowData?.data?.attributes,
             data: {
-              nodes: flowData?.data?.attributes?.data?.nodes || [],
-              edges: flowData?.data?.attributes?.data?.edges || [],
+              ...flowData?.data?.attributes?.data,
               settings: updatedSettings,
             },
           },
@@ -177,7 +185,7 @@ export function WhatsAppInstancesDrawer({
       // Depois persistir no backend
       const response = await updateFlow(flowId, updatedFlowData)
 
-      if (response) {
+      if (response?.data) {
         setSaveStatus("success")
         // Atualizar o estado local com a resposta da API
         onFlowDataChange({
@@ -223,153 +231,22 @@ export function WhatsAppInstancesDrawer({
       setSaveStatus("saving")
       const currentInstances = getCurrentInstances()
       
-      // Manter a estrutura exata da instância
-      const updatedInstances = [...currentInstances, instance]
-
-      // Preparar os dados para atualização
-      const currentSettings = flowData?.data?.attributes?.data?.settings
-      const parsedSettings = currentSettings
-        ? typeof currentSettings === "string"
-          ? JSON.parse(currentSettings)
-          : currentSettings
-        : {}
-
-      // Criar o objeto de configurações atualizado
-      const updatedSettings = {
-        ...parsedSettings,
-        instances: updatedInstances,
+      // Garantir que a instância tem o provider correto
+      const newInstance = {
+        ...instance,
+        credencias: {
+          ...instance.credencias,
+          provider: "whatsapp"
+        }
       }
 
-      // Criar o objeto de flow atualizado mantendo a estrutura existente
-      const updatedFlowData = {
-        data: {
-          id: parseInt(flowId),
-          attributes: {
-            ...flowData?.data?.attributes,
-            data: {
-              nodes: flowData?.data?.attributes?.data?.nodes || [],
-              edges: flowData?.data?.attributes?.data?.edges || [],
-              settings: updatedSettings,
-            },
-          },
-        },
-      }
-
-      // Primeiro atualizar o estado local
-      onFlowDataChange({
-        data: {
-          ...flowData?.data,
-          attributes: {
-            ...flowData?.data?.attributes,
-            data: {
-              nodes: flowData?.data?.attributes?.data?.nodes || [],
-              edges: flowData?.data?.attributes?.data?.edges || [],
-              settings: updatedSettings,
-            },
-          },
-        },
-      })
-
-      // Depois persistir no backend
-      const response = await updateFlow(flowId, updatedFlowData)
-
-      if (response?.data) {
-        setSaveStatus("success")
-        onFlowDataChange({
-          data: response.data,
-        })
-        setIsCreateDialogOpen(false)
-        setNewInstance(null)
-      } else {
-        throw new Error("Failed to update flow")
-      }
-
-      setTimeout(() => {
-        setSaveStatus("idle")
-      }, 2000)
+      const updatedInstances = [...currentInstances, newInstance]
+      await updateInstances(updatedInstances)
+      
+      setIsCreateDialogOpen(false)
+      setNewInstance(null)
     } catch (error) {
       console.error("Error saving new instance:", error)
-      setSaveStatus("error")
-      setTimeout(() => setSaveStatus("idle"), 3000)
-    }
-  }
-
-  // Função para remover instância
-  const handleRemoveInstance = async (index: number) => {
-    try {
-      setSaveStatus("saving")
-      const currentInstances = getCurrentInstances()
-      const updatedInstances = currentInstances.filter((_: WhatsAppInstance, i: number) => i !== index)
-
-      // Preparar os dados para atualização
-      const currentSettings = flowData?.data?.attributes?.data?.settings
-      const parsedSettings = currentSettings
-        ? typeof currentSettings === "string"
-          ? JSON.parse(currentSettings)
-          : currentSettings
-        : {}
-
-      // Criar o objeto de configurações atualizado
-      const updatedSettings = {
-        ...parsedSettings,
-        instances: updatedInstances,
-      }
-
-      // Criar o objeto de flow atualizado
-      const updatedFlowData = {
-        data: {
-          id: parseInt(flowId),
-          attributes: {
-            name: flowData?.data?.attributes?.name || "",
-            status: flowData?.data?.attributes?.status || "draft",
-            description: flowData?.data?.attributes?.description || "",
-            data: {
-              nodes: flowData?.data?.attributes?.data?.nodes || [],
-              edges: flowData?.data?.attributes?.data?.edges || [],
-              settings: updatedSettings,
-            },
-          },
-        },
-      }
-
-      // Primeiro atualizar o estado local
-      onFlowDataChange({
-        data: {
-          id: parseInt(flowId),
-          attributes: {
-            name: flowData?.data?.attributes?.name || "",
-            status: flowData?.data?.attributes?.status || "draft",
-            description: flowData?.data?.attributes?.description || "",
-            data: {
-              nodes: flowData?.data?.attributes?.data?.nodes || [],
-              edges: flowData?.data?.attributes?.data?.edges || [],
-              settings: updatedSettings,
-            },
-          },
-        },
-      })
-
-      // Depois persistir no backend
-      const response = await updateFlow(flowId, updatedFlowData)
-
-      if (response?.data) {
-        setSaveStatus("success")
-        // Atualizar o estado local com a resposta da API
-        onFlowDataChange({
-          data: response.data,
-        })
-        setIsDeleteDialogOpen(false)
-        setDeleteIndex(null)
-      } else {
-        throw new Error("Failed to update flow")
-      }
-
-      // Simular um pequeno atraso para mostrar o estado de salvamento
-      setTimeout(() => {
-        setSaveStatus("idle")
-      }, 2000)
-    } catch (error) {
-      console.error("Error removing instance:", error)
       setSaveStatus("error")
       setTimeout(() => setSaveStatus("idle"), 3000)
     }
@@ -386,81 +263,26 @@ export function WhatsAppInstancesDrawer({
       setSaveStatus("saving")
       const currentInstances = getCurrentInstances()
       
+      // Garantir que a instância tem o provider correto
+      const newInstance = {
+        ...updatedInstance,
+        credencias: {
+          ...updatedInstance.credencias,
+          provider: "whatsapp"
+        }
+      }
+
       // Criar uma cópia profunda das instâncias atualizadas
       const updatedInstances = currentInstances.map((instance: WhatsAppInstance, i: number) =>
-        i === editingIndex ? { ...updatedInstance } : { ...instance }
+        i === editingIndex ? newInstance : instance
       )
 
-      // Preparar os dados para atualização
-      const currentSettings = flowData?.data?.attributes?.data?.settings
-      const parsedSettings = currentSettings
-        ? typeof currentSettings === "string"
-          ? JSON.parse(currentSettings)
-          : currentSettings
-        : {}
-
-      // Criar o objeto de configurações atualizado
-      const updatedSettings = {
-        ...parsedSettings,
-        instances: updatedInstances,
-      }
-
-      // Criar o objeto de flow atualizado
-      const updatedFlowData = {
-        data: {
-          id: parseInt(flowId),
-          attributes: {
-            name: flowData?.data?.attributes?.name || "",
-            status: flowData?.data?.attributes?.status || "draft",
-            description: flowData?.data?.attributes?.description || "",
-            data: {
-              nodes: flowData?.data?.attributes?.data?.nodes || [],
-              edges: flowData?.data?.attributes?.data?.edges || [],
-              settings: updatedSettings,
-            },
-          },
-        },
-      }
-
-      // Primeiro atualizar o estado local
-      onFlowDataChange({
-        data: {
-          id: parseInt(flowId),
-          attributes: {
-            name: flowData?.data?.attributes?.name || "",
-            status: flowData?.data?.attributes?.status || "draft",
-            description: flowData?.data?.attributes?.description || "",
-            data: {
-              nodes: flowData?.data?.attributes?.data?.nodes || [],
-              edges: flowData?.data?.attributes?.data?.edges || [],
-              settings: updatedSettings,
-            },
-          },
-        },
-      })
-
-      // Depois persistir no backend
-      const response = await updateFlow(flowId, updatedFlowData)
-
-      if (response?.data) {
-        setSaveStatus("success")
-        // Atualizar o estado local com a resposta da API
-        onFlowDataChange({
-          data: response.data,
-        })
-        
-        // Fechar o diálogo e limpar o estado
-        setIsEditDialogOpen(false)
-        setEditingInstance(null)
-        setEditingIndex(null)
-      } else {
-        throw new Error("Failed to update flow")
-      }
-
-      // Simular um pequeno atraso para mostrar o estado de salvamento
-      setTimeout(() => {
-        setSaveStatus("idle")
-      }, 2000)
+      await updateInstances(updatedInstances)
+      
+      // Fechar o diálogo e limpar o estado
+      setIsEditDialogOpen(false)
+      setEditingInstance(null)
+      setEditingIndex(null)
     } catch (error) {
       console.error("Error updating instance:", error)
       setSaveStatus("error")
@@ -468,14 +290,20 @@ export function WhatsAppInstancesDrawer({
     }
   }
 
-  // Função para obter as instâncias atuais
-  const getCurrentInstances = (): WhatsAppInstance[] => {
+  // Função para remover instância
+  const handleRemoveInstance = async (index: number) => {
     try {
-      const settings = flowData?.data?.attributes?.data?.settings
-      const parsedSettings = settings ? (typeof settings === "string" ? JSON.parse(settings) : settings) : null
-      return (parsedSettings?.instances || []) as WhatsAppInstance[]
-    } catch {
-      return [] as WhatsAppInstance[]
+      setSaveStatus("saving")
+      const currentInstances = getCurrentInstances()
+      const updatedInstances = currentInstances.filter((_: WhatsAppInstance, i: number) => i !== index)
+      await updateInstances(updatedInstances)
+      
+      setIsDeleteDialogOpen(false)
+      setDeleteIndex(null)
+    } catch (error) {
+      console.error("Error removing instance:", error)
+      setSaveStatus("error")
+      setTimeout(() => setSaveStatus("idle"), 3000)
     }
   }
 
@@ -510,32 +338,50 @@ export function WhatsAppInstancesDrawer({
   // Função para obter o status da instância
   const getInstanceStatus = (instance: WhatsAppInstance) => {
     const status = instance.status || "inactive"
+    const provider = instance.credencias?.provider || "unknown"
 
-    switch (status) {
-      case "active":
-        return {
-          label: "Ativo",
-          color: "bg-green-500",
-          icon: <CheckCircle className="h-3 w-3 text-white" />,
-        }
-      case "connecting":
-        return {
-          label: "Conectando",
-          color: "bg-yellow-500",
-          icon: <Loader2 className="h-3 w-3 text-white animate-spin" />,
-        }
-      case "error":
-        return {
-          label: "Erro",
-          color: "bg-red-500",
-          icon: <AlertCircle className="h-3 w-3 text-white" />,
-        }
+    // Cores diferentes para cada provider
+    const providerColors = {
+      whatsapp: "bg-green-500",
+      assistant: "bg-blue-500",
+      default: "bg-gray-400"
+    }
+
+    const statusConfig = {
+      active: {
+        label: "Ativo",
+        color: providerColors[provider as keyof typeof providerColors] || providerColors.default,
+        icon: <CheckCircle className="h-3 w-3 text-white" />,
+      },
+      connecting: {
+        label: "Conectando",
+        color: "bg-yellow-500",
+        icon: <Loader2 className="h-3 w-3 text-white animate-spin" />,
+      },
+      error: {
+        label: "Erro",
+        color: "bg-red-500",
+        icon: <AlertCircle className="h-3 w-3 text-white" />,
+      },
+      default: {
+        label: "Inativo",
+        color: providerColors[provider as keyof typeof providerColors] || providerColors.default,
+        icon: <Info className="h-3 w-3 text-white" />,
+      }
+    }
+
+    return statusConfig[status as keyof typeof statusConfig] || statusConfig.default
+  }
+
+  // Função para obter o ícone do provider
+  const getProviderIcon = (provider: string) => {
+    switch (provider) {
+      case "whatsapp":
+        return <MessageSquare className="h-4 w-4 text-white" />
+      case "assistant":
+        return <Info className="h-4 w-4 text-white" />
       default:
-        return {
-          label: "Inativo",
-          color: "bg-gray-400",
-          icon: <Info className="h-3 w-3 text-white" />,
-        }
+        return <Info className="h-4 w-4 text-white" />
     }
   }
 
@@ -553,7 +399,7 @@ export function WhatsAppInstancesDrawer({
                   Instâncias 
                 </DrawerTitle>
                 <DrawerDescription className="text-xs mt-1">
-                  Gerencie as instâncias WhatsApp conectadas ao seu flow
+                  Gerencie as instâncias conectadas ao seu flow
                 </DrawerDescription>
               </div>
               <div className="flex items-center gap-2">
@@ -604,7 +450,7 @@ export function WhatsAppInstancesDrawer({
                         <CardHeader className="pb-2">
                           <CardTitle className="text-base">Nenhuma instância configurada</CardTitle>
                           <CardDescription>
-                            Adicione sua primeira instância WhatsApp para começar a enviar mensagens
+                            Adicione sua primeira instância para começar
                           </CardDescription>
                         </CardHeader>
                         <CardContent className="pb-2">
@@ -612,7 +458,7 @@ export function WhatsAppInstancesDrawer({
                             <div className="flex items-center gap-2 text-sm">
                               <AlertCircle className="h-4 w-4 text-muted-foreground" />
                               <p className="text-muted-foreground">
-                                Você precisa de pelo menos uma instância WhatsApp para usar este flow
+                                Você precisa de pelo menos uma instância para usar este flow
                               </p>
                             </div>
                           </div>
@@ -630,14 +476,20 @@ export function WhatsAppInstancesDrawer({
                           <h3 className="text-sm font-medium">
                             {instances.length} {instances.length === 1 ? "instância" : "instâncias"} configuradas
                           </h3>
-                          <Badge variant="outline" className="text-xs font-normal">
-                            {instances.filter((i) => i.status === "active").length} ativas
-                          </Badge>
+                          <div className="flex gap-2">
+                            <Badge variant="outline" className="text-xs font-normal">
+                              {instances.filter((i) => i.credencias?.provider === "whatsapp").length} WhatsApp
+                            </Badge>
+                            <Badge variant="outline" className="text-xs font-normal">
+                              {instances.filter((i) => i.credencias?.provider === "assistant").length} Assistant
+                            </Badge>
+                          </div>
                         </div>
 
                         {instances.map((instance: WhatsAppInstance, index: number) => {
                           const status = getInstanceStatus(instance)
                           const isExpanded = expandedInstances[index] || false
+                          const provider = instance.credencias?.provider || "unknown"
 
                           return (
                             <Card
@@ -649,7 +501,7 @@ export function WhatsAppInstancesDrawer({
                                   <div
                                     className={cn("w-8 h-8 rounded-full flex items-center justify-center", status.color)}
                                   >
-                                    <MessageSquare className="h-4 w-4 text-white" />
+                                    {getProviderIcon(provider)}
                                   </div>
                                   <div>
                                     <h4 className="font-medium text-sm">{instance.name}</h4>
@@ -659,9 +511,9 @@ export function WhatsAppInstancesDrawer({
                                         <span className="text-xs text-muted-foreground">{status.label}</span>
                                       </div>
                                       <span className="text-xs text-muted-foreground">•</span>
-                                      <span className="text-xs text-muted-foreground">
-                                        {instance.lastConnected || "Nunca conectado"}
-                                      </span>
+                                      <Badge variant="outline" className="text-xs font-normal">
+                                        {provider}
+                                      </Badge>
                                     </div>
                                   </div>
                                 </div>
@@ -715,73 +567,111 @@ export function WhatsAppInstancesDrawer({
                                         <div className="text-muted-foreground">Provider:</div>
                                         <div className="col-span-2 font-medium flex items-center gap-2">
                                           <Badge variant="outline" className="h-5 text-xs font-normal">
-                                            {instance.credencias?.provider || "Não configurado"}
+                                            {provider}
                                           </Badge>
                                         </div>
 
-                                        <div className="text-muted-foreground">App Name:</div>
-                                        <div className="col-span-2 font-medium">
-                                          {instance.credencias?.appName || "Não configurado"}
-                                        </div>
+                                        {provider === "whatsapp" && (
+                                          <>
+                                            <div className="text-muted-foreground">App Name:</div>
+                                            <div className="col-span-2 font-medium">
+                                              {instance.credencias?.appName || "Não configurado"}
+                                            </div>
 
-                                        <div className="text-muted-foreground">Source:</div>
-                                        <div className="col-span-2 font-medium flex items-center gap-1">
-                                          <span className="truncate">
-                                            {instance.credencias?.source || "Não configurado"}
-                                          </span>
-                                          {instance.credencias?.source && (
-                                            <Button
-                                              variant="ghost"
-                                              size="icon"
-                                              className="h-5 w-5"
-                                              onClick={() => copyToClipboard(instance.credencias.source)}
-                                            >
-                                              <Copy className="h-3 w-3" />
-                                            </Button>
-                                          )}
-                                        </div>
+                                            <div className="text-muted-foreground">Source:</div>
+                                            <div className="col-span-2 font-medium flex items-center gap-1">
+                                              <span className="truncate">
+                                                {instance.credencias?.source || "Não configurado"}
+                                              </span>
+                                              {instance.credencias?.source && (
+                                                <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  className="h-5 w-5"
+                                                  onClick={() => copyToClipboard(instance.credencias.source)}
+                                                >
+                                                  <Copy className="h-3 w-3" />
+                                                </Button>
+                                              )}
+                                            </div>
 
-                                        <div className="text-muted-foreground">Webhook:</div>
-                                        <div className="col-span-2 font-medium flex items-center gap-1">
-                                          <span className="truncate max-w-[180px]">
-                                            {instance.credencias?.webhook || "Não configurado"}
-                                          </span>
-                                          {instance.credencias?.webhook && (
-                                            <>
-                                              <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-5 w-5"
-                                                onClick={() => copyToClipboard(instance.credencias.webhook)}
-                                              >
-                                                <Copy className="h-3 w-3" />
-                                              </Button>
-                                              <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-5 w-5"
-                                                onClick={() => window.open(instance.credencias.webhook, "_blank")}
-                                              >
-                                                <ExternalLink className="h-3 w-3" />
-                                              </Button>
-                                            </>
-                                          )}
-                                        </div>
+                                            <div className="text-muted-foreground">Webhook:</div>
+                                            <div className="col-span-2 font-medium flex items-center gap-1">
+                                              <span className="truncate max-w-[180px]">
+                                                {instance.credencias?.webhook || "Não configurado"}
+                                              </span>
+                                              {instance.credencias?.webhook && (
+                                                <>
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-5 w-5"
+                                                    onClick={() => copyToClipboard(instance.credencias.webhook)}
+                                                  >
+                                                    <Copy className="h-3 w-3" />
+                                                  </Button>
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-5 w-5"
+                                                    onClick={() => window.open(instance.credencias.webhook, "_blank")}
+                                                  >
+                                                    <ExternalLink className="h-3 w-3" />
+                                                  </Button>
+                                                </>
+                                              )}
+                                            </div>
 
-                                        <div className="text-muted-foreground">API Key:</div>
-                                        <div className="col-span-2 font-medium flex items-center gap-1">
-                                          {instance.credencias?.apiKey ? "••••••••••••••••" : "Não configurado"}
-                                          {instance.credencias?.apiKey && (
-                                            <Button
-                                              variant="ghost"
-                                              size="icon"
-                                              className="h-5 w-5"
-                                              onClick={() => copyToClipboard(instance.credencias.apiKey)}
-                                            >
-                                              <Copy className="h-3 w-3" />
-                                            </Button>
-                                          )}
-                                        </div>
+                                            <div className="text-muted-foreground">API Key:</div>
+                                            <div className="col-span-2 font-medium flex items-center gap-1">
+                                              {instance.credencias?.apiKey ? "••••••••••••••••" : "Não configurado"}
+                                              {instance.credencias?.apiKey && (
+                                                <Button
+                                                  variant="ghost"
+                                                  size="icon"
+                                                  className="h-5 w-5"
+                                                  onClick={() => copyToClipboard(instance.credencias.apiKey)}
+                                                >
+                                                  <Copy className="h-3 w-3" />
+                                                </Button>
+                                              )}
+                                            </div>
+                                          </>
+                                        )}
+
+                                        {provider === "assistant" && (
+                                          <>
+                                            <div className="text-muted-foreground">App:</div>
+                                            <div className="col-span-2 font-medium">
+                                              {instance.credencias?.app || "Não configurado"}
+                                            </div>
+
+                                            <div className="text-muted-foreground">ID do Assistente:</div>
+                                            <div className="col-span-2 font-medium">
+                                              {instance.credencias?.idassistente || "Não configurado"}
+                                            </div>
+
+                                            <div className="text-muted-foreground">Modelo:</div>
+                                            <div className="col-span-2 font-medium">
+                                              {instance.credencias?.model?.name || "Não configurado"}
+                                            </div>
+
+                                            <div className="text-muted-foreground">Temperatura:</div>
+                                            <div className="col-span-2 font-medium">
+                                              {instance.credencias?.model?.temperature || "Não configurado"}
+                                            </div>
+
+                                            <div className="text-muted-foreground">Máximo de Tokens:</div>
+                                            <div className="col-span-2 font-medium">
+                                              {instance.credencias?.memory?.maxTokens || "Não configurado"}
+                                            </div>
+
+                                            <div className="text-muted-foreground">Período de Retenção:</div>
+                                            <div className="col-span-2 font-medium">
+                                              {instance.credencias?.memory?.retentionPeriod || "Não configurado"}
+                                            </div>
+                                          </>
+                                        )}
                                       </div>
 
                                       <div className="flex justify-end gap-2 pt-2">
