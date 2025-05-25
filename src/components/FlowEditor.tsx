@@ -58,7 +58,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { SettingsDrawer } from "@/components/SettingsDrawer"
-import { WhatsAppInstancesDrawer } from "./WhatsAppInstancesDrawer"
+import { WhatsAppInstancesDrawer } from "./InstancesDrawer"
 import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog"
 
 // Add styles for edge hover effect

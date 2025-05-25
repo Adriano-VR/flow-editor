@@ -27,6 +27,7 @@ import {
   MoreHorizontal,
   ExternalLink,
   Info,
+  Bot,
 } from "lucide-react"
 import { getFlow, updateFlow } from "@/lib/api"
 import type { Flow } from "@/types/flow"
@@ -46,19 +47,52 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { WhatsAppInstanceCreator } from './actionConfigFields/whatsapp/WhatsAppInstanceCreator'
+import { AssistantFormFields } from './actionConfigFields/assistant/AssistantFormFields'
+import type { Node } from "@/types/node"
+import type { Edge } from "@/types/flow"
+import type { Settings } from "@/lib/settingsTypes"
 
-interface WhatsAppInstance {
-  name: string
-  credencias: {
-    apiKey: string
-    source: string
-    appName: string
-    webhook: string
-    provider: string
+interface WhatsAppCredentials {
+  apiKey: string
+  source: string
+  appName: string
+  webhook: string
+  provider: string
+}
+
+interface AssistantCredentials {
+  app: string
+  idassistente: string
+  model: {
+    name: string
+    temperature: number
   }
+  memory: {
+    maxTokens: number
+    retentionPeriod: string
+  }
+  tools: string[]
+  provider: string
+}
+
+type InstanceCredentials = WhatsAppCredentials | AssistantCredentials
+
+interface BaseInstance {
+  name: string
+  credencias: InstanceCredentials
   status?: "active" | "inactive" | "connecting" | "error"
   lastConnected?: string
 }
+
+interface WhatsAppInstance extends BaseInstance {
+  credencias: WhatsAppCredentials
+}
+
+interface AssistantInstance extends BaseInstance {
+  credencias: AssistantCredentials
+}
+
+type Instance = WhatsAppInstance | AssistantInstance
 
 interface WhatsAppInstancesDrawerProps {
   open: boolean
@@ -66,6 +100,15 @@ interface WhatsAppInstancesDrawerProps {
   flowId: string
   flowData: { data: Flow } | null
   onFlowDataChange: (newData: { data: Flow }) => void
+}
+
+// Type guard functions
+function isWhatsAppInstance(instance: Instance): instance is WhatsAppInstance {
+  return instance.credencias.provider === "whatsapp"
+}
+
+function isAssistantInstance(instance: Instance): instance is AssistantInstance {
+  return instance.credencias.provider === "assistant"
 }
 
 export function WhatsAppInstancesDrawer({
@@ -79,7 +122,7 @@ export function WhatsAppInstancesDrawer({
   const [notificationsEnabled, setNotificationsEnabled] = useState(false)
   const [autoReconnect, setAutoReconnect] = useState(true)
   const [debugMode, setDebugMode] = useState(false)
-  const [editingInstance, setEditingInstance] = useState<WhatsAppInstance | null>(null)
+  const [editingInstance, setEditingInstance] = useState<Instance | null>(null)
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
@@ -88,7 +131,9 @@ export function WhatsAppInstancesDrawer({
   const [expandedInstances, setExpandedInstances] = useState<Record<number, boolean>>({})
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "success" | "error">("idle")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [newInstance, setNewInstance] = useState<WhatsAppInstance | null>(null)
+  const [newInstance, setNewInstance] = useState<Instance | null>(null)
+  const [isCreating, setIsCreating] = useState(false)
+  const [newInstanceDraft, setNewInstanceDraft] = useState<Instance | null>(null)
 
   // Função para buscar apenas as instâncias
   const fetchInstances = async () => {
@@ -125,7 +170,7 @@ export function WhatsAppInstancesDrawer({
   }
 
   // Função para obter as instâncias atuais
-  const getCurrentInstances = (): WhatsAppInstance[] => {
+  const getCurrentInstances = (): Instance[] => {
     try {
       const settings = flowData?.data?.attributes?.data?.settings
       if (!settings) return []
@@ -139,7 +184,7 @@ export function WhatsAppInstancesDrawer({
   }
 
   // Função para atualizar as instâncias
-  const updateInstances = async (updatedInstances: WhatsAppInstance[]) => {
+  const updateInstances = async (updatedInstances: Instance[]) => {
     try {
       setSaveStatus("saving")
       const currentSettings = flowData?.data?.attributes?.data?.settings
@@ -155,17 +200,23 @@ export function WhatsAppInstancesDrawer({
       }
 
       // Criar o objeto de flow atualizado
+      const nodes = flowData?.data?.attributes?.data?.nodes ?? []
+      const edges = flowData?.data?.attributes?.data?.edges ?? []
+      
       const updatedFlowData = {
-        data: {
-          id: parseInt(flowId),
-          attributes: {
-            ...flowData?.data?.attributes,
-            data: {
-              ...flowData?.data?.attributes?.data,
-              settings: updatedSettings,
-            },
-          },
-        },
+        nodes,
+        edges,
+        name: flowData?.data?.attributes?.name,
+        status: flowData?.data?.attributes?.status,
+        description: flowData?.data?.attributes?.description,
+        settings: updatedSettings
+      } satisfies {
+        nodes: Node[];
+        edges: Edge[];
+        name?: string;
+        status?: string;
+        description?: string;
+        settings?: Settings;
       }
 
       // Primeiro atualizar o estado local
@@ -207,44 +258,146 @@ export function WhatsAppInstancesDrawer({
   }
 
   // Função para adicionar instância
-  const handleAddInstance = () => {
+  const handleAddInstance = (type: "whatsapp" | "assistant") => {
     const currentInstances = getCurrentInstances()
-    const instance: WhatsAppInstance = {
-      name: `WhatsApp ${currentInstances.length + 1}`,
-      credencias: {
-        apiKey: "",
-        source: "",
-        appName: "",
-        webhook: "",
-        provider: "whatsapp",
-      },
-      status: "inactive",
-      lastConnected: "",
+    
+    if (type === "whatsapp") {
+      const instance: WhatsAppInstance = {
+        name: `WhatsApp ${currentInstances.length + 1}`,
+        credencias: {
+          apiKey: "",
+          source: "",
+          appName: "",
+          webhook: "",
+          provider: "whatsapp"
+        },
+        status: "inactive",
+        lastConnected: ""
+      }
+      setNewInstanceDraft(instance)
+    } else {
+      const instance: AssistantInstance = {
+        name: `Assistant ${currentInstances.length + 1}`,
+        credencias: {
+          app: "",
+          idassistente: "",
+          model: {
+            name: "gpt-3.5-turbo",
+            temperature: 0.7
+          },
+          memory: {
+            maxTokens: 2000,
+            retentionPeriod: "7d"
+          },
+          tools: [],
+          provider: "assistant"
+        },
+        status: "inactive",
+        lastConnected: ""
+      }
+      setNewInstanceDraft(instance)
     }
-    setNewInstance(instance)
-    setIsCreateDialogOpen(true)
+    setIsCreating(true)
   }
 
   // Função para salvar nova instância
-  const handleSaveNewInstance = async (instance: WhatsAppInstance) => {
+  const handleSaveNewInstance = async (instance: Instance) => {
     try {
       setSaveStatus("saving")
       const currentInstances = getCurrentInstances()
       
-      // Garantir que a instância tem o provider correto
-      const newInstance = {
-        ...instance,
-        credencias: {
-          ...instance.credencias,
-          provider: "whatsapp"
-        }
+      // Garantir que a instância tem a estrutura correta baseada no provider
+      let newInstance: Instance
+      if (isWhatsAppInstance(instance)) {
+        newInstance = {
+          name: instance.name,
+          credencias: {
+            apiKey: instance.credencias.apiKey || "",
+            source: instance.credencias.source || "",
+            appName: instance.credencias.appName || "",
+            webhook: instance.credencias.webhook || "",
+            provider: "whatsapp"
+          },
+          status: "inactive",
+          lastConnected: ""
+        } as WhatsAppInstance
+      } else {
+        newInstance = {
+          name: instance.name,
+          credencias: {
+            app: instance.credencias.app || "",
+            idassistente: instance.credencias.idassistente || "",
+            model: {
+              name: instance.credencias.model?.name || "gpt-3.5-turbo",
+              temperature: instance.credencias.model?.temperature || 0.7
+            },
+            memory: {
+              maxTokens: instance.credencias.memory?.maxTokens || 2000,
+              retentionPeriod: instance.credencias.memory?.retentionPeriod || "7d"
+            },
+            tools: instance.credencias.tools || [],
+            provider: "assistant"
+          },
+          status: "inactive",
+          lastConnected: ""
+        } as AssistantInstance
       }
 
       const updatedInstances = [...currentInstances, newInstance]
-      await updateInstances(updatedInstances)
       
-      setIsCreateDialogOpen(false)
-      setNewInstance(null)
+      // Atualizar o backend
+      const currentSettings = flowData?.data?.attributes?.data?.settings
+      const parsedSettings = currentSettings
+        ? typeof currentSettings === "string"
+          ? JSON.parse(currentSettings)
+          : currentSettings
+        : {}
+
+      const updatedSettings = {
+        ...parsedSettings,
+        instances: updatedInstances,
+      }
+
+      // Criar o objeto de flow atualizado mantendo a estrutura existente
+      const nodes = flowData?.data?.attributes?.data?.nodes ?? []
+      const edges = flowData?.data?.attributes?.data?.edges ?? []
+      
+      const updatedFlowData = {
+        nodes,
+        edges,
+        name: flowData?.data?.attributes?.name,
+        status: flowData?.data?.attributes?.status,
+        description: flowData?.data?.attributes?.description,
+        settings: updatedSettings
+      } satisfies {
+        nodes: Node[];
+        edges: Edge[];
+        name?: string;
+        status?: string;
+        description?: string;
+        settings?: Settings;
+      }
+
+      // Primeiro persistir no backend
+      const response = await updateFlow(flowId, { data: { id: parseInt(flowId), attributes: { data: updatedFlowData } } } )
+
+      if (response?.data) {
+        // Atualizar o estado local APENAS com a resposta da API
+        onFlowDataChange({
+          data: response.data
+        })
+        
+        setSaveStatus("success")
+        setIsCreating(false)
+        setNewInstanceDraft(null)
+      } else {
+        throw new Error("Failed to update flow")
+      }
+
+      // Simular um pequeno atraso para mostrar o estado de salvamento
+      setTimeout(() => {
+        setSaveStatus("idle")
+      }, 2000)
     } catch (error) {
       console.error("Error saving new instance:", error)
       setSaveStatus("error")
@@ -253,7 +406,7 @@ export function WhatsAppInstancesDrawer({
   }
 
   // Função para editar instância
-  const handleEditInstance = async (updatedInstance: WhatsAppInstance) => {
+  const handleEditInstance = async (updatedInstance: Instance) => {
     if (editingIndex === null) {
       console.error("Editing index is null")
       return
@@ -263,26 +416,103 @@ export function WhatsAppInstancesDrawer({
       setSaveStatus("saving")
       const currentInstances = getCurrentInstances()
       
-      // Garantir que a instância tem o provider correto
-      const newInstance = {
-        ...updatedInstance,
-        credencias: {
-          ...updatedInstance.credencias,
-          provider: "whatsapp"
-        }
+      // Garantir que a instância tem a estrutura correta baseada no provider
+      let newInstance: Instance
+      if (isWhatsAppInstance(updatedInstance)) {
+        newInstance = {
+          name: updatedInstance.name,
+          credencias: {
+            apiKey: updatedInstance.credencias.apiKey || "",
+            source: updatedInstance.credencias.source || "",
+            appName: updatedInstance.credencias.appName || "",
+            webhook: updatedInstance.credencias.webhook || "",
+            provider: "whatsapp"
+          },
+          status: updatedInstance.status || "inactive",
+          lastConnected: updatedInstance.lastConnected || ""
+        } as WhatsAppInstance
+      } else {
+        newInstance = {
+          name: updatedInstance.name,
+          credencias: {
+            app: updatedInstance.credencias.app || "",
+            idassistente: updatedInstance.credencias.idassistente || "",
+            model: {
+              name: updatedInstance.credencias.model?.name || "gpt-3.5-turbo",
+              temperature: updatedInstance.credencias.model?.temperature || 0.7
+            },
+            memory: {
+              maxTokens: updatedInstance.credencias.memory?.maxTokens || 2000,
+              retentionPeriod: updatedInstance.credencias.memory?.retentionPeriod || "7d"
+            },
+            tools: updatedInstance.credencias.tools || [],
+            provider: "assistant"
+          },
+          status: updatedInstance.status || "inactive",
+          lastConnected: updatedInstance.lastConnected || ""
+        } as AssistantInstance
       }
 
       // Criar uma cópia profunda das instâncias atualizadas
-      const updatedInstances = currentInstances.map((instance: WhatsAppInstance, i: number) =>
+      const updatedInstances = currentInstances.map((instance: Instance, i: number) =>
         i === editingIndex ? newInstance : instance
       )
 
-      await updateInstances(updatedInstances)
+      // Atualizar o backend
+      const currentSettings = flowData?.data?.attributes?.data?.settings
+      const parsedSettings = currentSettings
+        ? typeof currentSettings === "string"
+          ? JSON.parse(currentSettings)
+          : currentSettings
+        : {}
+
+      const updatedSettings = {
+        ...parsedSettings,
+        instances: updatedInstances,
+      }
+
+      // Criar o objeto de flow atualizado mantendo a estrutura existente
+      const nodes = flowData?.data?.attributes?.data?.nodes ?? []
+      const edges = flowData?.data?.attributes?.data?.edges ?? []
       
-      // Fechar o diálogo e limpar o estado
-      setIsEditDialogOpen(false)
-      setEditingInstance(null)
-      setEditingIndex(null)
+      const updatedFlowData = {
+        nodes,
+        edges,
+        name: flowData?.data?.attributes?.name,
+        status: flowData?.data?.attributes?.status,
+        description: flowData?.data?.attributes?.description,
+        settings: updatedSettings
+      } satisfies {
+        nodes: Node[];
+        edges: Edge[];
+        name?: string;
+        status?: string;
+        description?: string;
+        settings?: Settings;
+      }
+
+      // Primeiro persistir no backend
+      const response = await updateFlow(flowId, { data: { id: parseInt(flowId), attributes: { data: updatedFlowData } } } )
+
+      if (response?.data) {
+        // Atualizar o estado local APENAS com a resposta da API
+        onFlowDataChange({
+          data: response.data
+        })
+        
+        setSaveStatus("success")
+        // Fechar o diálogo e limpar o estado
+        setIsEditDialogOpen(false)
+        setEditingInstance(null)
+        setEditingIndex(null)
+      } else {
+        throw new Error("Failed to update flow")
+      }
+
+      // Simular um pequeno atraso para mostrar o estado de salvamento
+      setTimeout(() => {
+        setSaveStatus("idle")
+      }, 2000)
     } catch (error) {
       console.error("Error updating instance:", error)
       setSaveStatus("error")
@@ -295,7 +525,7 @@ export function WhatsAppInstancesDrawer({
     try {
       setSaveStatus("saving")
       const currentInstances = getCurrentInstances()
-      const updatedInstances = currentInstances.filter((_: WhatsAppInstance, i: number) => i !== index)
+      const updatedInstances = currentInstances.filter((_: Instance, i: number) => i !== index)
       await updateInstances(updatedInstances)
       
       setIsDeleteDialogOpen(false)
@@ -308,7 +538,7 @@ export function WhatsAppInstancesDrawer({
   }
 
   // Função para abrir o diálogo de edição
-  const openEditDialog = (instance: WhatsAppInstance, index: number) => {
+  const openEditDialog = (instance: Instance, index: number) => {
     // Garantir que temos uma cópia profunda da instância
     const instanceCopy = JSON.parse(JSON.stringify(instance))
     setEditingInstance(instanceCopy)
@@ -336,9 +566,9 @@ export function WhatsAppInstancesDrawer({
   }
 
   // Função para obter o status da instância
-  const getInstanceStatus = (instance: WhatsAppInstance) => {
+  const getInstanceStatus = (instance: Instance) => {
     const status = instance.status || "inactive"
-    const provider = instance.credencias?.provider || "unknown"
+    const provider = instance.credencias.provider
 
     // Cores diferentes para cada provider
     const providerColors = {
@@ -464,7 +694,7 @@ export function WhatsAppInstancesDrawer({
                           </div>
                         </CardContent>
                         <CardFooter>
-                          <Button onClick={handleAddInstance} className="w-full">
+                          <Button onClick={() => handleAddInstance("whatsapp")} className="w-full">
                             <Plus className="h-4 w-4 mr-2" />
                             Adicionar Instância
                           </Button>
@@ -478,18 +708,18 @@ export function WhatsAppInstancesDrawer({
                           </h3>
                           <div className="flex gap-2">
                             <Badge variant="outline" className="text-xs font-normal">
-                              {instances.filter((i) => i.credencias?.provider === "whatsapp").length} WhatsApp
+                              {instances.filter((i) => i.credencias.provider === "whatsapp").length} WhatsApp
                             </Badge>
                             <Badge variant="outline" className="text-xs font-normal">
-                              {instances.filter((i) => i.credencias?.provider === "assistant").length} Assistant
+                              {instances.filter((i) => i.credencias.provider === "assistant").length} Assistant
                             </Badge>
                           </div>
                         </div>
 
-                        {instances.map((instance: WhatsAppInstance, index: number) => {
+                        {instances.map((instance: Instance, index: number) => {
                           const status = getInstanceStatus(instance)
                           const isExpanded = expandedInstances[index] || false
-                          const provider = instance.credencias?.provider || "unknown"
+                          const provider = instance.credencias.provider
 
                           return (
                             <Card
@@ -571,19 +801,19 @@ export function WhatsAppInstancesDrawer({
                                           </Badge>
                                         </div>
 
-                                        {provider === "whatsapp" && (
+                                        {isWhatsAppInstance(instance) && (
                                           <>
                                             <div className="text-muted-foreground">App Name:</div>
                                             <div className="col-span-2 font-medium">
-                                              {instance.credencias?.appName || "Não configurado"}
+                                              {instance.credencias.appName || "Não configurado"}
                                             </div>
 
                                             <div className="text-muted-foreground">Source:</div>
                                             <div className="col-span-2 font-medium flex items-center gap-1">
                                               <span className="truncate">
-                                                {instance.credencias?.source || "Não configurado"}
+                                                {instance.credencias.source || "Não configurado"}
                                               </span>
-                                              {instance.credencias?.source && (
+                                              {instance.credencias.source && (
                                                 <Button
                                                   variant="ghost"
                                                   size="icon"
@@ -598,9 +828,9 @@ export function WhatsAppInstancesDrawer({
                                             <div className="text-muted-foreground">Webhook:</div>
                                             <div className="col-span-2 font-medium flex items-center gap-1">
                                               <span className="truncate max-w-[180px]">
-                                                {instance.credencias?.webhook || "Não configurado"}
+                                                {instance.credencias.webhook || "Não configurado"}
                                               </span>
-                                              {instance.credencias?.webhook && (
+                                              {instance.credencias.webhook && (
                                                 <>
                                                   <Button
                                                     variant="ghost"
@@ -624,8 +854,8 @@ export function WhatsAppInstancesDrawer({
 
                                             <div className="text-muted-foreground">API Key:</div>
                                             <div className="col-span-2 font-medium flex items-center gap-1">
-                                              {instance.credencias?.apiKey ? "••••••••••••••••" : "Não configurado"}
-                                              {instance.credencias?.apiKey && (
+                                              {instance.credencias.apiKey ? "••••••••••••••••" : "Não configurado"}
+                                              {instance.credencias.apiKey && (
                                                 <Button
                                                   variant="ghost"
                                                   size="icon"
@@ -639,36 +869,36 @@ export function WhatsAppInstancesDrawer({
                                           </>
                                         )}
 
-                                        {provider === "assistant" && (
+                                        {isAssistantInstance(instance) && (
                                           <>
                                             <div className="text-muted-foreground">App:</div>
                                             <div className="col-span-2 font-medium">
-                                              {instance.credencias?.app || "Não configurado"}
+                                              {instance.credencias.app || "Não configurado"}
                                             </div>
 
                                             <div className="text-muted-foreground">ID do Assistente:</div>
                                             <div className="col-span-2 font-medium">
-                                              {instance.credencias?.idassistente || "Não configurado"}
+                                              {instance.credencias.idassistente || "Não configurado"}
                                             </div>
 
                                             <div className="text-muted-foreground">Modelo:</div>
                                             <div className="col-span-2 font-medium">
-                                              {instance.credencias?.model?.name || "Não configurado"}
+                                              {instance.credencias.model?.name || "Não configurado"}
                                             </div>
 
                                             <div className="text-muted-foreground">Temperatura:</div>
                                             <div className="col-span-2 font-medium">
-                                              {instance.credencias?.model?.temperature || "Não configurado"}
+                                              {instance.credencias.model?.temperature || "Não configurado"}
                                             </div>
 
                                             <div className="text-muted-foreground">Máximo de Tokens:</div>
                                             <div className="col-span-2 font-medium">
-                                              {instance.credencias?.memory?.maxTokens || "Não configurado"}
+                                              {instance.credencias.memory?.maxTokens || "Não configurado"}
                                             </div>
 
                                             <div className="text-muted-foreground">Período de Retenção:</div>
                                             <div className="col-span-2 font-medium">
-                                              {instance.credencias?.memory?.retentionPeriod || "Não configurado"}
+                                              {instance.credencias.memory?.retentionPeriod || "Não configurado"}
                                             </div>
                                           </>
                                         )}
@@ -801,10 +1031,24 @@ export function WhatsAppInstancesDrawer({
                   <Button variant="outline" size="sm" onClick={() => onOpenChange(false)}>
                     Fechar
                   </Button>
-                  <Button size="sm" onClick={handleAddInstance}>
-                    <Plus className="h-3.5 w-3.5 mr-1.5" />
-                    Adicionar Instância
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size="sm">
+                        <Plus className="h-3.5 w-3.5 mr-1.5" />
+                        Adicionar Instância
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleAddInstance("whatsapp")}>
+                        <MessageSquare className="h-4 w-4 mr-2" />
+                        WhatsApp
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleAddInstance("assistant")}>
+                        <Bot className="h-4 w-4 mr-2" />
+                        Assistant
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             </DrawerFooter>
@@ -814,35 +1058,41 @@ export function WhatsAppInstancesDrawer({
 
       {/* Edit Instance Dialog */}
       {editingInstance && (
-        <Dialog 
-          open={isEditDialogOpen} 
-          onOpenChange={(open) => {
-            if (!open && editingInstance) {
-              // Se houver alterações não salvas, confirmar antes de fechar
-              const currentInstance = getCurrentInstances()[editingIndex || 0]
-              const hasChanges = JSON.stringify(currentInstance) !== JSON.stringify(editingInstance)
-              
-              if (hasChanges) {
-                if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
-                  setIsEditDialogOpen(false)
-                  setEditingInstance(null)
-                  setEditingIndex(null)
-                }
-              } else {
-                setIsEditDialogOpen(false)
-                setEditingInstance(null)
-                setEditingIndex(null)
-              }
-            } else {
-              setIsEditDialogOpen(open)
-            }
-          }}
-        >
-          <DialogContent className="sm:max-w-2xl h-full p-0 border-none shadow-none">
+        <>
+          {isWhatsAppInstance(editingInstance) && (
             <WhatsAppInstanceCreator
+              open={isEditDialogOpen}
+              onOpenChange={(open) => {
+                if (!open) {
+                  // Se estiver salvando, não mostra confirmação
+                  if (saveStatus === "saving") {
+                    setIsEditDialogOpen(false)
+                    setEditingInstance(null)
+                    setEditingIndex(null)
+                    return
+                  }
+                  
+                  const currentInstance = getCurrentInstances()[editingIndex || 0]
+                  const hasChanges = JSON.stringify(currentInstance) !== JSON.stringify(editingInstance)
+                  
+                  if (hasChanges) {
+                    if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
+                      setIsEditDialogOpen(false)
+                      setEditingInstance(null)
+                      setEditingIndex(null)
+                    }
+                  } else {
+                    setIsEditDialogOpen(false)
+                    setEditingInstance(null)
+                    setEditingIndex(null)
+                  }
+                } else {
+                  setIsEditDialogOpen(true)
+                }
+              }}
               instance={editingInstance}
               onChange={(field: string, value: string) => {
-                // Atualizar o estado local e propagar a mudança
+                if (!editingInstance) return
                 const updatedInstance = field === 'name' 
                   ? { ...editingInstance, name: value }
                   : {
@@ -871,8 +1121,104 @@ export function WhatsAppInstancesDrawer({
               }}
               isSaving={saveStatus === "saving"}
             />
-          </DialogContent>
-        </Dialog>
+          )}
+          {isAssistantInstance(editingInstance) && (
+            <AssistantFormFields
+              open={isEditDialogOpen}
+              onOpenChange={(open) => {
+                if (!open) {
+                  // Se estiver salvando, não mostra confirmação
+                  if (saveStatus === "saving") {
+                    setIsEditDialogOpen(false)
+                    setEditingInstance(null)
+                    setEditingIndex(null)
+                    return
+                  }
+                  
+                  const currentInstance = getCurrentInstances()[editingIndex || 0]
+                  const hasChanges = JSON.stringify(currentInstance) !== JSON.stringify(editingInstance)
+                  
+                  if (hasChanges) {
+                    if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
+                      setIsEditDialogOpen(false)
+                      setEditingInstance(null)
+                      setEditingIndex(null)
+                    }
+                  } else {
+                    setIsEditDialogOpen(false)
+                    setEditingInstance(null)
+                    setEditingIndex(null)
+                  }
+                } else {
+                  setIsEditDialogOpen(true)
+                }
+              }}
+              values={editingInstance}
+              onChange={(field: string, value: any) => {
+                if (!editingInstance) return
+                let updatedInstance = { ...editingInstance }
+                
+                if (field === 'name') {
+                  updatedInstance.name = value
+                } else if (field.startsWith('model.')) {
+                  const modelField = field.split('.')[1]
+                  updatedInstance = {
+                    ...updatedInstance,
+                    credencias: {
+                      ...updatedInstance.credencias,
+                      model: {
+                        ...updatedInstance.credencias.model,
+                        [modelField]: value
+                      }
+                    }
+                  }
+                } else if (field.startsWith('memory.')) {
+                  const memoryField = field.split('.')[1]
+                  updatedInstance = {
+                    ...updatedInstance,
+                    credencias: {
+                      ...updatedInstance.credencias,
+                      memory: {
+                        ...updatedInstance.credencias.memory,
+                        [memoryField]: value
+                      }
+                    }
+                  }
+                } else {
+                  updatedInstance = {
+                    ...updatedInstance,
+                    credencias: {
+                      ...updatedInstance.credencias,
+                      [field]: value
+                    }
+                  }
+                }
+                setEditingInstance(updatedInstance)
+              }}
+              onSave={() => {
+                setSaveStatus("saving")
+                handleEditInstance(editingInstance)
+              }}
+              onCancel={() => {
+                const currentInstance = getCurrentInstances()[editingIndex || 0]
+                const hasChanges = JSON.stringify(currentInstance) !== JSON.stringify(editingInstance)
+                
+                if (hasChanges) {
+                  if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
+                    setIsEditDialogOpen(false)
+                    setEditingInstance(null)
+                    setEditingIndex(null)
+                  }
+                } else {
+                  setIsEditDialogOpen(false)
+                  setEditingInstance(null)
+                  setEditingIndex(null)
+                }
+              }}
+              title={`Editar Instância: ${editingInstance.name}`}
+            />
+          )}
+        </>
       )}
 
       {/* Delete Confirmation Dialog */}
@@ -912,56 +1258,132 @@ export function WhatsAppInstancesDrawer({
       </Dialog>
 
       {/* Create Instance Dialog */}
-      {newInstance && (
-        <Dialog 
-          open={isCreateDialogOpen} 
-          onOpenChange={(open) => {
-            if (!open && newInstance) {
-              if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
-                setIsCreateDialogOpen(false)
-                setNewInstance(null)
-              }
-            } else {
-              setIsCreateDialogOpen(open)
-            }
-          }}
-        >
-          <DialogContent className="sm:max-w-2xl min-w-4xl p-0 border-none shadow-none">
-            <DialogHeader className="px-6 py-4 border-b">
-              <DialogTitle>Nova Instância</DialogTitle>
-              <DialogDescription>
-                Configure as credenciais e opções da nova instância. As alterações serão salvas apenas quando você clicar em Salvar.
-              </DialogDescription>
-            </DialogHeader>
+      {isCreating && newInstanceDraft && (
+        <>
+          {isWhatsAppInstance(newInstanceDraft) && (
             <WhatsAppInstanceCreator
-              instance={newInstance}
+              open={isCreating}
+              onOpenChange={(open) => {
+                if (!open) {
+                  // Se estiver salvando, não mostra confirmação
+                  if (saveStatus === "saving") {
+                    setIsCreating(false)
+                    setNewInstanceDraft(null)
+                    return
+                  }
+                  
+                  if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
+                    setIsCreating(false)
+                    setNewInstanceDraft(null)
+                  }
+                } else {
+                  setIsCreating(true)
+                }
+              }}
+              instance={newInstanceDraft}
               onChange={(field: string, value: string) => {
-                setNewInstance(prev => {
-                  if (!prev) return null
-                  return field === 'name' 
-                    ? { ...prev, name: value }
-                    : {
-                        ...prev,
-                        credencias: { ...prev.credencias, [field]: value }
-                      }
-                })
+                if (!newInstanceDraft) return
+                if (field === 'name') {
+                  setNewInstanceDraft({ ...newInstanceDraft, name: value })
+                } else {
+                  setNewInstanceDraft({
+                    ...newInstanceDraft,
+                    credencias: { ...newInstanceDraft.credencias, [field]: value }
+                  })
+                }
               }}
               isEditing={false}
-              onSave={async () => {
-                if (newInstance) {
-                  await handleSaveNewInstance(newInstance)
-                }
+              onSave={() => {
+                setSaveStatus("saving")
+                handleSaveNewInstance(newInstanceDraft)
               }}
               onCancel={() => {
                 if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
-                  setIsCreateDialogOpen(false)
-                  setNewInstance(null)
+                  setIsCreating(false)
+                  setNewInstanceDraft(null)
                 }
               }}
             />
-          </DialogContent>
-        </Dialog>
+          )}
+          {isAssistantInstance(newInstanceDraft) && (
+            <AssistantFormFields
+              open={isCreating}
+              onOpenChange={(open) => {
+                if (!open) {
+                  // Se estiver salvando, não mostra confirmação
+                  if (saveStatus === "saving") {
+                    setIsCreating(false)
+                    setNewInstanceDraft(null)
+                    return
+                  }
+                  
+                  if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
+                    setIsCreating(false)
+                    setNewInstanceDraft(null)
+                  }
+                } else {
+                  setIsCreating(true)
+                }
+              }}
+              values={newInstanceDraft}
+              onChange={(field: string, value: any) => {
+                if (!newInstanceDraft) return
+                let updatedInstance = { ...newInstanceDraft }
+                
+                if (field === 'name') {
+                  updatedInstance.name = value
+                } else if (field.startsWith('model.')) {
+                  const modelField = field.split('.')[1]
+                  updatedInstance = {
+                    ...updatedInstance,
+                    credencias: {
+                      ...updatedInstance.credencias,
+                      model: {
+                        ...updatedInstance.credencias.model,
+                        [modelField]: value
+                      }
+                    }
+                  }
+                } else if (field.startsWith('memory.')) {
+                  const memoryField = field.split('.')[1]
+                  updatedInstance = {
+                    ...updatedInstance,
+                    credencias: {
+                      ...updatedInstance.credencias,
+                      memory: {
+                        ...updatedInstance.credencias.memory,
+                        [memoryField]: value
+                      }
+                    }
+                  }
+                } else {
+                  updatedInstance = {
+                    ...updatedInstance,
+                    credencias: {
+                      ...updatedInstance.credencias,
+                      [field]: value
+                    }
+                  }
+                }
+                setNewInstanceDraft(updatedInstance)
+              }}
+              onSave={() => {
+                setSaveStatus("saving")
+                handleSaveNewInstance(newInstanceDraft)
+              }}
+              onCancel={() => {
+                if (window.confirm("Tem certeza que deseja cancelar? Todas as alterações serão perdidas.")) {
+                  setIsCreating(false)
+                  setNewInstanceDraft(null)
+                }
+              }}
+              title="Nova Instância Assistant"
+            />
+          )}
+        </>
       )}
     </>
   )
 }
+
+
