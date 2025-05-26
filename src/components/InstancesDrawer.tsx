@@ -760,31 +760,7 @@ export function WhatsAppInstancesDrawer({
                                     />
                                   </Button>
 
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                                        <MoreHorizontal className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="w-48">
-                                      <DropdownMenuItem onClick={() => openEditDialog(instance, index)}>
-                                        <Edit className="h-4 w-4 mr-2" />
-                                        Editar instância
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem>
-                                        <Copy className="h-4 w-4 mr-2" />
-                                        Duplicar instância
-                                      </DropdownMenuItem>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem
-                                        className="text-red-500 focus:text-red-500"
-                                        onClick={() => confirmDelete(index)}
-                                      >
-                                        <Trash2 className="h-4 w-4 mr-2" />
-                                        Remover instância
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
+                                
                                 </div>
                               </CardHeader>
 
@@ -903,26 +879,6 @@ export function WhatsAppInstancesDrawer({
                                           </>
                                         )}
                                       </div>
-
-                                      <div className="flex justify-end gap-2 pt-2">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => openEditDialog(instance, index)}
-                                        >
-                                          <Edit className="h-3.5 w-3.5 mr-1.5" />
-                                          Editar
-                                        </Button>
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                                          onClick={() => confirmDelete(index)}
-                                        >
-                                          <Trash2 className="h-3.5 w-3.5 mr-1.5" />
-                                          Remover
-                                        </Button>
-                                      </div>
                                     </div>
                                   </CardContent>
                                 </>
@@ -1032,12 +988,7 @@ export function WhatsAppInstancesDrawer({
                     Fechar
                   </Button>
                   <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button size="sm">
-                        <Plus className="h-3.5 w-3.5 mr-1.5" />
-                        Adicionar Instância
-                      </Button>
-                    </DropdownMenuTrigger>
+                  
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem onClick={() => handleAddInstance("whatsapp")}>
                         <MessageSquare className="h-4 w-4 mr-2" />
