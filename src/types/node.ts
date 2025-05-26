@@ -98,34 +98,6 @@ export interface NodeApiResponse {
   };
 }
 
-export interface NodeData {
-  type: NodeType;
-  app?: NodeApp;
-  name: string;
-  // uuid: string;
-  label: string;
-  stop: boolean;
-  icon?: string;
-  color?: string;
-  input?: {
-    variables: Array<{
-      variable: string;
-    }>;
-  };
-  output?: {
-    text: string;
-  };
-  config: Record<string, unknown>;
-  credentials?: {
-    provider?: string;
-    appName?: string;
-    source?: string;
-    webhook?: string;
-    apiKey?: string;
-    [key: string]: unknown;
-  };
-}
-
 export type Node = ReactFlowNode<NodeData>;
 
 // Tipos para operações com nodes
@@ -140,10 +112,11 @@ export interface GetNodeRequest {
   id: string;
 }
 
-// Respostas da API
-export interface CreateNodeResponse extends NodeApiResponse {}
-export interface UpdateNodeResponse extends NodeApiResponse {}
-export interface GetNodeResponse extends NodeApiResponse {}
+// Simplificar respostas da API usando type aliases
+export type CreateNodeResponse = NodeApiResponse;
+export type UpdateNodeResponse = NodeApiResponse;
+export type GetNodeResponse = NodeApiResponse;
+
 export interface DeleteNodeResponse {
   success: boolean;
   message: string;

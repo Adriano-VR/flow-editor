@@ -1,19 +1,5 @@
 import { AssistantConfig, AssistantNodeConfig, defaultAssistantConfig } from '../types/assistant';
 
-export interface NodeAction {
-  uuid: string;
-  name: string;
-  type: 'app' | 'trigger';
-  subcategory?: string;
-  config?: Record<string, unknown>;
-}
-
-export interface NodeVariable {
-  name: string;
-  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
-  value?: unknown;
-}
-
 export interface NodeIO {
   variables?: {
     nome: string;
@@ -160,8 +146,8 @@ const assistantActions: NodeTypeDefinition[] = [
     label: 'Configurar Modelo',
     config: {
       models: [{
-        model: defaultAssistantConfig.models[0].model,
-        temperature: defaultAssistantConfig.models[0].temperature
+        model: 'gpt-3.5-turbo',
+        temperature: 0.7
       }]
     } as Partial<AssistantConfig>
   },
@@ -176,9 +162,9 @@ const assistantActions: NodeTypeDefinition[] = [
     label: 'Configurar Memória',
     config: {
       memory: {
-        maxTokens: defaultAssistantConfig.memory.maxTokens,
-        temperature: defaultAssistantConfig.memory.temperature,
-        retentionPeriod: defaultAssistantConfig.memory.retentionPeriod
+        maxTokens: 2000,
+        temperature: 0.7,
+        retentionPeriod: '1h'
       }
     } as Partial<AssistantConfig>
   },

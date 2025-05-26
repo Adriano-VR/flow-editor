@@ -1,7 +1,8 @@
-import { Dispatch, SetStateAction } from 'react';
+// import { Dispatch, SetStateAction } from 'react';
 import { Edge as ReactFlowEdge } from 'reactflow';
-import { Node } from './node';
+import { Node, NodeApiRequest } from './node';
 import { Settings } from '@/lib/settingsTypes';
+// import { Settings } from '@/lib/settingsTypes';
 
 export type { Node } from './node';
 export type Edge = ReactFlowEdge;
@@ -68,45 +69,4 @@ export interface FlowContextType {
   handleActionConfigSubmit: () => Promise<void>;
 }
 
-export interface NodeConfig {
-  // WhatsApp config
-  to?: string;
-  message?: string;
-  template?: string;
-  phone?: string;
-  credentials?: {
-    provider: string;
-    appName: string;
-    source: string; // phone number
-    webhook: string;
-    apiKey: string;
-  };
-  
-  // OpenAI/Assistant config
-  model?: string;
-  temperature?: number;
-  prompt?: string;
-  memoryType?: string;
-  maxTokens?: number;
-  agentName?: string;
-  agentDescription?: string;
-  capabilities?: string[];
-  toolName?: string;
-  toolDescription?: string;
-  parameters?: Record<string, unknown>;
-  agentId?: string;
-  input?: string;
-  
-  // Internal config
-  duration?: number;
-  unit?: 'seconds' | 'minutes' | 'hours';
-  condition?: string;
-
-  // Webhook config
-  webhook?: {
-    url: string;
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-    headers?: Record<string, string>;
-    response?: Record<string, unknown>;
-  };
-} 
+export type NodeConfig = NodeApiRequest['config']; 
