@@ -11,9 +11,11 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { type FlowData } from "./NodeCommandMenu"
 
 interface NodeSelectionDrawerProps {
-  onNodeSelect: (nodeType: NodeTypeDefinition) => void
+  onNodeSelect: (nodeType: NodeTypeDefinition, flowData: FlowData) => void
+  currentFlowData?: FlowData
 }
 
 export interface NodeSelectionDrawerRef {
@@ -21,7 +23,7 @@ export interface NodeSelectionDrawerRef {
 }
 
 export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelectionDrawerProps>(
-  ({ onNodeSelect }, ref) => {
+  ({ onNodeSelect, currentFlowData }, ref) => {
     const categories = getNodeCategories()
     const appSubcategories = categories.app.subcategories
     const [open, setOpen] = useState(false)
@@ -32,14 +34,14 @@ export const NodeSelectionDrawer = forwardRef<NodeSelectionDrawerRef, NodeSelect
 
     // Add useEffect to handle node selection
     useEffect(() => {
-      if (selectedAction) {
-        onNodeSelect(selectedAction)
+      if (selectedAction && currentFlowData) {
+        onNodeSelect(selectedAction, currentFlowData)
         setOpen(false)
         setSelectedAction(null)
         setSelectedAppKey(null)
         setActionConfig({})
       }
-    }, [selectedAction, onNodeSelect])
+    }, [selectedAction, onNodeSelect, currentFlowData])
 
     useImperativeHandle(ref, () => ({
       open: () => {

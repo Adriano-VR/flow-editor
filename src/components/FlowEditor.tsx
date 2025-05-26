@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useCallback, useState, useEffect, useRef } from "react"
+import React, { useCallback, useState, useEffect, useRef, useMemo } from "react"
 import ReactFlow, {
   Controls,
   Background,
@@ -24,7 +24,7 @@ import { FiSave, FiInfo } from "react-icons/fi"
 import { JsonEditor } from "./JsonEditor"
 import { EditNodeDialog } from "./EditNodeDialog"
 import { NodeSelectionDrawer, type NodeSelectionDrawerRef } from "./NodeSelectionDrawer"
-import type { Node, Edge, Flow } from "@/types/flow"
+import type { Node, Edge, Flow, FlowData, FlowResponse } from "@/types/flow"
 import { PlayButton } from "./PlayButton"
 import { IntegrationDialog } from "./IntegrationDialog"
 import { ChatAssistant } from "./ChatAssistant"
@@ -60,6 +60,8 @@ import { Separator } from "@/components/ui/separator"
 import { SettingsDrawer } from "@/components/SettingsDrawer"
 import { WhatsAppInstancesDrawer } from "./InstancesDrawer"
 import { KeyboardShortcutsDialog } from "./KeyboardShortcutsDialog"
+import { toast } from "@/components/ui/use-toast"
+import { flowToFlowData, flowDataToFlow } from "@/lib/flowUtils"
 
 // Add styles for edge hover effect
 const edgeStyles = `
@@ -184,10 +186,6 @@ interface NodeConfig {
   url?: string
 }
 
-interface FlowData {
-  data: Flow
-}
-
 interface FlowEditorProps {
   flowId: string
   initialData?: {
@@ -231,7 +229,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   const [isConfigDialogOpen, setIsConfigDialogOpen] = useState(false)
   const [newNodeConfig, setNewNodeConfig] = useState<NodeConfig>({})
   const [tempNode, setTempNode] = useState<Node | null>(null)
-  const [flowData, setFlowData] = useState<FlowData | null>(null)
+  const [flowData, setFlowData] = useState<FlowResponse | null>(null)
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const drawerRef = useRef<NodeSelectionDrawerRef>(null)
@@ -249,6 +247,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle")
   const [settingsDrawerOpen, setSettingsDrawerOpen] = useState(false)
   const [showInstancesDialog, setShowInstancesDialog] = useState(false)
+  const lastSavedDataRef = useRef<string>("")
 
   // Efeito para limpar o estado quando o flowId muda
   useEffect(() => {
@@ -284,26 +283,21 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
     const loadFlow = async () => {
       try {
         setLoading(true)
-        const response = await getFlow(flowId)
-        const flowData: FlowData = response
-        console.log("Flow data:", flowData)
-
-        if (!flowData.data?.attributes) {
-          throw new Error("No flow attributes found in response")
+        const response = await getFlow(flowId) as FlowResponse
+        console.log("Raw API response:", response);
+        
+        if (!response?.data) {
+          throw new Error("No flow data found in response")
         }
 
-        // Initialize with empty arrays if no data exists
-        if (!flowData.data.attributes.data) {
-          setFlowData(flowData)
-          return
-        }
-
-        const { nodes: flowNodes, edges: flowEdges } = flowData.data.attributes.data
-
-        // Always set nodes and edges from the loaded flow data
-        setNodes(flowNodes || [])
-        setEdges(flowEdges || [])
-        setFlowData(flowData)
+        // Atualiza o estado com o Flow
+        setFlowData(response);
+        
+        // Atualiza os nós e arestas
+        const { nodes: flowNodes, edges: flowEdges } = response.data.data;
+        setNodes(flowNodes);
+        setEdges(flowEdges);
+        
       } catch (err) {
         console.error("Error loading flow:", err)
         setError(err instanceof Error ? err.message : "Failed to load flow")
@@ -315,47 +309,126 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
     loadFlow()
   }, [flowId, setNodes, setEdges])
 
-  // Debounced save function
-  const debouncedSave = useCallback(() => {
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current)
-    }
+  // Atualiza o currentFlowData
+  const currentFlowData = useMemo(() => {
+    if (!flowData?.data) return { 
+      nodes: [], 
+      edges: [], 
+      settings: { instances: [] } 
+    };
+    
+    // Extrai os dados do Flow para o formato FlowData
+    return {
+      nodes: flowData.data.data.nodes,
+      edges: flowData.data.data.edges,
+      settings: flowData.data.data.settings || { instances: [] },
+      name: flowData.data.name,
+      status: flowData.data.status,
+      description: flowData.data.description
+    };
+  }, [flowData]);
 
-    setSaveStatus("saving")
-
-    saveTimeoutRef.current = setTimeout(() => {
-      if (onSave) {
-        onSave({ nodes, edges })
-          .then(() => {
-            setLastSaved(new Date())
-            setSaveStatus("saved")
-            setTimeout(() => setSaveStatus("idle"), 2000)
-          })
-          .catch(() => {
-            setSaveStatus("error")
-            setTimeout(() => setSaveStatus("idle"), 2000)
-          })
+  // Replace the debouncedSave implementation
+  const debouncedSave = useCallback(
+    async () => {
+      if (!flowId || !flowData?.data) {
+        console.log("Cannot save: missing flowId or flowData", { flowId, flowData });
+        return;
       }
-    }, 1000) // 1 second delay
-  }, [nodes, edges, onSave])
 
-  // Modified node change handler
+      // Create a snapshot of current state
+      const currentState = {
+        nodes: nodes,
+        edges: edges,
+        name: flowData.data.name,
+        status: flowData.data.status,
+        description: flowData.data.description,
+        settings: flowData.data.data.settings || { instances: [] },
+      };
+
+      // Convert to string for comparison
+      const currentStateString = JSON.stringify(currentState);
+
+      // Skip save if data hasn't changed
+      if (currentStateString === lastSavedDataRef.current) {
+        console.log("No changes detected, skipping save");
+        return;
+      }
+
+      // Clear any pending save
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+
+      // Set new timeout
+      saveTimeoutRef.current = setTimeout(async () => {
+        try {
+          setSaveStatus("saving");
+          console.log("Saving flow...");
+          
+          await handleSaveFlow(currentState);
+          
+          // Update last saved data reference
+          lastSavedDataRef.current = currentStateString;
+          
+          setSaveStatus("saved");
+          setLastSaved(new Date());
+          
+          setTimeout(() => {
+            setSaveStatus("idle");
+          }, 2000);
+        } catch (error) {
+          console.error("Error saving flow:", error);
+          setSaveStatus("error");
+          
+          toast({
+            title: "Erro ao salvar",
+            description: error instanceof Error ? error.message : "Não foi possível salvar as alterações",
+            variant: "destructive",
+          });
+
+          setTimeout(() => {
+            setSaveStatus("idle");
+          }, 3000);
+        }
+      }, 1000); // 1 second debounce
+    },
+    [flowId, nodes, edges, flowData, handleSaveFlow, toast]
+  );
+
+  // Modify handleNodesChange to batch changes
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      onNodesChange(changes)
-      debouncedSave()
+      onNodesChange(changes);
+      // Only trigger save for meaningful changes
+      const hasSignificantChange = changes.some(change => 
+        change.type === 'position' || 
+        change.type === 'dimensions' || 
+        change.type === 'remove' ||
+        change.type === 'add'
+      );
+      if (hasSignificantChange) {
+        debouncedSave();
+      }
     },
-    [onNodesChange, debouncedSave],
-  )
+    [onNodesChange, debouncedSave]
+  );
 
-  // Modified edge change handler
+  // Modify handleEdgesChange to batch changes
   const handleEdgesChange = useCallback(
     (changes: EdgeChange[]) => {
-      onEdgesChange(changes)
-      debouncedSave()
+      onEdgesChange(changes);
+      // Only trigger save for meaningful changes
+      const hasSignificantChange = changes.some(change => 
+        change.type === 'remove' || 
+        change.type === 'add'
+      );
+      if (hasSignificantChange) {
+        debouncedSave();
+      }
     },
-    [onEdgesChange, debouncedSave],
-  )
+    [onEdgesChange, debouncedSave]
+  );
 
   // Modified connect handler
   const onConnect = useCallback(
@@ -509,15 +582,41 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   }, [])
 
   const handleNodeTypeSelect = useCallback(
-    (actionDefinition: NodeTypeDefinition) => {
-      // Cria o nó usando a função createNode
-      const newNode = createNode(actionDefinition)
+    async (nodeType: NodeTypeDefinition, flowData: FlowData) => {
+      try {
+        // Cria o nó usando a função createNode
+        const newNode = createNode(nodeType);
 
-      // Adiciona o nó diretamente sem abrir o diálogo de configuração
-      setNodes((nds) => [...nds, newNode])
+        // Prepara os dados atualizados usando os nós e arestas atuais do estado
+        const flowToSave = {
+          nodes: [...nodes, newNode], // Usa o estado atual dos nós
+          edges: edges, // Usa o estado atual das arestas
+          name: flowData.name,
+          status: flowData.status,
+          description: flowData.description,
+          settings: flowData.settings,
+        };
+        
+        // Salva as alterações e aguarda a resposta
+        const response = await handleSaveFlow(flowToSave);
+        
+        // Atualiza o estado local com os novos dados
+        if (response?.data?.data) {
+          setNodes(response.data.data.nodes);
+          setEdges(response.data.data.edges);
+          setFlowData(response);
+        }
+      } catch (error) {
+        console.error("Error adding node:", error);
+        toast({
+          title: "Erro ao adicionar nó",
+          description: "Não foi possível adicionar o nó ao flow",
+          variant: "destructive",
+        });
+      }
     },
-    [setNodes, createNode],
-  )
+    [createNode, handleSaveFlow, nodes, edges, setNodes, setEdges, setFlowData, toast]
+  );
 
   const handleConfigSubmit = (updatedConfig: Record<string, any>) => {
     if (!tempNode) return
@@ -683,9 +782,9 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
       await handleSaveFlow({
         nodes: updatedNodes,
         edges,
-        name: flowData?.data?.attributes?.name,
-        status: flowData?.data?.attributes?.status,
-        description: flowData?.data?.attributes?.description,
+        name: flowData?.data?.name,
+        status: flowData?.data?.status,
+        description: flowData?.data?.description,
       })
       setLastSaved(new Date())
     } catch (error) {
@@ -696,7 +795,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
   }
 
   const handleFlowEdit = async (data: { name: string; description: string; status: string }) => {
-    if (!flowData?.data?.attributes) return
+    if (!flowData?.data) return
 
     try {
       await handleSaveFlow({
@@ -709,22 +808,14 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
 
       // Update local state
       setFlowData((prev) => {
-        if (!prev?.data?.attributes) return null
+        if (!prev?.data) return null
         return {
           ...prev,
           data: {
             ...prev.data,
-            attributes: {
-              ...prev.data.attributes,
-              name: data.name,
-              status: data.status,
-              description: data.description,
-              data: {
-                ...prev.data.attributes.data,
-                nodes,
-                edges,
-              },
-            },
+            name: data.name,
+            status: data.status,
+            description: data.description,
           },
         }
       })
@@ -923,30 +1014,34 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
               </Tooltip>
             </TooltipProvider>
 
-            <NodeSelectionDrawer ref={drawerRef} onNodeSelect={handleNodeTypeSelect} />
+            <NodeSelectionDrawer 
+              ref={drawerRef} 
+              onNodeSelect={handleNodeTypeSelect}
+              currentFlowData={currentFlowData}
+            />
 
             <div className="h-6 border-l mx-1 border-gray-200"></div>
 
             <Badge
               variant={
-                flowData?.data?.attributes?.status === "published"
+                flowData?.data?.status === "published"
                   ? "default"
-                  : flowData?.data?.attributes?.status === "draft"
+                  : flowData?.data?.status === "draft"
                     ? "outline"
                     : "secondary"
               }
               className="text-xs font-normal"
             >
-              {flowData?.data?.attributes?.status === "published"
+              {flowData?.data?.status === "published"
                 ? "Publicado"
-                : flowData?.data?.attributes?.status === "draft"
+                : flowData?.data?.status === "draft"
                   ? "Rascunho"
-                  : flowData?.data?.attributes?.status || "Rascunho"}
+                  : flowData?.data?.status || "Rascunho"}
             </Badge>
           </div>
 
           <h1 className="text-lg font-semibold absolute left-1/2 -translate-x-1/2 flex items-center gap-2">
-            {flowData?.data?.attributes?.name || "Flow Editor"}
+            {flowData?.data?.name || "Flow Editor"}
             {saveStatus === "saving" && (
               <span className="text-xs text-muted-foreground animate-pulse">Salvando...</span>
             )}
@@ -1008,27 +1103,6 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
               onExecutionStateChange={setIsExecuting}
               className="h-9"
             />
-
-            {/* <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setShowKeyboardShortcuts(true)}
-                    className="h-9 w-9"
-                  >
-                    <Keyboard className="h-4 w-4" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p className="text-xs">
-                    Atalhos de teclado{" "}
-                    <kbd className="px-1 py-0.5 text-xs bg-gray-100 rounded border ml-1">Ctrl + K</kbd>
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider> */}
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -1206,6 +1280,7 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
                   onOpenChange={setShowCommandMenu}
                   onClose={() => setShowCommandMenu(false)}
                   onNodeSelect={handleNodeTypeSelect}
+                  currentFlowData={currentFlowData}
                 />
               )}
             </ReactFlow>
@@ -1266,40 +1341,35 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
         open={isEditDrawerOpen}
         onOpenChange={setIsEditDrawerOpen}
         flowData={{
-          name: flowData?.data?.attributes?.name || "",
-          description: flowData?.data?.attributes?.description || "",
-          status: flowData?.data?.attributes?.status || "draft",
+          name: flowData?.data?.name || "",
+          description: flowData?.data?.description || "",
+          status: flowData?.data?.status || "draft",
         }}
         onSave={handleFlowEdit}
         onDelete={() => handleDeleteFlow(flowId)}
       />
-
-      {/* <KeyboardShortcutsDialog 
-        open={showKeyboardShortcuts} 
-        onOpenChange={setShowKeyboardShortcuts} 
-      /> */}
 
       <SettingsDrawer
         open={settingsDrawerOpen}
         onOpenChange={setSettingsDrawerOpen}
         settings={(() => {
           try {
-            const settings = flowData?.data?.attributes?.data?.settings;
+            const settings = flowData?.data?.data?.settings;
             return settings ? (typeof settings === 'string' ? JSON.parse(settings) : settings) : null;
           } catch {
             return null;
           }
         })()}
         onSave={async (newSettings) => {
-          if (!flowData?.data?.attributes?.data) return;
+          if (!flowData?.data?.data) return;
           
-          const currentData = flowData.data.attributes.data;
+          const currentData = flowData.data.data;
           const updatedData = {
             nodes: currentData.nodes,
             edges: currentData.edges,
-            name: flowData.data.attributes.name,
-            status: flowData.data.attributes.status,
-            description: flowData.data.attributes.description,
+            name: flowData.data.name,
+            status: flowData.data.status,
+            description: flowData.data.description,
             settings: newSettings
           };
           
@@ -1311,8 +1381,15 @@ export default function FlowEditor({ flowId, onSave }: FlowEditorProps) {
         open={showInstancesDialog}
         onOpenChange={setShowInstancesDialog}
         flowId={flowId}
-        flowData={flowData}
-        onFlowDataChange={setFlowData}
+        flowData={flowData?.data || null}
+        onFlowDataChange={(newData) => {
+          if (flowData) {
+            setFlowData({
+              ...flowData,
+              data: newData
+            });
+          }
+        }}
       />
     </div>
   )

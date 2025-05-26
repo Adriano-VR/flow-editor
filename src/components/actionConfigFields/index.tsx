@@ -78,12 +78,14 @@ interface ActionConfigFieldsProps {
     output?: Record<string, unknown>;
     config: Record<string, unknown>;
     credentials?: Record<string, unknown>;
+    instance?: string | null;
   };
   setActionConfig: (cfg: {
     input?: Record<string, unknown>;
     output?: Record<string, unknown>;
     config: Record<string, unknown>;
     credentials?: Record<string, unknown>;
+    instance?: string | null;
   }) => void;
   actionDefinition?: any;
 }

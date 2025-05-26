@@ -7,18 +7,64 @@ import { Settings } from '@/lib/settingsTypes';
 export type { Node } from './node';
 export type Edge = ReactFlowEdge;
 
+export interface Edge {
+  id: string;
+  source: string;
+  target: string;
+  sourceHandle?: string | null;
+  targetHandle?: string | null;
+  type?: string;
+  animated?: boolean;
+  style?: {
+    stroke?: string;
+    strokeWidth?: number;
+  };
+  markerEnd?: {
+    type: string;
+    width: number;
+    height: number;
+    color: string;
+  };
+  label?: string;
+  labelStyle?: {
+    fill: string;
+    fontWeight: number;
+    fontSize: number;
+    cursor: string;
+    opacity: number;
+  };
+  labelBgStyle?: {
+    fill: string;
+    fillOpacity: number;
+    opacity: number;
+  };
+  labelBgPadding?: [number, number];
+  labelBgBorderRadius?: number;
+}
+
+export interface FlowData {
+  nodes: Node[];
+  edges: Edge[];
+  settings?: Settings;
+  name?: string;
+  status?: string;
+  description?: string;
+}
+
 export interface Flow {
   id: number;
-  attributes: {
-    name: string;
-    description?: string;
-    status: string;
-    data: {
-      nodes: Node[];
-      edges: Edge[];
-      settings?: Settings;
-    } | null;
-  };
+  name: string;
+  description: string;
+  status: string;
+  billing: string;
+  published: boolean;
+  created_at: string;
+  updated_at: string;
+  data: FlowData;
+}
+
+export interface FlowResponse {
+  data: Flow;
 }
 
 export interface Action {

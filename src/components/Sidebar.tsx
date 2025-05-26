@@ -23,7 +23,8 @@ import {
   ArrowUpDown,
 } from "lucide-react"
 import { useSearch } from "@/contexts/SearchContext"
-import type { SidebarProps, Flow } from "@/types/sidebar"
+import type { SidebarProps } from "@/types/sidebar"
+import type { Flow } from "@/types/flow"
 import { useFlow } from "@/contexts/FlowContext"
 import { NewFlowDialog } from "./NewFlowDialog"
 import { cn } from "@/lib/utils"
@@ -106,7 +107,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
     }
 
     let filtered: Flow[] = flows.filter(
-      (flow: Flow) => flow.attributes?.name?.toLowerCase().includes(localSearch.toLowerCase()) ?? false,
+      (flow: Flow) => flow.name?.toLowerCase().includes(localSearch.toLowerCase()) ?? false,
     )
 
     // Sort flows
@@ -119,8 +120,8 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
         break
       case "name":
         filtered = filtered.sort((a: Flow, b: Flow) => {
-          const nameA = a.attributes?.name?.toLowerCase() || ""
-          const nameB = b.attributes?.name?.toLowerCase() || ""
+          const nameA = a.name?.toLowerCase() || ""
+          const nameB = b.name?.toLowerCase() || ""
           return nameA.localeCompare(nameB)
         })
         break
@@ -128,10 +129,10 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
 
     // Group by status
     const grouped = {
-      favorites: filtered.filter((flow: Flow) => favorites.includes(flow.id)),
-      published: filtered.filter((flow: Flow) => flow.attributes.status === "published"),
-      draft: filtered.filter((flow: Flow) => flow.attributes.status === "draft"),
-      archived: filtered.filter((flow: Flow) => flow.attributes.status !== "published" && flow.attributes.status !== "draft"),
+      favorites: filtered.filter((flow: Flow) => favorites.includes(flow.id.toString())),
+      published: filtered.filter((flow: Flow) => flow.status === "published"),
+      draft: filtered.filter((flow: Flow) => flow.status === "draft"),
+      archived: filtered.filter((flow: Flow) => flow.status !== "published" && flow.status !== "draft"),
     }
 
     return grouped
@@ -146,7 +147,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
 
   // Get the last updated time
   const getLastUpdated = (flow: Flow) => {
-    const date = flow.attributes.updatedAt || flow.attributes.createdAt
+    const date = flow.updated_at || flow.created_at
     if (!date) return "Unknown"
 
     const updatedDate = new Date(date)
@@ -167,8 +168,8 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
 
   // Render flow item based on view mode
   const renderFlowItem = (flow: Flow) => {
-    const isFavorite = favorites.includes(flow.id)
-    const isSelected = selectedFlowId === flow.id
+    const isFavorite = favorites.includes(flow.id.toString())
+    const isSelected = selectedFlowId === flow.id.toString()
     const lastUpdated = getLastUpdated(flow)
 
     if (viewMode === "grid") {
@@ -180,7 +181,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
             "hover:border-primary/30 hover:shadow-sm",
             isSelected ? "border-primary bg-primary/5" : "border-border",
           )}
-          onClick={() => handleFlowSelect(flow.id)}
+          onClick={() => handleFlowSelect(flow.id.toString())}
         >
           <div className="absolute top-2 right-2 flex gap-1">
             <TooltipProvider>
@@ -190,7 +191,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => toggleFavorite(e, flow.id)}
+                    onClick={(e) => toggleFavorite(e, flow.id.toString())}
                   >
                     {isFavorite ? (
                       <Star className="h-3.5 w-3.5 text-yellow-400" />
@@ -238,20 +239,20 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
             <div className="flex items-start gap-2">
               <div className="flex-1 min-w-0">
                 <h3 className="font-medium text-sm truncate">
-                  {flow.attributes.name.charAt(0).toUpperCase() + flow.attributes.name.slice(1).toLowerCase()}
+                  {flow.name.charAt(0).toUpperCase() + flow.name.slice(1).toLowerCase()}
                 </h3>
                 <div className="flex items-center gap-2 mt-1">
                   <Badge
                     variant={
-                      flow.attributes.status === "published"
+                      flow.status === "published"
                         ? "default"
-                        : flow.attributes.status === "draft"
+                        : flow.status === "draft"
                           ? "outline"
                           : "secondary"
                     }
                     className="text-[10px] px-1 h-4"
                   >
-                    {flow.attributes.status}
+                    {flow.status}
                   </Badge>
                   <span className="text-xs text-muted-foreground flex items-center">
                     <Clock className="h-3 w-3 mr-1" />
@@ -273,7 +274,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
           "hover:bg-accent/50",
           isSelected && "bg-accent/80 hover:bg-accent",
         )}
-        onClick={() => handleFlowSelect(flow.id)}
+        onClick={() => handleFlowSelect(flow.id.toString())}
       >
         <div className="flex items-center justify-between w-full">
           <div className="flex gap-1 flex-col items-start min-w-0 flex-1">
@@ -287,21 +288,21 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
                   isSelected && "text-primary",
                 )}
               >
-                {flow.attributes.name.charAt(0).toUpperCase() + flow.attributes.name.slice(1).toLowerCase()}
+                {flow.name.charAt(0).toUpperCase() + flow.name.slice(1).toLowerCase()}
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Badge
                 variant={
-                  flow.attributes.status === "published"
+                  flow.status === "published"
                     ? "default"
-                    : flow.attributes.status === "draft"
+                    : flow.status === "draft"
                       ? "outline"
                       : "secondary"
                 }
                 className="text-[10px] px-1 h-4"
               >
-                {flow.attributes.status}
+                {flow.status}
               </Badge>
               <span
                 className={cn(
@@ -319,7 +320,7 @@ export default function Sidebar({ onSelectFlow }: SidebarProps) {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => toggleFavorite(e, flow.id)}>
+                  <Button variant="ghost" size="icon" className="h-7 w-7" onClick={(e) => toggleFavorite(e, flow.id.toString())}>
                     {isFavorite ? (
                       <Star className="h-3.5 w-3.5 text-yellow-400" />
                     ) : (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useToast } from "@/components/ui/use-toast"
+import { useFlow } from "@/contexts/FlowContext"
 import {
   Trash,
   Save,
@@ -30,15 +31,36 @@ interface EditNodeDialogProps {
 
 export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDelete }: EditNodeDialogProps) {
   const { toast } = useToast()
+  const { flowData } = useFlow()
   const [localNode, setLocalNode] = useState<Node | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
 
   useEffect(() => {
     if (editingNode) {
-      setLocalNode(editingNode)
+      // Obtém as instâncias do fluxo atual
+      const currentSettings = flowData?.data?.settings;
+      const settingsObject = typeof currentSettings === 'string' ? JSON.parse(currentSettings) : currentSettings || {};
+      const savedInstances = settingsObject.instances || [];
+
+      // Garante que as credenciais e config estejam inicializados corretamente
+      const nodeWithDefaults = {
+        ...editingNode,
+        data: {
+          ...editingNode.data,
+          credentials: editingNode.data.credentials || {},
+          config: {
+            ...editingNode.data.config || {},
+            // Garante que a instância esteja no config e seja uma das instâncias salvas
+            instance: savedInstances.some((inst: any) => inst.name === editingNode.data.config?.instance) 
+              ? editingNode.data.config?.instance 
+              : null
+          }
+        }
+      }
+      setLocalNode(nodeWithDefaults)
     }
-  }, [editingNode])
+  }, [editingNode, flowData])
 
   if (!editingNode || !localNode) return null
 
@@ -46,7 +68,7 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
     try {
       setIsSaving(true)
       
-      // Remove credenciais do config se existirem
+      // Preserva a instância e credenciais ao atualizar o nó
       const { credentials: configCredentials, ...configWithoutCredentials } = localNode.data.config || {};
       
       const updatedNode = {
@@ -54,7 +76,13 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
         data: {
           ...editingNode.data,
           ...localNode.data,
-          config: configWithoutCredentials // Config sem credenciais
+          // Mantém a instância no config
+          config: {
+            ...configWithoutCredentials,
+            // Garante que a instância esteja no config
+            instance: localNode.data.config?.instance || null
+          },
+          credentials: localNode.data.credentials
         }
       }
       
@@ -118,8 +146,6 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
   const isEndNode = localNode.data.label === "Fim"
   const isConditionNode = localNode.data.label === "Condição"
 
-
-
   const getNodeColor = () => {
     switch (localNode.data.name) {
       case "whatsapp":
@@ -135,11 +161,16 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
 
   // Encontra a definição do nó nos tipos de nó disponíveis
   const getActionDefinition = () => {
-    // Constrói o actionDefinition no mesmo formato que o IntegrationDialog recebe
+    // Constrói o actionDefinition incluindo a instância
     return {
-      id: localNode.id.split("-")[0], // Extrai o ID original da ação
+      id: localNode.id.split("-")[0],
       ...localNode.data,
-      config: localNode.data.config || {},
+      config: {
+        ...localNode.data.config || {},
+        // Garante que a instância esteja no config
+        instance: localNode.data.config?.instance || null
+      },
+      credentials: localNode.data.credentials || {}
     }
   }
 
@@ -187,17 +218,25 @@ export function EditNodeDialog({ open, onOpenChange, editingNode, onSave, onDele
               }, {
                 input: localNode.data.input,
                 output: localNode.data.output,
-                config: localNode.data.config || {},
+                config: {
+                  ...localNode.data.config || {},
+                  // Garante que a instância esteja no config
+                  instance: localNode.data.config?.instance || null
+                },
                 credentials: localNode.data.credentials || {}
               }, (newConfig) => {
-                // Simplifica a atualização para evitar aninhamento
+                // Atualiza o nó local mantendo a instância
                 setLocalNode({
                   ...localNode,
                   data: {
                     ...localNode.data,
                     input: newConfig.input || localNode.data.input,
                     output: newConfig.output || localNode.data.output,
-                    config: newConfig.config || localNode.data.config,
+                    config: {
+                      ...newConfig.config || localNode.data.config,
+                      // Mantém a instância no config
+                      instance: newConfig.config?.instance || localNode.data.config?.instance || null
+                    },
                     credentials: newConfig.credentials || localNode.data.credentials
                   }
                 });

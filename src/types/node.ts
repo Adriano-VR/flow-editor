@@ -98,6 +98,21 @@ export interface NodeApiResponse {
   };
 }
 
+export interface NodeData {
+  type: NodeType;
+  app: NodeApp;
+  name: string;
+  label: string;
+  icon?: string;
+  color?: string;
+  status?: 'active' | 'inactive' | 'error';
+  input?: Record<string, unknown>;
+  output?: Record<string, unknown>;
+  config: Record<string, unknown>;
+  credentials?: Record<string, unknown>;
+  instance?: string | null;
+}
+
 export type Node = ReactFlowNode<NodeData>;
 
 // Tipos para operações com nodes

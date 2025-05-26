@@ -65,13 +65,15 @@ export function AssistantFields({ values, onChange, errors }: AssistantFieldsPro
         description: newTool.description.trim(),
         parameters: {},
       }
-      onChange("tools", [...(values.credencias.tools || []), tool])
+      const currentTools = Array.isArray(values.credencias.tools) ? values.credencias.tools : []
+      onChange("tools", [...currentTools, tool])
       setNewTool({ name: "", description: "" })
     }
   }
 
   const removeTool = (index: number) => {
-    const updatedTools = values.credencias.tools.filter((_, i) => i !== index)
+    const currentTools = Array.isArray(values.credencias.tools) ? values.credencias.tools : []
+    const updatedTools = currentTools.filter((_, i) => i !== index)
     onChange("tools", updatedTools)
   }
 
@@ -309,7 +311,7 @@ export function AssistantFields({ values, onChange, errors }: AssistantFieldsPro
         </div>
 
         <div className="space-y-2">
-          {values.credencias.tools?.map((tool, index) => (
+          {(Array.isArray(values.credencias.tools) ? values.credencias.tools : []).map((tool, index) => (
             <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
               <div>
                 <div className="font-medium">{tool.name}</div>
@@ -327,7 +329,7 @@ export function AssistantFields({ values, onChange, errors }: AssistantFieldsPro
           ))}
         </div>
 
-        {(!values.credencias.tools || values.credencias.tools.length === 0) && (
+        {(!Array.isArray(values.credencias.tools) || values.credencias.tools.length === 0) && (
           <div className="text-center py-8 text-gray-500">
             <Wrench className="h-12 w-12 mx-auto mb-2 opacity-50" />
             <p>Nenhuma ferramenta configurada</p>

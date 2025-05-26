@@ -48,7 +48,7 @@ interface WhatsAppConfigProps {
     components?: any[];
   };
   output?: WhatsAppOutput;
-
+  instance?: string | null;
   updateConfig: (config: any) => void;
   updateCredentials: (field: string, value: string) => void;
   stop?: boolean;
@@ -59,6 +59,7 @@ interface WhatsAppConfigProps {
 export function WhatsAppConfig({ 
   config = {}, 
   output = { type: 'text', text: '' },
+  instance,
   updateConfig, 
   updateCredentials,
   setActionConfig,
@@ -85,12 +86,13 @@ export function WhatsAppConfig({
       webhook?: string;
       provider?: string;
     };
+    instance?: string | null;
     stop?: boolean;
   };
 }) {
   const { toast } = useToast()
   const { flowData, handleSaveFlow } = useFlow()
-  const [selectedInstance, setSelectedInstance] = useState<string>("")
+  const [selectedInstance, setSelectedInstance] = useState<string>(instance || "")
   const [showCredentials, setShowCredentials] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [newInstanceDraft, setNewInstanceDraft] = useState<any>(null)
@@ -107,6 +109,29 @@ export function WhatsAppConfig({
     apiKey: '',
     provider: 'whatsapp'
   });
+
+  // Carrega as instâncias do WhatsApp do settings
+  const settings = flowData?.data?.settings
+  const whatsappInstances = (typeof settings === 'string' ? JSON.parse(settings) : settings)?.instances?.filter(
+    (instance: any) => instance.credencias.provider === "whatsapp"
+  ) || []
+
+  // Atualiza o estado local quando a instância muda
+  useEffect(() => {
+    if (instance) {
+      setSelectedInstance(instance);
+      const instanceData = whatsappInstances.find((i: any) => i.name === instance);
+      if (instanceData) {
+        setLocalCredentials({
+          appName: instanceData.credencias.appName || '',
+          source: instanceData.credencias.source || '',
+          webhook: instanceData.credencias.webhook || '',
+          apiKey: instanceData.credencias.apiKey || '',
+          provider: 'whatsapp'
+        });
+      }
+    }
+  }, [instance, whatsappInstances]);
 
   // Inicializa o output quando o componente monta ou quando messageType muda
   useEffect(() => {
@@ -140,12 +165,6 @@ export function WhatsAppConfig({
     }
   }, [config?.messageType])
 
-  // Carrega as instâncias do WhatsApp do settings
-  const settings = flowData?.attributes?.data?.settings
-  const whatsappInstances = (typeof settings === 'string' ? JSON.parse(settings) : settings)?.instances?.filter(
-    (instance: any) => instance.credencias.provider === "whatsapp"
-  ) || []
-
   // Função para gerar nome único
   const getNextInstanceName = () => {
     let idx = 1;
@@ -177,30 +196,68 @@ export function WhatsAppConfig({
 
   // Salva a nova instância
   const handleSaveNewInstance = async () => {
-    const currentSettings = typeof settings === 'string' ? JSON.parse(settings) : settings || { instances: [] }
-    const newSettings = {
-      ...currentSettings,
-      instances: [
-        ...(currentSettings.instances || []),
-        newInstanceDraft
-      ]
+    try {
+      // Obtém as configurações atuais
+      const currentSettings = typeof settings === 'string' ? JSON.parse(settings) : settings || { instances: [] }
+      
+      // Verifica se já existe uma instância com o mesmo nome
+      const instanceExists = currentSettings.instances?.some((i: any) => i.name === newInstanceDraft.name)
+      if (instanceExists) {
+        toast({
+          title: "Erro ao criar instância",
+          description: "Já existe uma instância com este nome. Por favor, escolha outro nome.",
+          variant: "destructive"
+        })
+        return
+      }
+
+      // Cria o novo settings mantendo as instâncias existentes
+      const newSettings = {
+        ...currentSettings,
+        instances: [
+          ...(currentSettings.instances || []),
+          {
+            ...newInstanceDraft,
+            credencias: {
+              ...newInstanceDraft.credencias,
+              provider: "whatsapp"
+            }
+          }
+        ]
+      }
+
+      // Salva no backend
+      await handleSaveFlow({
+        nodes: flowData?.data?.nodes || [],
+        edges: flowData?.data?.edges || [],
+        name: flowData?.name,
+        status: flowData?.status,
+        description: flowData?.description,
+        settings: newSettings
+      })
+
+      toast({
+        title: "Nova instância criada",
+        description: `A instância "${newInstanceDraft.name}" foi criada com sucesso.`
+      })
+
+      // Atualiza o estado local
+      setSelectedInstance(newInstanceDraft.name)
+      setActionConfig({
+        ...actionConfig,
+        instance: newInstanceDraft.name
+      })
+      setIsCreating(false)
+      setShowCredentials(false)
+      setNewInstanceDraft(null)
+    } catch (error) {
+      console.error("Error creating new instance:", error)
+      toast({
+        title: "Erro ao criar instância",
+        description: "Não foi possível criar a nova instância. Tente novamente.",
+        variant: "destructive"
+      })
     }
-    await handleSaveFlow({
-      nodes: flowData?.attributes?.data?.nodes || [],
-      edges: flowData?.attributes?.data?.edges || [],
-      name: flowData?.attributes?.name,
-      status: flowData?.attributes?.status,
-      description: flowData?.attributes?.description,
-      settings: newSettings
-    })
-    toast({
-      title: "Nova instância criada",
-      description: `A instância "${newInstanceDraft.name}" foi criada. Configure as credenciais abaixo.`
-    })
-    setSelectedInstance(newInstanceDraft.name)
-    setIsCreating(false)
-    setShowCredentials(false)
-    setNewInstanceDraft(null)
   }
 
   // Cancela a criação
@@ -225,10 +282,14 @@ export function WhatsAppConfig({
         apiKey: instance.credencias.apiKey || '',
         provider: 'whatsapp'
       })
-      // Atualiza o config do nó mantendo as configurações existentes
-      updateConfig({
-        ...config
-      })
+      // Atualiza o config do nó mantendo as configurações existentes e atualizando a instância
+      setActionConfig({
+        ...actionConfig,
+        instance: instanceName,
+        config: {
+          ...config
+        }
+      });
     }
   }
 
@@ -276,11 +337,11 @@ export function WhatsAppConfig({
 
       // Salva o novo settings
       await handleSaveFlow({
-        nodes: flowData?.attributes?.data?.nodes || [],
-        edges: flowData?.attributes?.data?.edges || [],
-        name: flowData?.attributes?.name,
-        status: flowData?.attributes?.status,
-        description: flowData?.attributes?.description,
+        nodes: flowData?.data?.nodes || [],
+        edges: flowData?.data?.edges || [],
+        name: flowData?.name,
+        status: flowData?.status,
+        description: flowData?.description,
         settings: newSettings
       })
 
@@ -306,11 +367,11 @@ export function WhatsAppConfig({
 
       // Salva o settings atualizado
       await handleSaveFlow({
-        nodes: flowData?.attributes?.data?.nodes || [],
-        edges: flowData?.attributes?.data?.edges || [],
-        name: flowData?.attributes?.name,
-        status: flowData?.attributes?.status,
-        description: flowData?.attributes?.description,
+        nodes: flowData?.data?.nodes || [],
+        edges: flowData?.data?.edges || [],
+        name: flowData?.name,
+        status: flowData?.status,
+        description: flowData?.description,
         settings: {
           ...currentSettings,
           instances: updatedInstances
@@ -752,6 +813,7 @@ export function renderWhatsAppConfigFields(
       webhook?: string;
       provider?: string;
     };
+    instance?: string | null;
     stop?: boolean;
   },
   setActionConfig: (cfg: any) => void
@@ -765,7 +827,6 @@ export function renderWhatsAppConfigFields(
   };
 
   const updateCredentials = (field: string, value: string): void => {
-    // Não armazena as credenciais no nó, apenas atualiza o estado local
     setActionConfig({
       ...actionConfig,
       stop: true
@@ -776,6 +837,7 @@ export function renderWhatsAppConfigFields(
     <WhatsAppConfig
       config={actionConfig.config}
       output={actionConfig.output}
+      instance={actionConfig.instance}
       updateConfig={updateConfig}
       updateCredentials={updateCredentials}
       setActionConfig={setActionConfig}

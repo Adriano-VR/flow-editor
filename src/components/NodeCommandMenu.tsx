@@ -12,15 +12,29 @@ import {
 import { IconRenderer } from "@/lib/IconRenderer";
 import { NodeTypeDefinition } from "@/lib/nodeTypes";
 import { nodeTypes as allNodeTypes } from "@/lib/nodeTypes";
+import { Node } from "@/types/node";
+import { Edge, FlowData } from "@/types/flow";
+import { Settings } from "@/lib/settingsTypes";
 
 interface NodeCommandMenuProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onNodeSelect: (nodeType: NodeTypeDefinition) => void;
+  onNodeSelect: (nodeType: NodeTypeDefinition, flowData: FlowData) => void;
   onClose?: () => void;
+  currentFlowData?: FlowData;
 }
 
-export function NodeCommandMenu({ open, onOpenChange, onNodeSelect, onClose }: NodeCommandMenuProps) {
+export function NodeCommandMenu({ 
+  open, 
+  onOpenChange, 
+  onNodeSelect, 
+  onClose,
+  currentFlowData = { 
+    nodes: [], 
+    edges: [], 
+    settings: { instances: [] } 
+  }
+}: NodeCommandMenuProps) {
   // Add keyboard shortcut handler
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -38,10 +52,10 @@ export function NodeCommandMenu({ open, onOpenChange, onNodeSelect, onClose }: N
   const handleSelect = useCallback((nodeType: NodeTypeDefinition) => {
     // Use setTimeout to ensure state updates happen after render
     setTimeout(() => {
-      onNodeSelect(nodeType);
+      onNodeSelect(nodeType, currentFlowData);
       onOpenChange(false);
     }, 0);
-  }, [onNodeSelect, onOpenChange]);
+  }, [onNodeSelect, onOpenChange, currentFlowData]);
 
   // Flatten all node types into a single array for search
   const allNodes = useMemo(() => {

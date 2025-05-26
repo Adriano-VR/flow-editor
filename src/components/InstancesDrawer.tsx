@@ -98,8 +98,8 @@ interface WhatsAppInstancesDrawerProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   flowId: string
-  flowData: { data: Flow } | null
-  onFlowDataChange: (newData: { data: Flow }) => void
+  flowData: Flow | null
+  onFlowDataChange: (newData: Flow) => void
 }
 
 // Type guard functions
@@ -140,23 +140,17 @@ export function WhatsAppInstancesDrawer({
     try {
       setIsLoading(true)
       const response = await getFlow(flowId)
-      const newFlowData = response
+      const newFlowData = response.data
 
       // Atualiza apenas as instâncias no estado atual
-      if (flowData?.data?.attributes?.data) {
+      if (flowData?.data) {
         onFlowDataChange({
           ...flowData,
           data: {
             ...flowData.data,
-            attributes: {
-              ...flowData.data.attributes,
-              data: {
-                ...flowData.data.attributes.data,
-                settings: {
-                  ...flowData.data.attributes.data.settings,
-                  instances: newFlowData.data.attributes.data?.settings?.instances || [],
-                },
-              },
+            settings: {
+              ...flowData.data.settings,
+              instances: newFlowData.data?.settings?.instances || [],
             },
           },
         })
@@ -172,7 +166,7 @@ export function WhatsAppInstancesDrawer({
   // Função para obter as instâncias atuais
   const getCurrentInstances = (): Instance[] => {
     try {
-      const settings = flowData?.data?.attributes?.data?.settings
+      const settings = flowData?.data?.settings
       if (!settings) return []
       
       const parsedSettings = typeof settings === "string" ? JSON.parse(settings) : settings
@@ -186,8 +180,15 @@ export function WhatsAppInstancesDrawer({
   // Função para atualizar as instâncias
   const updateInstances = async (updatedInstances: Instance[]) => {
     try {
+      // Verificar se realmente houve mudança nas instâncias
+      const currentInstances = getCurrentInstances()
+      if (JSON.stringify(currentInstances) === JSON.stringify(updatedInstances)) {
+        console.log("No changes detected, skipping save")
+        return
+      }
+
       setSaveStatus("saving")
-      const currentSettings = flowData?.data?.attributes?.data?.settings
+      const currentSettings = flowData?.data?.settings
       const parsedSettings = currentSettings
         ? typeof currentSettings === "string"
           ? JSON.parse(currentSettings)
@@ -199,49 +200,25 @@ export function WhatsAppInstancesDrawer({
         instances: updatedInstances,
       }
 
-      // Criar o objeto de flow atualizado
-      const nodes = flowData?.data?.attributes?.data?.nodes ?? []
-      const edges = flowData?.data?.attributes?.data?.edges ?? []
-      
+      // Criar o objeto de flow atualizado mantendo a estrutura existente
       const updatedFlowData = {
-        nodes,
-        edges,
-        name: flowData?.data?.attributes?.name,
-        status: flowData?.data?.attributes?.status,
-        description: flowData?.data?.attributes?.description,
-        settings: updatedSettings
-      } satisfies {
-        nodes: Node[];
-        edges: Edge[];
-        name?: string;
-        status?: string;
-        description?: string;
-        settings?: Settings;
+        data: {
+          nodes: flowData?.data?.nodes || [],
+          edges: flowData?.data?.edges || [],
+          settings: updatedSettings
+        },
+        name: flowData?.name,
+        status: flowData?.status,
+        description: flowData?.description
       }
 
-      // Primeiro atualizar o estado local
-      onFlowDataChange({
-        data: {
-          ...flowData?.data,
-          attributes: {
-            ...flowData?.data?.attributes,
-            data: {
-              ...flowData?.data?.attributes?.data,
-              settings: updatedSettings,
-            },
-          },
-        },
-      })
-
-      // Depois persistir no backend
+      // Primeiro persistir no backend
       const response = await updateFlow(flowId, updatedFlowData)
 
       if (response?.data) {
         setSaveStatus("success")
         // Atualizar o estado local com a resposta da API
-        onFlowDataChange({
-          data: response.data,
-        })
+        onFlowDataChange(response.data)
       } else {
         throw new Error("Failed to update flow")
       }
@@ -303,12 +280,24 @@ export function WhatsAppInstancesDrawer({
   // Função para salvar nova instância
   const handleSaveNewInstance = async (instance: Instance) => {
     try {
+      // Verificar se a instância tem dados válidos antes de salvar
+      if (!instance.name || !instance.credencias) {
+        console.log("Invalid instance data, skipping save")
+        return
+      }
+
       setSaveStatus("saving")
       const currentInstances = getCurrentInstances()
       
       // Garantir que a instância tem a estrutura correta baseada no provider
       let newInstance: Instance
       if (isWhatsAppInstance(instance)) {
+        // Verificar se os campos obrigatórios estão preenchidos
+        if (!instance.credencias.appName) {
+          console.log("Missing required WhatsApp fields, skipping save")
+          return
+        }
+
         newInstance = {
           name: instance.name,
           credencias: {
@@ -322,6 +311,12 @@ export function WhatsAppInstancesDrawer({
           lastConnected: ""
         } as WhatsAppInstance
       } else {
+        // Verificar se os campos obrigatórios estão preenchidos
+        if (!instance.credencias.app || !instance.credencias.idassistente) {
+          console.log("Missing required Assistant fields, skipping save")
+          return
+        }
+
         newInstance = {
           name: instance.name,
           credencias: {
@@ -335,7 +330,7 @@ export function WhatsAppInstancesDrawer({
               maxTokens: instance.credencias.memory?.maxTokens || 2000,
               retentionPeriod: instance.credencias.memory?.retentionPeriod || "7d"
             },
-            tools: instance.credencias.tools || [],
+            tools: Array.isArray(instance.credencias.tools) ? instance.credencias.tools : [],
             provider: "assistant"
           },
           status: "inactive",
@@ -343,10 +338,19 @@ export function WhatsAppInstancesDrawer({
         } as AssistantInstance
       }
 
+      // Verificar se a instância já existe
+      const instanceExists = currentInstances.some(
+        (inst) => inst.name === newInstance.name && inst.credencias.provider === newInstance.credencias.provider
+      )
+      if (instanceExists) {
+        console.log("Instance already exists, skipping save")
+        return
+      }
+
       const updatedInstances = [...currentInstances, newInstance]
       
       // Atualizar o backend
-      const currentSettings = flowData?.data?.attributes?.data?.settings
+      const currentSettings = flowData?.data?.settings
       const parsedSettings = currentSettings
         ? typeof currentSettings === "string"
           ? JSON.parse(currentSettings)
@@ -359,33 +363,23 @@ export function WhatsAppInstancesDrawer({
       }
 
       // Criar o objeto de flow atualizado mantendo a estrutura existente
-      const nodes = flowData?.data?.attributes?.data?.nodes ?? []
-      const edges = flowData?.data?.attributes?.data?.edges ?? []
-      
       const updatedFlowData = {
-        nodes,
-        edges,
-        name: flowData?.data?.attributes?.name,
-        status: flowData?.data?.attributes?.status,
-        description: flowData?.data?.attributes?.description,
-        settings: updatedSettings
-      } satisfies {
-        nodes: Node[];
-        edges: Edge[];
-        name?: string;
-        status?: string;
-        description?: string;
-        settings?: Settings;
+        data: {
+          nodes: flowData?.data?.nodes || [],
+          edges: flowData?.data?.edges || [],
+          settings: updatedSettings
+        },
+        name: flowData?.name,
+        status: flowData?.status,
+        description: flowData?.description
       }
 
       // Primeiro persistir no backend
-      const response = await updateFlow(flowId, { data: { id: parseInt(flowId), attributes: { data: updatedFlowData } } } )
+      const response = await updateFlow(flowId, updatedFlowData)
 
       if (response?.data) {
         // Atualizar o estado local APENAS com a resposta da API
-        onFlowDataChange({
-          data: response.data
-        })
+        onFlowDataChange(response.data)
         
         setSaveStatus("success")
         setIsCreating(false)
@@ -413,12 +407,28 @@ export function WhatsAppInstancesDrawer({
     }
 
     try {
-      setSaveStatus("saving")
+      // Verificar se realmente houve mudança na instância
       const currentInstances = getCurrentInstances()
+      const currentInstance = currentInstances[editingIndex]
+      if (JSON.stringify(currentInstance) === JSON.stringify(updatedInstance)) {
+        console.log("No changes detected in instance, skipping save")
+        setIsEditDialogOpen(false)
+        setEditingInstance(null)
+        setEditingIndex(null)
+        return
+      }
+
+      setSaveStatus("saving")
       
       // Garantir que a instância tem a estrutura correta baseada no provider
       let newInstance: Instance
       if (isWhatsAppInstance(updatedInstance)) {
+        // Verificar se os campos obrigatórios estão preenchidos
+        if (!updatedInstance.credencias.appName) {
+          console.log("Missing required WhatsApp fields, skipping save")
+          return
+        }
+
         newInstance = {
           name: updatedInstance.name,
           credencias: {
@@ -432,6 +442,12 @@ export function WhatsAppInstancesDrawer({
           lastConnected: updatedInstance.lastConnected || ""
         } as WhatsAppInstance
       } else {
+        // Verificar se os campos obrigatórios estão preenchidos
+        if (!updatedInstance.credencias.app || !updatedInstance.credencias.idassistente) {
+          console.log("Missing required Assistant fields, skipping save")
+          return
+        }
+
         newInstance = {
           name: updatedInstance.name,
           credencias: {
@@ -445,7 +461,7 @@ export function WhatsAppInstancesDrawer({
               maxTokens: updatedInstance.credencias.memory?.maxTokens || 2000,
               retentionPeriod: updatedInstance.credencias.memory?.retentionPeriod || "7d"
             },
-            tools: updatedInstance.credencias.tools || [],
+            tools: Array.isArray(updatedInstance.credencias.tools) ? updatedInstance.credencias.tools : [],
             provider: "assistant"
           },
           status: updatedInstance.status || "inactive",
@@ -459,7 +475,7 @@ export function WhatsAppInstancesDrawer({
       )
 
       // Atualizar o backend
-      const currentSettings = flowData?.data?.attributes?.data?.settings
+      const currentSettings = flowData?.data?.settings
       const parsedSettings = currentSettings
         ? typeof currentSettings === "string"
           ? JSON.parse(currentSettings)
@@ -472,33 +488,23 @@ export function WhatsAppInstancesDrawer({
       }
 
       // Criar o objeto de flow atualizado mantendo a estrutura existente
-      const nodes = flowData?.data?.attributes?.data?.nodes ?? []
-      const edges = flowData?.data?.attributes?.data?.edges ?? []
-      
       const updatedFlowData = {
-        nodes,
-        edges,
-        name: flowData?.data?.attributes?.name,
-        status: flowData?.data?.attributes?.status,
-        description: flowData?.data?.attributes?.description,
-        settings: updatedSettings
-      } satisfies {
-        nodes: Node[];
-        edges: Edge[];
-        name?: string;
-        status?: string;
-        description?: string;
-        settings?: Settings;
+        data: {
+          nodes: flowData?.data?.nodes || [],
+          edges: flowData?.data?.edges || [],
+          settings: updatedSettings
+        },
+        name: flowData?.name,
+        status: flowData?.status,
+        description: flowData?.description
       }
 
       // Primeiro persistir no backend
-      const response = await updateFlow(flowId, { data: { id: parseInt(flowId), attributes: { data: updatedFlowData } } } )
+      const response = await updateFlow(flowId, updatedFlowData)
 
       if (response?.data) {
         // Atualizar o estado local APENAS com a resposta da API
-        onFlowDataChange({
-          data: response.data
-        })
+        onFlowDataChange(response.data)
         
         setSaveStatus("success")
         // Fechar o diálogo e limpar o estado

@@ -1,12 +1,19 @@
 "use client"
 import { useReactFlow } from 'reactflow';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import React, { createContext, useContext, useState, useEffect, ReactNode, Dispatch, SetStateAction } from "react";
 import { createFlow, getFlow, updateFlow, deleteFlow, getFlows } from "@/lib/api";
 import { nodeTypes as nodeTypeDefinitions } from "@/lib/nodeTypes";
 import { Flow, Node, Edge, Action, ActionConfig } from "@/types/flow";
-import { Flow as FlowType } from "@/types/sidebar";
+import { Settings } from '@/lib/settingsTypes';
 import { NodeTypeDefinition } from '@/lib/nodeTypes';
+
+// Definindo o tipo FlowResponse localmente
+interface FlowResponse {
+  data: Flow;
+  message?: string;
+  error?: string;
+}
 
 interface FlowContextType {
   flows: Flow[];
@@ -29,7 +36,7 @@ interface FlowContextType {
   setActionConfig: (config: ActionConfig) => void;
   handleCreateFlow: (name: string) => Promise<string | null>;
   handleDeleteFlow: (flowId: string) => Promise<void>;
-  handleSaveFlow: (data: { nodes: Node[]; edges: Edge[]; name?: string; status?: string; description?: string; settings?: Settings }) => Promise<void>;
+  handleSaveFlow: (data: { nodes: Node[]; edges: Edge[]; name?: string; status?: string; description?: string; settings?: Settings }) => Promise<FlowResponse>;
   handleActionSelect: (action: Action) => void;
   handleActionConfigSubmit: () => Promise<void>;
   handleJsonUpdate: (json: string) => Promise<void>;
@@ -52,8 +59,8 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
   const [selectedAction, setSelectedAction] = useState<Action | null>(null);
   const [actionConfig, setActionConfig] = useState<ActionConfig>({});
-  const [flows, setFlows] = useState<FlowType[]>([]);
-  const { project } = useReactFlow();
+  const [flows, setFlows] = useState<Flow[]>([]);
+  const { screenToFlowPosition } = useReactFlow();
 
   const handleCreateFlow = async (name: string): Promise<string | null> => {
     if (!name.trim()) return null;
@@ -61,24 +68,25 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     try {
       setIsCreating(true);
       const flowData = {
+        name: name.trim(),
+        status: "draft",
+        billing: "free",
+        published: true,
+        uuid: crypto.randomUUID(),  
         data: {
-          name: name.trim(),
-          status: "draft",
-          billing: "free",
-          published: true,
-          data: {
-            nodes: [],
-            edges: [],
-            settings: {}
-          }
+          nodes: [],
+          edges: [],
+          settings: {}
         }
       };
 
-      const response = await createFlow(flowData as Partial<Flow>);
+      const response = await createFlow(flowData as unknown as Partial<Flow>);
+
 
       if (response && response.data && response.data.id) {
         const updatedResponse = await getFlows();
-        setFlows([updatedResponse.data[0], ...updatedResponse.data.slice(1)]);
+        console.log('updatedResponse', updatedResponse);
+        setFlows(updatedResponse.data);
         setSelectedFlowId(response.data.id.toString());
         return response.data.id.toString();
       }
@@ -107,14 +115,13 @@ export function FlowProvider({ children }: { children: ReactNode }) {
       const updatedResponse = await getFlows();
       setFlows(updatedResponse.data);
       
-      // Se o flow deletado era o selecionado, limpa a seleção
       if (selectedFlowId === flowId) {
         setSelectedFlowId(null);
         setFlowData(null);
       }
     } catch (err) {
       console.error('Error deleting flow:', err);
-      throw err; // Re-throw the error to be handled by the component
+      throw err;
     } finally {
       setIsDeleting(null);
     }
@@ -125,6 +132,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
       try {
         setIsLoading(true);
         const response = await getFlows();
+        console.log(response);
         setFlows(response.data);
       } catch (err) {
         console.error('Error fetching flows:', err);
@@ -134,6 +142,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     };
 
     fetchFlows();
+    console.log('flows', flows);
   }, []);
 
   useEffect(() => {
@@ -143,16 +152,13 @@ export function FlowProvider({ children }: { children: ReactNode }) {
           const response = await getFlow(selectedFlowId);
           const newFlowData = response.data;
           setFlowData(newFlowData);
-          
-          // Atualiza o nome do flow apenas se ele existir nos dados
-          if (newFlowData?.attributes?.name) {
-            setFlowName(newFlowData.attributes.name);
+          if (newFlowData?.name) {
+            setFlowName(newFlowData.name);
           }
         } catch (error) {
           console.error('Error loading flow:', error);
         }
       } else {
-        // Limpa os dados quando não há flow selecionado
         setFlowData(null);
         setFlowName("");
       }
@@ -161,55 +167,76 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     loadFlowData();
   }, [selectedFlowId]);
 
-  const handleSaveFlow = async (data: { nodes: Node[]; edges: Edge[]; name?: string; status?: string; description?: string; settings?: Settings }) => {
-    if (!selectedFlowId) return;
+  const handleSaveFlow = async (data: { nodes: Node[]; edges: Edge[]; name?: string; status?: string; description?: string; settings?: Settings }): Promise<FlowResponse> => {
+    if (!selectedFlowId) {
+      console.error('No flow selected');
+      throw new Error('No flow selected');
+    }
 
     try {
-      const updatedName = data.name || flowData?.attributes?.name;
+      console.log('=== handleSaveFlow Debug ===');
+      console.log('1. Received data:', data);
+      console.log('2. Nodes count in received data:', data.nodes.length);
+      console.log('3. Edges count in received data:', data.edges.length);
+      
+      const updatedName = data.name || flowData?.name;
       if (updatedName) {
         setFlowName(updatedName);
       }
 
-      // Converte o settings para objeto se for string
-      const currentSettings = flowData?.attributes?.data?.settings;
-      const settingsObject = typeof currentSettings === 'string' ? JSON.parse(currentSettings) : currentSettings;
+      // Obtém as configurações atuais
+      const currentSettings = flowData?.data?.settings;
+      const settingsObject = typeof currentSettings === 'string' ? JSON.parse(currentSettings) : currentSettings || {};
 
-      await updateFlow(selectedFlowId, {
+      // Mescla as configurações existentes com as novas
+      const mergedSettings = {
+        ...settingsObject,
+        ...(data.settings || {}),
+        // Preserva as instâncias existentes e adiciona as novas
+        instances: [
+          ...(settingsObject.instances || []),
+          ...(data.settings?.instances?.filter((newInstance: any) => 
+            !settingsObject.instances?.some((existingInstance: any) => 
+              existingInstance.name === newInstance.name && 
+              existingInstance.credencias.provider === newInstance.credencias.provider
+            )
+          ) || [])
+        ]
+      };
+
+      // Ensure we're sending the correct data structure
+      const updateData = {
+        name: updatedName,
+        status: data.status || flowData?.status || "draft",
+        description: data.description || flowData?.description || "",
         data: {
-          name: updatedName,
-          status: data.status || flowData?.attributes?.status || "draft",
-          description: data.description || flowData?.attributes?.description || "",
-          billing: "free",
-          published: true,
-          data: {
-            nodes: data.nodes,
-            edges: data.edges,
-            settings: data.settings || settingsObject || {}
-          }
+          nodes: Array.isArray(data.nodes) ? [...data.nodes] : [],
+          edges: Array.isArray(data.edges) ? [...data.edges] : [],
+          settings: mergedSettings
         }
-      });
+      };
 
-      // Atualiza o estado local
-      setFlowData(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          attributes: {
-            ...prev.attributes,
-            name: updatedName || prev.attributes.name,
-            status: data.status || prev.attributes.status,
-            description: data.description || prev.attributes.description,
-            data: {
-              ...prev.attributes.data,
-              nodes: data.nodes,
-              edges: data.edges,
-              settings: data.settings || settingsObject || {}
-            }
-          }
-        };
-      });
+      console.log('4. Transformed updateData:', updateData);
+      console.log('5. Nodes count in updateData:', updateData.data.nodes.length);
+      console.log('6. Edges count in updateData:', updateData.data.edges.length);
+      console.log('7. Instances count in updateData:', updateData.data.settings.instances?.length);
+
+      const response = await updateFlow(selectedFlowId, updateData);
+      console.log('8. API response:', response);
+
+      if (response?.data) {
+        console.log('9. Setting new flow data:', response.data);
+        console.log('10. Nodes count in response:', response.data.data?.nodes?.length);
+        console.log('11. Edges count in response:', response.data.data?.edges?.length);
+        console.log('12. Instances count in response:', response.data.data?.settings?.instances?.length);
+        setFlowData(response.data);
+        return response;
+      } else {
+        throw new Error('No data returned from update');
+      }
     } catch (error) {
       console.error('Error saving flow:', error);
+      throw error;
     }
   };
 
@@ -220,35 +247,32 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   };
 
   const createNode = (actionDefinition: NodeTypeDefinition, position?: { x: number; y: number }) => {
-    // Remove input/output/credentials do config se existirem
     const { 
       input: configInput, 
       output: configOutput, 
       credentials: configCredentials,
-      config: nestedConfig, // Remove config aninhado se existir
+      config: nestedConfig, 
       ...restConfig 
     } = actionDefinition.config || {};
 
-    // Config limpo sem credenciais e sem aninhamento
     const configWithoutCredentials = nestedConfig || restConfig;
 
     const centerX = window.innerWidth / 2;
     const centerY = window.innerHeight / 2;
 
-    // Converte coordenadas da tela para coordenadas do flow (considerando zoom e pan)
-    const positionFlow = position || project({ x: centerX, y: centerY });
+    const positionFlow = position || screenToFlowPosition({ x: centerX, y: centerY });
 
     return {
       id: `${actionDefinition.id}-${Date.now()}`,
       type: actionDefinition.type as 'action' | 'internal',
       data: {
         type: actionDefinition.type as 'action' | 'internal',
-        app: actionDefinition.subcategory as 'whatsapp' | 'instagram' | 'assistant' | 'openai' | 'conversion' | 'veo2' | 'klingai' | 'elevenlabs' | 'form' | 'klap' | undefined,
+        app: actionDefinition.subcategory as any,
         name: actionDefinition.name,
         label: actionDefinition.label ?? actionDefinition.name,
         stop: actionDefinition.stop === undefined ? false : actionDefinition.stop,
         input: actionDefinition.input ? {
-          variables: [{ variable: actionDefinition.input.variables.nome }]
+          variables: actionDefinition.input.variables ? [{ variable: actionDefinition.input.variables.nome }] : []
         } : { variables: [] },
         output: actionDefinition.output ? {
           text: actionDefinition.output.text || ''
@@ -265,7 +289,7 @@ export function FlowProvider({ children }: { children: ReactNode }) {
   };
 
   const handleActionConfigSubmit = async () => {
-    if (!selectedAction || !flowData?.attributes?.data || !selectedFlowId) return;
+    if (!selectedAction || !flowData?.data || !selectedFlowId) return;
 
     let actionDefinition;
 
@@ -283,10 +307,8 @@ export function FlowProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Cria o nó usando a função createNode
     const newNode = createNode(actionDefinition);
 
-    // Atualiza o input/output com os valores do actionConfig
     if (actionConfig.input) {
       newNode.data.input = actionConfig.input;
     }
@@ -295,19 +317,17 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     }
 
     const updatedData = {
-      nodes: [...(flowData.attributes?.data.nodes || []), newNode],
-      edges: flowData.attributes?.data.edges || [],
+      nodes: [...(flowData.data.nodes || []), newNode],
+      edges: flowData.data.edges || [],
     };
 
     try {
       const response = await updateFlow(selectedFlowId, {
-        data: {
-          name: flowName,
-          status: "draft",
-          billing: "free",
-          published: true,
-          data: updatedData
-        }
+        name: flowName,
+        status: "draft",
+        billing: "free",
+        published: true,
+        data: updatedData
       });
       
       setFlowData(response.data);
@@ -325,24 +345,17 @@ export function FlowProvider({ children }: { children: ReactNode }) {
     try {
       const parsedJson = JSON.parse(json);
       await updateFlow(selectedFlowId, {
-        data: {
-          name: flowData?.attributes?.name || "Novo Flow",
-          status: "draft",
-          billing: "free",
-          published: true,
-          data: parsedJson
-        }
+        name: flowData?.name || "Novo Flow",
+        status: "draft",
+        billing: "free",
+        published: true,
+        data: parsedJson
       });
-      
-      // Atualiza o estado local com o novo JSON
       setFlowData(prev => {
         if (!prev) return null;
         return {
           ...prev,
-          attributes: {
-            ...prev.attributes,
-            data: parsedJson
-          }
+          data: parsedJson
         };
       });
     } catch (error) {

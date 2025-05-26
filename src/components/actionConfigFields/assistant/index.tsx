@@ -78,7 +78,7 @@ export function AssistantConfig({
   }, [actionConfig, setActionConfig]);
 
   // Carrega as instâncias do Assistant do settings
-  const settings = flowData?.attributes?.data?.settings
+  const settings = flowData?.data?.settings
   const assistantInstances = (typeof settings === 'string' ? JSON.parse(settings) : settings)?.instances?.filter(
     (instance: any) => instance.credencias.provider === "assistant"
   ) || []
@@ -130,11 +130,11 @@ export function AssistantConfig({
       ]
     }
     await handleSaveFlow({
-      nodes: flowData?.attributes?.data?.nodes || [],
-      edges: flowData?.attributes?.data?.edges || [],
-      name: flowData?.attributes?.name,
-      status: flowData?.attributes?.status,
-      description: flowData?.attributes?.description,
+      nodes: flowData?.data?.nodes || [],
+      edges: flowData?.data?.edges || [],
+      name: flowData?.data?.name,
+      status: flowData?.data?.status,
+      description: flowData?.data?.description,
       settings: newSettings
     })
     toast({
@@ -209,11 +209,11 @@ export function AssistantConfig({
         return instance
       })
       await handleSaveFlow({
-        nodes: flowData?.attributes?.data?.nodes || [],
-        edges: flowData?.attributes?.data?.edges || [],
-        name: flowData?.attributes?.name,
-        status: flowData?.attributes?.status,
-        description: flowData?.attributes?.description,
+        nodes: flowData?.data?.nodes || [],
+        edges: flowData?.data?.edges || [],
+        name: flowData?.data?.name,
+        status: flowData?.data?.status,
+        description: flowData?.data?.description,
         settings: {
           ...currentSettings,
           instances: updatedInstances
